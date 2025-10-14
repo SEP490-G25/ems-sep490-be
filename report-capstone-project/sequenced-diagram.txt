@@ -1,0 +1,175 @@
+sequenceDiagram
+    autonumber
+    
+    actor Student
+    actor AcademicStaff
+    participant TransferAPI as Transfer Request API
+    participant ValidationSvc as Validation Service
+    participant EnrollmentSvc as Enrollment Service
+    participant SessionSvc as Session Service
+    participant CourseSvc as Course Service
+    participant NotificationSvc as Notification Service
+    participant DB as Database
+    participant AuditLog as Audit Logger
+    
+    %% ============ PHASE 1: CREATE REQUEST ============
+    rect rgb(240, 248, 255)
+        Note over Student,TransferAPI: PHASE 1: Student Creates Transfer Request
+        Student->>+TransferAPI: POST /students/{id}/requests/transfer<br/>{current_class_id, target_class_id, effective_date, note}
+        TransferAPI->>+DB: INSERT student_request
+        DB-->>-TransferAPI: request_id: 15
+        TransferAPI-->>-Student: 201 Created<br/>{id: 15, status: "pending"}
+        TransferAPI->>NotificationSvc: Notify Academic Staff<br/>(new transfer request)
+        NotificationSvc-->>AcademicStaff: 📧 New transfer request from HV-2025-001
+    end
+    
+    %% ============ PHASE 2: VALIDATE REQUEST ============
+    rect rgb(255, 250, 240)
+        Note over AcademicStaff,ValidationSvc: PHASE 2: Academic Staff Reviews & Validates
+        AcademicStaff->>+TransferAPI: POST /student-requests/15/validate-transfer
+        TransferAPI->>+ValidationSvc: validateTransferRequest(request_id: 15)
+        
+        %% Validation Step 1: Check Classes
+        ValidationSvc->>+DB: SELECT class WHERE id IN (1, 3)
+        DB-->>-ValidationSvc: from_class, to_class
+        
+        ValidationSvc->>ValidationSvc: Check class status<br/>(both must be ongoing/scheduled)
+        
+        alt Class status invalid
+            ValidationSvc-->>TransferAPI: ValidationError:<br/>"Cannot transfer from/to cancelled class"
+            TransferAPI-->>AcademicStaff: 400 Bad Request<br/>{is_valid: false, errors: [...]}
+        end
+        
+        %% Validation Step 2: Check Same Course
+        ValidationSvc->>+CourseSvc: checkSameCourse(class_id_1, class_id_2)
+        CourseSvc->>+DB: SELECT course_id FROM class<br/>WHERE id IN (1, 3)
+        DB-->>-CourseSvc: course_id: 1, 1
+        CourseSvc-->>-ValidationSvc: same_course: true
+        
+        alt Different courses
+            ValidationSvc-->>TransferAPI: ValidationError:<br/>"Cannot transfer between different courses"
+            TransferAPI-->>AcademicStaff: 400 Bad Request
+        end
+        
+        %% Validation Step 3: Check Capacity
+        ValidationSvc->>+DB: SELECT COUNT(*) FROM enrollment<br/>WHERE class_id=3 AND status='enrolled'
+        DB-->>-ValidationSvc: current: 20, max: 25
+        
+        alt Capacity exceeded
+            ValidationSvc-->>TransferAPI: ValidationError:<br/>"Target class at maximum capacity"
+            TransferAPI-->>AcademicStaff: 409 Conflict
+        end
+        
+        %% Validation Step 4: Calculate Session Mapping
+        ValidationSvc->>+SessionSvc: calculateSessionMapping(from_class_id: 1,<br/>to_class_id: 3, effective_date)
+        
+        SessionSvc->>+DB: SELECT DISTINCT course_session_id<br/>FROM session WHERE class_id=1<br/>AND date >= effective_date
+        DB-->>-SessionSvc: remaining_from: [5,6,7,8,...]
+        
+        SessionSvc->>+DB: SELECT id, course_session_id, date<br/>FROM session WHERE class_id=3<br/>AND date >= effective_date
+        DB-->>-SessionSvc: available_to: [{id:45, cs_id:5}, {id:50, cs_id:6}...]
+        
+        SessionSvc->>SessionSvc: Map by course_session_id<br/>Find matched & missing sessions
+        
+        SessionSvc-->>-ValidationSvc: {matched: 25, missing: 2,<br/>missing_sessions: [9, 10]}
+        
+        ValidationSvc-->>-TransferAPI: ValidationResult:<br/>{is_valid: true, warnings: ["2 sessions missing"]}
+        TransferAPI-->>-AcademicStaff: 200 OK<br/>{is_valid: true, mapping_details, warnings}
+    end
+    
+    %% ============ PHASE 3: APPROVE & EXECUTE TRANSFER ============
+    rect rgb(240, 255, 240)
+        Note over AcademicStaff,DB: PHASE 3: Approve & Execute Transfer (TRANSACTION)
+        AcademicStaff->>+TransferAPI: POST /student-requests/15/approve-transfer
+        TransferAPI->>+EnrollmentSvc: executeTransfer(request_id: 15)
+        
+        EnrollmentSvc->>+DB: BEGIN TRANSACTION
+        
+        %% Step 1: Determine cut-off sessions
+        EnrollmentSvc->>DB: WITH last_done AS (<br/>SELECT id FROM session WHERE class_id=1<br/>AND date < effective_date ORDER BY date DESC LIMIT 1<br/>), next_planned AS (<br/>SELECT id FROM session WHERE class_id=1<br/>AND date >= effective_date LIMIT 1<br/>)<br/>SELECT left_session_id, cutoff_session_id
+        DB-->>EnrollmentSvc: left_session_id: 8, cutoff_session_id: 9
+        
+        %% Step 2: Update FROM enrollment
+        EnrollmentSvc->>DB: UPDATE enrollment SET<br/>status='transferred',<br/>left_at=NOW(),<br/>left_session_id=8<br/>WHERE class_id=1 AND student_id=100
+        DB-->>EnrollmentSvc: 1 row updated
+        
+        alt Update failed
+            EnrollmentSvc->>DB: ROLLBACK TRANSACTION
+            EnrollmentSvc-->>TransferAPI: Error: "Failed to update enrollment"
+            TransferAPI-->>AcademicStaff: 500 Internal Server Error
+        end
+        
+        %% Step 3: Create TO enrollment
+        EnrollmentSvc->>DB: INSERT INTO enrollment<br/>(class_id, student_id, status, enrolled_at, join_session_id)<br/>VALUES (3, 100, 'enrolled', NOW(), 10)
+        DB-->>EnrollmentSvc: enrollment_id: 25
+        
+        %% Step 4: Mark FROM class sessions as excused
+        EnrollmentSvc->>+SessionSvc: markSessionsExcused(student_id: 100,<br/>class_id: 1, from_date: effective_date)
+        SessionSvc->>DB: UPDATE student_session SET<br/>attendance_status='excused',<br/>note='Transferred to class ENG-A1-2025-03'<br/>FROM session WHERE student_id=100<br/>AND session.class_id=1<br/>AND session.date >= effective_date
+        DB-->>SessionSvc: 28 rows updated
+        SessionSvc-->>-EnrollmentSvc: Success: 28 sessions marked excused
+        
+        %% Step 5: Generate TO class sessions (with mapping)
+        EnrollmentSvc->>+SessionSvc: generateStudentSessions(student_id: 100,<br/>class_id: 3, from_date: effective_date,<br/>mapping: course_session_mapping)
+        
+        SessionSvc->>DB: WITH remaining_from_A AS (<br/>SELECT DISTINCT course_session_id FROM session<br/>WHERE class_id=1 AND date >= effective_date<br/>), target_future AS (<br/>SELECT id, course_session_id FROM session<br/>WHERE class_id=3 AND date >= effective_date<br/>)<br/>INSERT INTO student_session<br/>(student_id, session_id, is_makeup, attendance_status, note)<br/>SELECT 100, t.id, FALSE, 'planned',<br/>'Transferred from ENG-A1-2025-01'<br/>FROM target_future t<br/>WHERE t.course_session_id IN (SELECT * FROM remaining_from_A)
+        
+        DB-->>SessionSvc: 27 rows inserted
+        
+        alt Insert failed
+            SessionSvc->>DB: ROLLBACK TRANSACTION
+            SessionSvc-->>EnrollmentSvc: Error: "Failed to generate sessions"
+            EnrollmentSvc-->>TransferAPI: Error
+            TransferAPI-->>AcademicStaff: 500 Internal Server Error
+        end
+        
+        SessionSvc-->>-EnrollmentSvc: Success: 27 sessions created
+        
+        %% Step 6: Update request status
+        EnrollmentSvc->>DB: UPDATE student_request SET<br/>status='approved',<br/>decided_by=16,<br/>decided_at=NOW()<br/>WHERE id=15
+        DB-->>EnrollmentSvc: 1 row updated
+        
+        EnrollmentSvc->>DB: COMMIT TRANSACTION
+        DB-->>-EnrollmentSvc: Transaction committed
+        
+        EnrollmentSvc-->>-TransferAPI: TransferResult:<br/>{from_enrollment: {...}, to_enrollment: {...},<br/>sessions_excused: 28, sessions_created: 27}
+    end
+    
+    %% ============ PHASE 4: POST-PROCESSING ============
+    rect rgb(255, 240, 255)
+        Note over TransferAPI,AuditLog: PHASE 4: Notifications & Audit
+        
+        %% Audit Log
+        TransferAPI->>+AuditLog: logTransfer(request_id: 15,<br/>student_id: 100, from_class: 1,<br/>to_class: 3, decided_by: 16)
+        AuditLog->>DB: INSERT INTO audit_logs
+        DB-->>AuditLog: log_id: 5678
+        AuditLog-->>-TransferAPI: Logged
+        
+        %% Parallel Notifications
+        par Notify Student
+            TransferAPI->>NotificationSvc: notifyStudent(student_id: 100,<br/>type: "transfer_approved")
+            NotificationSvc-->>Student: 📧 Transfer approved!<br/>New schedule available
+        and Notify FROM class teacher
+            TransferAPI->>NotificationSvc: notifyTeacher(class_id: 1,<br/>type: "student_left")
+            NotificationSvc-->>TransferAPI: Teacher notified
+        and Notify TO class teacher
+            TransferAPI->>NotificationSvc: notifyTeacher(class_id: 3,<br/>type: "student_joined")
+            NotificationSvc-->>TransferAPI: Teacher notified
+        and Notify Manager
+            TransferAPI->>NotificationSvc: notifyManager(branch_id: 1,<br/>type: "transfer_completed")
+            NotificationSvc-->>TransferAPI: Manager notified
+        end
+        
+        TransferAPI-->>-AcademicStaff: 200 OK<br/>{status: "approved",<br/>from_enrollment: {...},<br/>to_enrollment: {...},<br/>sessions_excused: 28,<br/>sessions_created: 27,<br/>message: "Transfer completed successfully"}
+    end
+    
+    %% ============ VERIFICATION ============
+    rect rgb(245, 245, 245)
+        Note over Student,DB: Student verifies new schedule
+        Student->>+TransferAPI: GET /students/100/schedule<br/>?date_from=2025-02-15
+        TransferAPI->>+DB: SELECT sessions for student 100<br/>from class 3
+        DB-->>-TransferAPI: 27 new sessions
+        TransferAPI-->>-Student: 200 OK<br/>{sessions: [new schedule...]}
+        Student->>Student: ✅ Sees updated schedule<br/>with new class sessions
+    end
+

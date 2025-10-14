@@ -1,0 +1,335 @@
+classDiagram
+    %% ==================== CORE ENTITIES ====================
+    
+    class Student {
+        +Long id
+        +Long user_id
+        +String student_code
+        +Long branch_id
+        +DateTime created_at
+        +getEnrollments() List~Enrollment~
+        +getCurrentClasses() List~Class~
+        +getSchedule(dateFrom, dateTo) List~StudentSession~
+        +createTransferRequest(targetClassId, effectiveDate) StudentRequest
+    }
+    
+    class Class {
+        +Long id
+        +Long branch_id
+        +Long course_id
+        +String code
+        +String name
+        +String modality
+        +Date start_date
+        +Date planned_end_date
+        +Integer[] schedule_days
+        +Integer max_capacity
+        +String status
+        +Long created_by
+        +DateTime approved_at
+        +getSessions() List~Session~
+        +getEnrollments() List~Enrollment~
+        +getCurrentEnrollmentCount() Integer
+        +hasCapacity() Boolean
+        +isSameCourse(otherClassId) Boolean
+    }
+    
+    class Course {
+        +Long id
+        +Long subject_id
+        +Long level_id
+        +String code
+        +String name
+        +Integer version
+        +Integer total_hours
+        +Integer duration_weeks
+        +String status
+        +DateTime approved_at
+        +getPhases() List~CoursePhase~
+        +getCourseSessions() List~CourseSession~
+        +getCLOs() List~CLO~
+    }
+    
+    class CourseSession {
+        +Long id
+        +Long phase_id
+        +Integer sequence_no
+        +String topic
+        +String student_task
+        +String[] skill_set
+        +DateTime created_at
+        +getCLOs() List~CLO~
+        +getMaterials() List~CourseMaterial~
+    }
+    
+    class Session {
+        +Long id
+        +Long class_id
+        +Long course_session_id
+        +Date date
+        +Time start_time
+        +Time end_time
+        +String type
+        +String status
+        +String teacher_note
+        +DateTime created_at
+        +getStudents() List~StudentSession~
+        +getTeachers() List~TeachingSlot~
+        +getResources() List~SessionResource~
+        +isConflictWith(otherSession) Boolean
+    }
+    
+    class Enrollment {
+        +Long id
+        +Long class_id
+        +Long student_id
+        +String status
+        +DateTime enrolled_at
+        +DateTime left_at
+        +Long join_session_id
+        +Long left_session_id
+        +markAsTransferred(leftSessionId) void
+        +getAttendanceSummary() AttendanceSummary
+        +isActive() Boolean
+    }
+    
+    class StudentSession {
+        +Long student_id
+        +Long session_id
+        +Boolean is_makeup
+        +String attendance_status
+        +String note
+        +DateTime recorded_at
+        +markExcused(reason) void
+        +recordAttendance(status) void
+        +isAttended() Boolean
+    }
+    
+    %% ==================== REQUEST & VALIDATION ====================
+    
+    class StudentRequest {
+        +Long id
+        +Long student_id
+        +Long current_class_id
+        +String request_type
+        +Long target_class_id
+        +Long target_session_id
+        +Long makeup_session_id
+        +Date effective_date
+        +Long effective_session_id
+        +String status
+        +DateTime submitted_at
+        +Long submitted_by
+        +Long decided_by
+        +DateTime decided_at
+        +String note
+        +validate() ValidationResult
+        +approve(decidedBy) void
+        +reject(decidedBy, reason) void
+    }
+    
+    class ValidationResult {
+        +Boolean is_valid
+        +List~ValidationError~ errors
+        +List~ValidationWarning~ warnings
+        +SessionMapping session_mapping
+        +hasErrors() Boolean
+        +hasWarnings() Boolean
+        +getSummary() String
+    }
+    
+    class ValidationError {
+        +String code
+        +String message
+        +Map~String,Object~ details
+    }
+    
+    class ValidationWarning {
+        +String type
+        +String message
+        +List~Integer~ affected_sessions
+    }
+    
+    class SessionMapping {
+        +Integer matched_count
+        +Integer missing_count
+        +List~MissingSession~ missing_sessions
+        +List~MappedSession~ mapped_sessions
+        +calculateMapping(fromClassId, toClassId, effectiveDate) void
+    }
+    
+    class MissingSession {
+        +Long course_session_id
+        +String topic
+        +Date would_be_date
+    }
+    
+    class MappedSession {
+        +Long course_session_id
+        +Long from_session_id
+        +Long to_session_id
+        +Date from_date
+        +Date to_date
+    }
+    
+    %% ==================== SERVICES ====================
+    
+    class TransferService {
+        -ValidationService validationService
+        -EnrollmentService enrollmentService
+        -SessionService sessionService
+        -NotificationService notificationService
+        -AuditLogger auditLogger
+        +validateTransferRequest(requestId) ValidationResult
+        +executeTransfer(requestId, decidedBy) TransferResult
+        -beginTransaction() void
+        -commitTransaction() void
+        -rollbackTransaction() void
+    }
+    
+    class ValidationService {
+        +validateClassStatus(classId) Boolean
+        +validateSameCourse(fromClassId, toClassId) Boolean
+        +validateCapacity(classId) Boolean
+        +validateEffectiveDate(date) Boolean
+        +calculateSessionMapping(fromClassId, toClassId, effectiveDate) SessionMapping
+        +buildValidationResult() ValidationResult
+    }
+    
+    class EnrollmentService {
+        +findEnrollment(classId, studentId) Enrollment
+        +createEnrollment(classId, studentId, joinSessionId) Enrollment
+        +updateEnrollmentStatus(enrollmentId, status, leftSessionId) void
+        +calculateCutoffSessions(classId, effectiveDate) CutoffSessions
+        +getCurrentEnrollmentCount(classId) Integer
+    }
+    
+    class SessionService {
+        +findSessionsByClass(classId, fromDate) List~Session~
+        +findSessionByCourseSession(classId, courseSessionId) Session
+        +generateStudentSessions(studentId, classId, fromDate, mapping) Integer
+        +markSessionsExcused(studentId, classId, fromDate, reason) Integer
+        +calculateSessionMapping(fromClassId, toClassId, fromDate) SessionMapping
+    }
+    
+    class NotificationService {
+        +notifyStudent(studentId, type, data) void
+        +notifyTeacher(classId, type, data) void
+        +notifyManager(branchId, type, data) void
+        +sendEmail(to, subject, body) void
+        +sendSMS(phone, message) void
+        +sendPushNotification(userId, title, body) void
+    }
+    
+    class AuditLogger {
+        +logTransfer(requestId, studentId, fromClassId, toClassId, decidedBy) void
+        +logEnrollmentChange(enrollmentId, oldStatus, newStatus, reason) void
+        +logSessionChange(sessionId, changes) void
+        +getAuditTrail(entityType, entityId) List~AuditLog~
+    }
+    
+    %% ==================== RESULT OBJECTS ====================
+    
+    class TransferResult {
+        +Enrollment from_enrollment
+        +Enrollment to_enrollment
+        +Integer sessions_excused
+        +Integer sessions_created
+        +List~Long~ excused_session_ids
+        +List~Long~ created_session_ids
+        +DateTime completed_at
+        +getSummary() String
+    }
+    
+    class CutoffSessions {
+        +Long last_done_session_id
+        +Long cutoff_session_id
+        +Long join_session_id
+    }
+    
+    class AttendanceSummary {
+        +Integer total_sessions
+        +Integer present_count
+        +Integer absent_count
+        +Integer late_count
+        +Integer excused_count
+        +Double attendance_rate
+        +calculateRate() Double
+    }
+    
+    %% ==================== RELATIONSHIPS ====================
+    
+    %% Student relationships
+    Student "1" --> "*" Enrollment : has
+    Student "1" --> "*" StudentSession : attends
+    Student "1" --> "*" StudentRequest : creates
+    
+    %% Class relationships
+    Class "1" --> "*" Session : contains
+    Class "1" --> "*" Enrollment : has
+    Class "*" --> "1" Course : follows
+    
+    %% Course relationships
+    Course "1" --> "*" CourseSession : defines
+    
+    %% Session relationships
+    Session "*" --> "1" CourseSession : based_on
+    Session "1" --> "*" StudentSession : tracks
+    
+    %% Enrollment relationships
+    Enrollment "*" --> "1" Class : belongs_to
+    Enrollment "*" --> "1" Student : for
+    
+    %% StudentSession relationships
+    StudentSession "*" --> "1" Student : for
+    StudentSession "*" --> "1" Session : in
+    
+    %% Request relationships
+    StudentRequest "*" --> "1" Student : created_by
+    StudentRequest "*" --> "1" Class : from_class
+    StudentRequest "*" --> "1" Class : to_class
+    
+    %% Validation relationships
+    ValidationResult "1" --> "*" ValidationError : contains
+    ValidationResult "1" --> "*" ValidationWarning : contains
+    ValidationResult "1" --> "1" SessionMapping : includes
+    SessionMapping "1" --> "*" MissingSession : identifies
+    SessionMapping "1" --> "*" MappedSession : contains
+    
+    %% Service relationships
+    TransferService --> ValidationService : uses
+    TransferService --> EnrollmentService : uses
+    TransferService --> SessionService : uses
+    TransferService --> NotificationService : uses
+    TransferService --> AuditLogger : uses
+    
+    TransferService ..> StudentRequest : processes
+    TransferService ..> TransferResult : produces
+    
+    ValidationService ..> ValidationResult : produces
+    ValidationService ..> Class : validates
+    ValidationService ..> Course : checks
+    
+    EnrollmentService ..> Enrollment : manages
+    EnrollmentService ..> CutoffSessions : calculates
+    
+    SessionService ..> Session : queries
+    SessionService ..> StudentSession : creates
+    SessionService ..> SessionMapping : calculates
+    
+    NotificationService ..> Student : notifies
+    
+    %% ==================== NOTES ====================
+    
+    note for Student "Core entity representing a learner.\nCan have multiple enrollments across different classes."
+    
+    note for Enrollment "Represents student's membership in a class.\nStatus lifecycle: enrolled → transferred/completed/dropped.\nNEVER deleted, only status changed."
+    
+    note for StudentSession "Personal schedule entry for each student.\nis_makeup flag indicates makeup session.\nattendance_status tracked here (no separate Attendance table)."
+    
+    note for StudentRequest "All student change requests (absence, makeup, transfer).\nTransfer request triggers complex validation and execution."
+    
+    note for SessionMapping "Core business logic for transfer.\nMaps sessions by course_session_id.\nIdentifies missing content student will miss."
+    
+    note for TransferService "Orchestrates entire transfer process.\nManages transaction boundaries.\nEnsures atomicity: all-or-nothing execution."
+
