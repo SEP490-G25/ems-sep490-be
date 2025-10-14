@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: ems-sep490-be
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/ems_sep490
