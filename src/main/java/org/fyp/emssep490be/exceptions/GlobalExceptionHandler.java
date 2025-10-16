@@ -1,7 +1,7 @@
 package org.fyp.emssep490be.exceptions;
 
-import com.wha.warehousemanagement.models.ResponseObject;
 import jakarta.persistence.EntityNotFoundException;
+import org.fyp.emssep490be.dtos.ResponseObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;

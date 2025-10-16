@@ -3,4 +3,23 @@ spring:
     name: ems-sep490-be
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/ems_sep490
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/ems
+    username: postgres
+    password: 979712
+
+  sql:
+    init:
+      mode: always  # Change to 'always' only on first run to create enum types
+      schema-locations: classpath:schema.sql
+      continue-on-error: true
+
+  jpa:
+    defer-datasource-initialization: false
+    hibernate:
+      ddl-auto: update   # <--- "create", "create-drop", "update", "validate", "none"
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    show-sql: true

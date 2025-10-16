@@ -1,4 +1,4 @@
-package com.wha.warehousemanagement.exceptions;
+package org.fyp.emssep490be.exceptions;
 
 import lombok.Getter;
 import lombok.Setter;

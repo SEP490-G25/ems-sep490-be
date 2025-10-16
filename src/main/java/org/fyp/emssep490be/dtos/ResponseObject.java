@@ -1,4 +1,4 @@
-package com.wha.warehousemanagement.models;
+package org.fyp.emssep490be.dtos;
 
 
 import com.fasterxml.jackson.annotation.JsonInclude;
