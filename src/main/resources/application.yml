@@ -5,7 +5,7 @@ spring:
   datasource:
     driver-class-name: org.postgresql.Driver
     # docker run --name some-postgres -e POSTGRES_PASSWORD=979712 -p 5432:5432 -d postgres 
-    # docker exec -it some-postgres netstat -tlnp
+    # docker exec -it some-postgres psql -U postgres
     # CREATE DATABASE ems;
     username: postgres
     url: jdbc:postgresql://localhost:5432/ems 
