@@ -10,6 +10,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import java.time.OffsetDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -37,4 +38,10 @@ public class Student {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "branch_id")
     private Branch branch;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private OffsetDateTime createdAt;
+
+    @Column(name = "updated_at", nullable = false)
+    private OffsetDateTime updatedAt;
 }

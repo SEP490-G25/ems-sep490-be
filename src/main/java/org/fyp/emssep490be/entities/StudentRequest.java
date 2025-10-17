@@ -81,4 +81,10 @@ public class StudentRequest {
     private OffsetDateTime decidedAt;
 
     private String note;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private OffsetDateTime createdAt;
+
+    @Column(name = "updated_at", nullable = false)
+    private OffsetDateTime updatedAt;
 }

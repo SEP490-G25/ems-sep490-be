@@ -10,6 +10,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import java.time.OffsetDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -41,4 +42,10 @@ public class Plo {
 
     @Column(nullable = false)
     private String description;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private OffsetDateTime createdAt;
+
+    @Column(name = "updated_at", nullable = false)
+    private OffsetDateTime updatedAt;
 }

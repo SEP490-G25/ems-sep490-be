@@ -61,4 +61,10 @@ public class Enrollment {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "left_session_id")
     private SessionEntity leftSession;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private OffsetDateTime createdAt;
+
+    @Column(name = "updated_at", nullable = false)
+    private OffsetDateTime updatedAt;
 }

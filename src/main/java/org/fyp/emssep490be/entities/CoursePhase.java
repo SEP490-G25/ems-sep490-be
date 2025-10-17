@@ -51,6 +51,9 @@ public class CoursePhase {
     @Column(name = "sort_order")
     private Integer sortOrder;
 
-    @Column(name = "created_at")
+    @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
+
+    @Column(name = "updated_at", nullable = false)
+    private OffsetDateTime updatedAt;
 }

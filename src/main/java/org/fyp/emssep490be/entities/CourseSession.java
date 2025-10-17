@@ -56,6 +56,9 @@ public class CourseSession {
     @Column(name = "skill_set", columnDefinition = "skill_enum[]")
     private List<Skill> skillSet;
 
-    @Column(name = "created_at")
+    @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
+
+    @Column(name = "updated_at", nullable = false)
+    private OffsetDateTime updatedAt;
 }

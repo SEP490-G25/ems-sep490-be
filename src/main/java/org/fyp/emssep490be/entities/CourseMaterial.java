@@ -49,6 +49,9 @@ public class CourseMaterial {
     @JoinColumn(name = "uploaded_by")
     private UserAccount uploadedBy;
 
-    @Column(name = "created_at")
+    @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
+
+    @Column(name = "updated_at", nullable = false)
+    private OffsetDateTime updatedAt;
 }
