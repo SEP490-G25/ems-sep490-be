@@ -3,7 +3,8 @@
     "allow": [
       "Bash(mvn spring-boot:run:*)",
       "Bash(find:*)",
-      "Bash(./mvnw.cmd clean compile:*)"
+      "Bash(./mvnw.cmd clean compile:*)",
+      "Bash(wc:*)"
     ],
     "deny": [],
     "ask": []
