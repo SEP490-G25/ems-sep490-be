@@ -15,9 +15,9 @@ import java.util.Optional;
 @Repository
 public interface SessionRepository extends JpaRepository<SessionEntity, Long> {
 
-    @Query("SELECT s FROM SessionEntity s WHERE s.classEntity.id = :classId AND " +
-            "(:dateFrom IS NULL OR s.sessionDate >= :dateFrom) AND " +
-            "(:dateTo IS NULL OR s.sessionDate <= :dateTo) AND " +
+    @Query("SELECT s FROM SessionEntity s WHERE s.clazz.id = :classId AND " +
+            "(:dateFrom IS NULL OR s.date >= :dateFrom) AND " +
+            "(:dateTo IS NULL OR s.date <= :dateTo) AND " +
             "(:status IS NULL OR s.status = :status) AND " +
             "(:type IS NULL OR s.type = :type)")
     Page<SessionEntity> findByClassIdWithFilters(@Param("classId") Long classId,
@@ -27,24 +27,16 @@ public interface SessionRepository extends JpaRepository<SessionEntity, Long> {
                                                   @Param("type") String type,
                                                   Pageable pageable);
 
-    @Query("SELECT s FROM SessionEntity s " +
-            "LEFT JOIN FETCH s.teachingSlots ts " +
-            "LEFT JOIN FETCH ts.teacher " +
-            "LEFT JOIN FETCH s.sessionResources sr " +
-            "LEFT JOIN FETCH sr.resource " +
-            "WHERE s.id = :id")
-    Optional<SessionEntity> findByIdWithDetails(@Param("id") Long id);
+    List<SessionEntity> findByClazzIdAndDateAfter(Long classId, LocalDate date);
 
-    List<SessionEntity> findByClassEntityIdAndSessionDateAfter(Long classId, LocalDate date);
-
-    @Query("SELECT s FROM SessionEntity s WHERE s.classEntity.id = :classId AND " +
-            "s.sessionDate >= :effectiveFrom AND " +
-            "FUNCTION('EXTRACT', DAY_OF_WEEK, s.sessionDate) = :dayOfWeek")
+    @Query(value = "SELECT * FROM session s WHERE s.class_id = :classId AND " +
+            "s.date >= :effectiveFrom AND " +
+            "EXTRACT(DOW FROM s.date) = :dayOfWeek", nativeQuery = true)
     List<SessionEntity> findByClassIdAndDateFromAndDayOfWeek(@Param("classId") Long classId,
                                                                @Param("effectiveFrom") LocalDate effectiveFrom,
                                                                @Param("dayOfWeek") Integer dayOfWeek);
 
-    long countByClassEntityId(Long classId);
+    long countByClazzId(Long classId);
 
-    long countByClassEntityIdAndStatus(Long classId, String status);
+    long countByClazzIdAndStatus(Long classId, String status);
 }

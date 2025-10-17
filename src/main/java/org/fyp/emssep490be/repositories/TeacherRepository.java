@@ -14,10 +14,4 @@ public interface TeacherRepository extends JpaRepository<Teacher, Long> {
     Optional<Teacher> findByEmployeeCode(String employeeCode);
 
     Optional<Teacher> findByUserAccountId(Long userAccountId);
-
-    @Query("SELECT t FROM Teacher t " +
-            "LEFT JOIN FETCH t.teacherSkills " +
-            "LEFT JOIN FETCH t.teacherAvailabilities " +
-            "WHERE t.id = :id")
-    Optional<Teacher> findByIdWithDetails(@Param("id") Long id);
 }

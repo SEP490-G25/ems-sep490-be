@@ -25,10 +25,4 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
                                 @Param("status") String status,
                                 @Param("approved") Boolean approved,
                                 Pageable pageable);
-
-    @Query("SELECT c FROM Course c " +
-            "LEFT JOIN FETCH c.coursePhases " +
-            "LEFT JOIN FETCH c.clos " +
-            "WHERE c.id = :id")
-    Optional<Course> findByIdWithDetails(@Param("id") Long id);
 }

@@ -67,7 +67,7 @@ public interface ResourceRepository extends JpaRepository<Resource, Long> {
             "AND (:resourceType IS NULL OR r.resourceType = :resourceType) " +
             "AND r.id NOT IN (" +
             "  SELECT sr.resource.id FROM SessionResource sr " +
-            "  WHERE sr.session.sessionDate = :date " +
+            "  WHERE sr.session.date = :date " +
             "  AND ((sr.session.startTime < :endTime AND sr.session.endTime > :startTime))" +
             ")")
     List<Resource> findAvailableResources(

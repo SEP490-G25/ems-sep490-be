@@ -62,16 +62,4 @@ public interface BranchRepository extends JpaRepository<Branch, Long> {
      * @return true if branch code exists
      */
     boolean existsByCodeAndCenterId(String code, Long centerId);
-
-    /**
-     * Find branch by ID with time slots and resources
-     *
-     * @param id Branch ID
-     * @return Optional containing branch with related entities
-     */
-    @Query("SELECT b FROM Branch b " +
-            "LEFT JOIN FETCH b.timeSlotTemplates " +
-            "LEFT JOIN FETCH b.resources " +
-            "WHERE b.id = :id")
-    Optional<Branch> findByIdWithDetails(@Param("id") Long id);
 }

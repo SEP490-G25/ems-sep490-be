@@ -11,13 +11,7 @@ import java.util.Optional;
 
 @Repository
 public interface CourseSessionRepository extends JpaRepository<CourseSession, Long> {
-    List<CourseSession> findByPhaseIdOrderBySequenceNoAsc(Long phaseId);
+    List<CourseSession> findByPhaseIdOrderBySequenceNumberAsc(Long phaseId);
     Optional<CourseSession> findByIdAndPhaseId(Long id, Long phaseId);
-    boolean existsBySequenceNoAndPhaseId(Integer sequenceNo, Long phaseId);
-
-    @Query("SELECT cs FROM CourseSession cs " +
-            "LEFT JOIN FETCH cs.cloMappings " +
-            "WHERE cs.phase.id = :phaseId " +
-            "ORDER BY cs.sequenceNo ASC")
-    List<CourseSession> findByPhaseIdWithClos(@Param("phaseId") Long phaseId);
+    boolean existsBySequenceNumberAndPhaseId(Integer sequenceNumber, Long phaseId);
 }

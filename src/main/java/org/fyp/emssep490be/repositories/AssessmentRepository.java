@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface AssessmentRepository extends JpaRepository<Assessment, Long> {
-    List<Assessment> findByClassEntityId(Long classId);
+    List<Assessment> findByClazzId(Long classId);
 }

@@ -1,6 +1,8 @@
 package org.fyp.emssep490be.repositories;
 
 import org.fyp.emssep490be.entities.TeachingSlot;
+import org.fyp.emssep490be.entities.enums.Skill;
+import org.fyp.emssep490be.entities.ids.TeachingSlotId;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -12,21 +14,21 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface TeachingSlotRepository extends JpaRepository<TeachingSlot, Long> {
+public interface TeachingSlotRepository extends JpaRepository<TeachingSlot, TeachingSlotId> {
 
-    List<TeachingSlot> findBySessionId(Long sessionId);
+    List<TeachingSlot> findByIdSessionId(Long sessionId);
 
-    Optional<TeachingSlot> findBySessionIdAndTeacherIdAndSkill(Long sessionId, Long teacherId, String skill);
+    Optional<TeachingSlot> findByIdSessionIdAndIdTeacherIdAndIdSkill(Long sessionId, Long teacherId, Skill skill);
 
-    void deleteBySessionIdAndTeacherId(Long sessionId, Long teacherId);
+    void deleteByIdSessionIdAndIdTeacherId(Long sessionId, Long teacherId);
 
     @Query("SELECT ts FROM TeachingSlot ts WHERE ts.teacher.id = :teacherId AND " +
-            "ts.session.sessionDate = :date AND " +
+            "ts.session.date = :date AND " +
             "((ts.session.startTime < :endTime AND ts.session.endTime > :startTime))")
     List<TeachingSlot> findConflictingSlots(@Param("teacherId") Long teacherId,
                                              @Param("date") LocalDate date,
                                              @Param("startTime") LocalTime startTime,
                                              @Param("endTime") LocalTime endTime);
 
-    long countByTeacherIdAndSessionSessionDate(Long teacherId, LocalDate date);
+    long countByIdTeacherIdAndSessionDate(Long teacherId, LocalDate date);
 }
