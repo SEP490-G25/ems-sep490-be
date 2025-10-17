@@ -1,0 +1,41 @@
+spring:
+  application:
+    name: ems-sep490-be-test
+
+  # H2 in-memory database for fast unit tests (alternative to TestContainers)
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
+    username: sa
+    password:
+
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+      continue-on-error: true
+
+  jpa:
+    defer-datasource-initialization: false
+    hibernate:
+      ddl-auto: create-drop  # Recreate schema for each test
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: true
+        # Enable enum type handling for H2
+        globally_quoted_identifiers: true
+    show-sql: false  # Set to true for debugging tests
+
+  # Disable security for most tests (override in specific security tests)
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+
+# Logging configuration for tests
+logging:
+  level:
+    org.fyp.emssep490be: DEBUG
+    org.springframework.test: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
