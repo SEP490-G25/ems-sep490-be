@@ -4,8 +4,11 @@ spring:
 
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/ems
+    # docker run --name some-postgres -e POSTGRES_PASSWORD=979712 -p 5432:5432 -d postgres 
+    # docker exec -it some-postgres netstat -tlnp
+    # CREATE DATABASE ems;
     username: postgres
+    url: jdbc:postgresql://localhost:5432/ems 
     password: 979712
 
   sql:
