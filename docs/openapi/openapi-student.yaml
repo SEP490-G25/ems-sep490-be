@@ -1,0 +1,649 @@
+# Module 7: Student Operations
+# OpenAPI specification for student profile, enrollments, schedule, requests, and progress
+
+paths:
+  /students:
+    get:
+      tags:
+        - Students
+      summary: Get all students
+      operationId: getAllStudents
+      parameters:
+        - $ref: './openapi-schemas.yaml#/components/parameters/BranchIdParam'
+        - $ref: './openapi-schemas.yaml#/components/parameters/PageParam'
+        - $ref: './openapi-schemas.yaml#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: List of students
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/StudentDTO'
+                  pagination:
+                    $ref: './openapi-schemas.yaml#/components/schemas/Pagination'
+
+    post:
+      tags:
+        - Students
+      summary: Create student
+      description: Create new student account (ACADEMIC_STAFF role)
+      operationId: createStudent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateStudentRequest'
+      responses:
+        '201':
+          description: Student created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentDTO'
+
+  /students/import:
+    post:
+      tags:
+        - Students
+      summary: Bulk import students
+      description: Import students from CSV file (ACADEMIC_STAFF role)
+      operationId: importStudents
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                branch_id:
+                  type: integer
+                  format: int64
+              required:
+                - file
+                - branch_id
+      responses:
+        '200':
+          description: Import results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkImportResponse'
+
+  /students/{id}:
+    get:
+      tags:
+        - Students
+      summary: Get student profile
+      operationId: getStudentById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Student profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentProfileDTO'
+
+  /students/{id}/enrollments:
+    get:
+      tags:
+        - Students
+      summary: Get student enrollments
+      operationId: getStudentEnrollments
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: status
+          in: query
+          schema:
+            $ref: './openapi-schemas.yaml#/components/schemas/EnrollmentStatusEnum'
+      responses:
+        '200':
+          description: List of enrollments
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/EnrollmentDTO'
+
+  /classes/{class_id}/enrollments:
+    post:
+      tags:
+        - Students
+      summary: Enroll student to class
+      description: Enroll single student (ACADEMIC_STAFF role)
+      operationId: enrollStudent
+      parameters:
+        - name: class_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                student_id:
+                  type: integer
+                  format: int64
+              required:
+                - student_id
+      responses:
+        '201':
+          description: Student enrolled successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    format: int64
+                  class_id:
+                    type: integer
+                    format: int64
+                  student_id:
+                    type: integer
+                    format: int64
+                  status:
+                    $ref: './openapi-schemas.yaml#/components/schemas/EnrollmentStatusEnum'
+                  enrolled_at:
+                    type: string
+                    format: date-time
+                  sessions_generated:
+                    type: integer
+                  message:
+                    type: string
+        '400':
+          description: Enrollment error (conflict or capacity exceeded)
+          content:
+            application/json:
+              schema:
+                $ref: './openapi-schemas.yaml#/components/responses/ValidationError'
+
+  /classes/{class_id}/enrollments/bulk:
+    post:
+      tags:
+        - Students
+      summary: Bulk enroll students
+      operationId: bulkEnrollStudents
+      parameters:
+        - name: class_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                student_ids:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+              required:
+                - student_ids
+      responses:
+        '200':
+          description: Bulk enrollment results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkEnrollmentResponse'
+
+  /students/{id}/schedule:
+    get:
+      tags:
+        - Students
+      summary: Get student schedule
+      operationId: getStudentSchedule
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: date_from
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: date_to
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: class_id
+          in: query
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Student schedule
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentScheduleDTO'
+
+  /students/{id}/requests:
+    get:
+      tags:
+        - Students
+      summary: Get student requests
+      operationId: getStudentRequests
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: request_type
+          in: query
+          schema:
+            $ref: './openapi-schemas.yaml#/components/schemas/StudentRequestTypeEnum'
+        - name: status
+          in: query
+          schema:
+            $ref: './openapi-schemas.yaml#/components/schemas/RequestStatusEnum'
+        - $ref: './openapi-schemas.yaml#/components/parameters/PageParam'
+      responses:
+        '200':
+          description: List of student requests
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/StudentRequestDTO'
+                  pagination:
+                    $ref: './openapi-schemas.yaml#/components/schemas/Pagination'
+
+  /students/{id}/requests/absence:
+    post:
+      tags:
+        - Students
+      summary: Create absence request
+      operationId: createAbsenceRequest
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                target_session_id:
+                  type: integer
+                  format: int64
+                note:
+                  type: string
+              required:
+                - target_session_id
+      responses:
+        '201':
+          description: Absence request created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentRequestDTO'
+
+  /students/{id}/requests/makeup:
+    post:
+      tags:
+        - Students
+      summary: Create makeup request
+      operationId: createMakeupRequest
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                target_session_id:
+                  type: integer
+                  format: int64
+                makeup_session_id:
+                  type: integer
+                  format: int64
+                note:
+                  type: string
+              required:
+                - target_session_id
+                - makeup_session_id
+      responses:
+        '201':
+          description: Makeup request created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentRequestDTO'
+
+  /students/{id}/requests/transfer:
+    post:
+      tags:
+        - Students
+      summary: Create transfer request
+      operationId: createTransferRequest
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                current_class_id:
+                  type: integer
+                  format: int64
+                target_class_id:
+                  type: integer
+                  format: int64
+                effective_date:
+                  type: string
+                  format: date
+                note:
+                  type: string
+              required:
+                - current_class_id
+                - target_class_id
+                - effective_date
+      responses:
+        '201':
+          description: Transfer request created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentRequestDTO'
+
+  /student-requests/{request_id}/approve:
+    post:
+      tags:
+        - Students
+      summary: Approve student request
+      operationId: approveStudentRequest
+      parameters:
+        - name: request_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Request approved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentRequestApprovalResponse'
+
+  /students/{id}/attendance:
+    get:
+      tags:
+        - Students
+      summary: Get student attendance report
+      operationId: getStudentAttendance
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: class_id
+          in: query
+          schema:
+            type: integer
+            format: int64
+        - $ref: './openapi-schemas.yaml#/components/parameters/DateFromParam'
+        - $ref: './openapi-schemas.yaml#/components/parameters/DateToParam'
+      responses:
+        '200':
+          description: Student attendance report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentAttendanceReportDTO'
+
+components:
+  schemas:
+    StudentDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        user_id:
+          type: integer
+          format: int64
+        student_code:
+          type: string
+        full_name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        branch:
+          $ref: './openapi-schemas.yaml#/components/schemas/BranchReference'
+        created_at:
+          type: string
+          format: date-time
+
+    CreateStudentRequest:
+      type: object
+      properties:
+        full_name:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        branch_id:
+          type: integer
+          format: int64
+      required:
+        - full_name
+        - email
+        - phone
+        - branch_id
+
+    StudentProfileDTO:
+      allOf:
+        - $ref: '#/components/schemas/StudentDTO'
+        - type: object
+          properties:
+            current_classes:
+              type: array
+              items:
+                type: object
+                properties:
+                  class_id:
+                    type: integer
+                    format: int64
+                  class_code:
+                    type: string
+                  class_name:
+                    type: string
+                  enrollment_status:
+                    $ref: './openapi-schemas.yaml#/components/schemas/EnrollmentStatusEnum'
+                  enrolled_at:
+                    type: string
+                    format: date-time
+
+    EnrollmentDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        class:
+          $ref: './openapi-schemas.yaml#/components/schemas/ClassReference'
+        status:
+          $ref: './openapi-schemas.yaml#/components/schemas/EnrollmentStatusEnum'
+        enrolled_at:
+          type: string
+          format: date-time
+        left_at:
+          type: string
+          format: date-time
+          nullable: true
+        attendance_summary:
+          $ref: './openapi-schemas.yaml#/components/schemas/AttendanceSummary'
+
+    BulkImportResponse:
+      type: object
+      properties:
+        total_rows:
+          type: integer
+        successful:
+          type: integer
+        failed:
+          type: integer
+        students_created:
+          type: array
+          items:
+            $ref: '#/components/schemas/StudentDTO'
+        errors:
+          type: array
+          items:
+            type: object
+
+    BulkEnrollmentResponse:
+      type: object
+      properties:
+        total_students:
+          type: integer
+        successful:
+          type: integer
+        failed:
+          type: integer
+        enrollments_created:
+          type: array
+          items:
+            type: object
+        errors:
+          type: array
+          items:
+            type: object
+
+    StudentScheduleDTO:
+      type: object
+      properties:
+        student_id:
+          type: integer
+          format: int64
+        student_name:
+          type: string
+        date_from:
+          type: string
+          format: date
+        date_to:
+          type: string
+          format: date
+        sessions:
+          type: array
+          items:
+            type: object
+        summary:
+          type: object
+
+    StudentRequestDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        student_id:
+          type: integer
+          format: int64
+        request_type:
+          $ref: './openapi-schemas.yaml#/components/schemas/StudentRequestTypeEnum'
+        status:
+          $ref: './openapi-schemas.yaml#/components/schemas/RequestStatusEnum'
+        note:
+          type: string
+        submitted_at:
+          type: string
+          format: date-time
+
+    StudentRequestApprovalResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        status:
+          type: string
+        decided_at:
+          type: string
+          format: date-time
+
+    StudentAttendanceReportDTO:
+      type: object
+      properties:
+        student_id:
+          type: integer
+          format: int64
+        summary:
+          $ref: './openapi-schemas.yaml#/components/schemas/AttendanceSummary'

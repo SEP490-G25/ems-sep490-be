@@ -1,0 +1,445 @@
+# Module 9: Assessments & Scores
+# OpenAPI specification for assessments, scores, and student feedback
+
+paths:
+  /classes/{class_id}/assessments:
+    get:
+      tags:
+        - Assessments
+      summary: Get assessments by class
+      operationId: getAssessmentsByClass
+      parameters:
+        - name: class_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: List of assessments
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AssessmentDTO'
+
+    post:
+      tags:
+        - Assessments
+      summary: Create assessment
+      description: Create new assessment (ACADEMIC_STAFF or TEACHER role)
+      operationId: createAssessment
+      parameters:
+        - name: class_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAssessmentRequest'
+      responses:
+        '201':
+          description: Assessment created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssessmentDTO'
+
+  /assessments/{assessment_id}/scores:
+    get:
+      tags:
+        - Assessments
+      summary: Get scores by assessment
+      operationId: getScoresByAssessment
+      parameters:
+        - name: assessment_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: List of scores
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssessmentScoresDTO'
+
+    post:
+      tags:
+        - Assessments
+      summary: Submit/update scores
+      description: Submit or update student scores (TEACHER or ACADEMIC_STAFF role)
+      operationId: submitScores
+      parameters:
+        - name: assessment_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitScoresRequest'
+      responses:
+        '200':
+          description: Scores submitted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScoreSubmissionResponse'
+
+  /assessments/{assessment_id}/scores/import:
+    post:
+      tags:
+        - Assessments
+      summary: Import scores from CSV
+      operationId: importScores
+      parameters:
+        - name: assessment_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+              required:
+                - file
+      responses:
+        '200':
+          description: Scores imported
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScoreImportResponse'
+
+  /students/{id}/feedback:
+    post:
+      tags:
+        - Assessments
+      summary: Submit student feedback
+      description: Student submits feedback for session/phase (STUDENT role)
+      operationId: submitFeedback
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitFeedbackRequest'
+      responses:
+        '201':
+          description: Feedback submitted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeedbackDTO'
+
+  /classes/{class_id}/feedback:
+    get:
+      tags:
+        - Assessments
+      summary: Get feedback by class
+      operationId: getFeedbackByClass
+      parameters:
+        - name: class_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: phase_id
+          in: query
+          schema:
+            type: integer
+            format: int64
+        - name: rating_min
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 5
+        - $ref: './openapi-schemas.yaml#/components/parameters/PageParam'
+      responses:
+        '200':
+          description: List of feedback with statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeedbackListDTO'
+
+components:
+  schemas:
+    AssessmentDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        class_id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        kind:
+          $ref: './openapi-schemas.yaml#/components/schemas/AssessmentKindEnum'
+        max_score:
+          type: number
+          format: float
+        weight:
+          type: number
+          format: float
+        session_id:
+          type: integer
+          format: int64
+          nullable: true
+        session_date:
+          type: string
+          format: date
+          nullable: true
+        scores_submitted:
+          type: integer
+        total_students:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+
+    CreateAssessmentRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        kind:
+          $ref: './openapi-schemas.yaml#/components/schemas/AssessmentKindEnum'
+        max_score:
+          type: number
+          format: float
+        weight:
+          type: number
+          format: float
+        session_id:
+          type: integer
+          format: int64
+      required:
+        - name
+        - kind
+        - max_score
+        - weight
+
+    AssessmentScoresDTO:
+      type: object
+      properties:
+        assessment:
+          $ref: '#/components/schemas/AssessmentDTO'
+        scores:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                format: int64
+              student_id:
+                type: integer
+                format: int64
+              student_code:
+                type: string
+              student_name:
+                type: string
+              score:
+                type: number
+                format: float
+              percentage:
+                type: number
+                format: float
+              feedback:
+                type: string
+              graded_by:
+                type: object
+                properties:
+                  teacher_id:
+                    type: integer
+                    format: int64
+                  teacher_name:
+                    type: string
+              graded_at:
+                type: string
+                format: date-time
+        statistics:
+          type: object
+          properties:
+            total_students:
+              type: integer
+            submitted:
+              type: integer
+            average:
+              type: number
+              format: float
+            highest:
+              type: number
+              format: float
+            lowest:
+              type: number
+              format: float
+            pass_rate:
+              type: number
+              format: float
+
+    SubmitScoresRequest:
+      type: object
+      properties:
+        scores:
+          type: array
+          items:
+            type: object
+            properties:
+              student_id:
+                type: integer
+                format: int64
+              score:
+                type: number
+                format: float
+              feedback:
+                type: string
+            required:
+              - student_id
+              - score
+      required:
+        - scores
+
+    ScoreSubmissionResponse:
+      type: object
+      properties:
+        assessment_id:
+          type: integer
+          format: int64
+        total_scores:
+          type: integer
+        created:
+          type: integer
+        updated:
+          type: integer
+        graded_by:
+          type: integer
+          format: int64
+        graded_at:
+          type: string
+          format: date-time
+        message:
+          type: string
+
+    ScoreImportResponse:
+      type: object
+      properties:
+        assessment_id:
+          type: integer
+          format: int64
+        total_rows:
+          type: integer
+        successful:
+          type: integer
+        failed:
+          type: integer
+        scores_created:
+          type: array
+          items:
+            type: object
+        errors:
+          type: array
+          items:
+            type: object
+        statistics:
+          type: object
+
+    SubmitFeedbackRequest:
+      type: object
+      properties:
+        session_id:
+          type: integer
+          format: int64
+        phase_id:
+          type: integer
+          format: int64
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        comment:
+          type: string
+      required:
+        - rating
+
+    FeedbackDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        student_id:
+          type: integer
+          format: int64
+        session_id:
+          type: integer
+          format: int64
+        phase_id:
+          type: integer
+          format: int64
+        rating:
+          type: integer
+        comment:
+          type: string
+        submitted_at:
+          type: string
+          format: date-time
+
+    FeedbackListDTO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/FeedbackDTO'
+        statistics:
+          type: object
+          properties:
+            total_feedbacks:
+              type: integer
+            average_rating:
+              type: number
+              format: float
+            rating_distribution:
+              type: object
+              additionalProperties:
+                type: integer
+        pagination:
+          $ref: './openapi-schemas.yaml#/components/schemas/Pagination'

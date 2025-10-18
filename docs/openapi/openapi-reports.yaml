@@ -1,0 +1,359 @@
+# Module 10: Reports & Analytics
+# OpenAPI specification for all reports and analytics
+
+paths:
+  /reports/enrollments:
+    get:
+      tags:
+        - Reports
+      summary: Get enrollment report
+      operationId: getEnrollmentReport
+      parameters:
+        - $ref: './openapi-schemas.yaml#/components/parameters/BranchIdParam'
+        - name: start_date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: level_id
+          in: query
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Enrollment report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnrollmentReportDTO'
+
+  /reports/attendance:
+    get:
+      tags:
+        - Reports
+      summary: Get attendance rate report
+      operationId: getAttendanceReport
+      parameters:
+        - $ref: './openapi-schemas.yaml#/components/parameters/BranchIdParam'
+        - name: class_id
+          in: query
+          schema:
+            type: integer
+            format: int64
+        - name: start_date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Attendance report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceReportDTO'
+
+  /reports/class-utilization:
+    get:
+      tags:
+        - Reports
+      summary: Get class utilization report
+      operationId: getClassUtilizationReport
+      parameters:
+        - $ref: './openapi-schemas.yaml#/components/parameters/BranchIdParam'
+        - name: start_date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Class utilization report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClassUtilizationReportDTO'
+
+  /reports/teacher-workload:
+    get:
+      tags:
+        - Reports
+      summary: Get teacher workload report
+      operationId: getTeacherWorkloadReport
+      parameters:
+        - $ref: './openapi-schemas.yaml#/components/parameters/BranchIdParam'
+        - name: teacher_id
+          in: query
+          schema:
+            type: integer
+            format: int64
+        - name: start_date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Teacher workload report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeacherWorkloadReportDTO'
+
+  /reports/resource-utilization:
+    get:
+      tags:
+        - Reports
+      summary: Get resource utilization report
+      operationId: getResourceUtilizationReport
+      parameters:
+        - name: branch_id
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: resource_type
+          in: query
+          schema:
+            $ref: './openapi-schemas.yaml#/components/schemas/ResourceTypeEnum'
+        - name: start_date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Resource utilization report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceUtilizationReportDTO'
+
+  /reports/clo-attainment:
+    get:
+      tags:
+        - Reports
+      summary: Get CLO attainment report
+      operationId: getCLOAttainmentReport
+      parameters:
+        - name: course_id
+          in: query
+          schema:
+            type: integer
+            format: int64
+        - name: class_id
+          in: query
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: CLO attainment report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CLOAttainmentReportDTO'
+
+  /reports/feedback-rating:
+    get:
+      tags:
+        - Reports
+      summary: Get feedback rating report
+      operationId: getFeedbackRatingReport
+      parameters:
+        - $ref: './openapi-schemas.yaml#/components/parameters/BranchIdParam'
+        - name: class_id
+          in: query
+          schema:
+            type: integer
+            format: int64
+        - name: start_date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Feedback rating report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeedbackRatingReportDTO'
+
+  /reports/daily-runsheet:
+    get:
+      tags:
+        - Reports
+      summary: Get daily runsheet
+      description: Daily operations report showing all sessions and alerts
+      operationId: getDailyRunsheet
+      parameters:
+        - name: date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - $ref: './openapi-schemas.yaml#/components/parameters/BranchIdParam'
+      responses:
+        '200':
+          description: Daily runsheet
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DailyRunsheetDTO'
+
+components:
+  schemas:
+    EnrollmentReportDTO:
+      type: object
+      properties:
+        period:
+          type: object
+        summary:
+          type: object
+        by_branch:
+          type: array
+          items:
+            type: object
+        by_level:
+          type: array
+          items:
+            type: object
+
+    AttendanceReportDTO:
+      type: object
+      properties:
+        period:
+          type: object
+        overall:
+          type: object
+        by_class:
+          type: array
+          items:
+            type: object
+
+    ClassUtilizationReportDTO:
+      type: object
+      properties:
+        period:
+          type: object
+        summary:
+          type: object
+        by_class:
+          type: array
+          items:
+            type: object
+
+    TeacherWorkloadReportDTO:
+      type: object
+      properties:
+        period:
+          type: object
+        summary:
+          type: object
+        by_teacher:
+          type: array
+          items:
+            type: object
+
+    ResourceUtilizationReportDTO:
+      type: object
+      properties:
+        period:
+          type: object
+        branch:
+          type: object
+        summary:
+          type: object
+        by_resource:
+          type: array
+          items:
+            type: object
+
+    CLOAttainmentReportDTO:
+      type: object
+      properties:
+        course:
+          type: object
+        class:
+          type: object
+        summary:
+          type: object
+        by_clo:
+          type: array
+          items:
+            type: object
+
+    FeedbackRatingReportDTO:
+      type: object
+      properties:
+        period:
+          type: object
+        summary:
+          type: object
+        by_class_and_phase:
+          type: array
+          items:
+            type: object
+
+    DailyRunsheetDTO:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        summary:
+          type: object
+        sessions:
+          type: array
+          items:
+            type: object
+        alerts:
+          type: array
+          items:
+            type: object

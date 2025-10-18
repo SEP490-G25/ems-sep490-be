@@ -1,0 +1,679 @@
+# Module 6: Teacher Operations
+# OpenAPI specification for teacher profile, availability, schedule, workload, and requests
+
+paths:
+  /teachers/{id}:
+    get:
+      tags:
+        - Teachers
+      summary: Get teacher profile
+      description: Retrieve teacher profile with skills, availability, and branches
+      operationId: getTeacherProfile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Teacher profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeacherProfileDTO'
+        '404':
+          $ref: './openapi-schemas.yaml#/components/responses/NotFoundError'
+
+  /teachers/{id}/skills:
+    put:
+      tags:
+        - Teachers
+      summary: Update teacher skills
+      description: Update teacher skill proficiency levels (requires MANAGER or ADMIN role)
+      operationId: updateTeacherSkills
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                skills:
+                  type: array
+                  items:
+                    $ref: './openapi-schemas.yaml#/components/schemas/TeacherSkill'
+              required:
+                - skills
+      responses:
+        '200':
+          description: Skills updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  teacher_id:
+                    type: integer
+                    format: int64
+                  skills:
+                    type: array
+                    items:
+                      $ref: './openapi-schemas.yaml#/components/schemas/TeacherSkill'
+                  updated_at:
+                    type: string
+                    format: date-time
+        '403':
+          $ref: './openapi-schemas.yaml#/components/responses/ForbiddenError'
+
+  /teachers/{id}/availability:
+    get:
+      tags:
+        - Teachers
+      summary: Get teacher availability
+      description: Retrieve regular availability and overrides
+      operationId: getTeacherAvailability
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: date
+          in: query
+          description: Include overrides for specific date
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Teacher availability
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  regular_availability:
+                    type: array
+                    items:
+                      $ref: './openapi-schemas.yaml#/components/schemas/TeacherAvailability'
+                  overrides:
+                    type: array
+                    items:
+                      $ref: './openapi-schemas.yaml#/components/schemas/TeacherAvailabilityOverride'
+
+    post:
+      tags:
+        - Teachers
+      summary: Create or update regular availability
+      description: Set regular weekly availability (TEACHER or MANAGER role)
+      operationId: setTeacherAvailability
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                day_of_week:
+                  type: integer
+                  minimum: 1
+                  maximum: 7
+                start_time:
+                  type: string
+                  format: time
+                end_time:
+                  type: string
+                  format: time
+                note:
+                  type: string
+              required:
+                - day_of_week
+                - start_time
+                - end_time
+      responses:
+        '201':
+          description: Availability set successfully
+          content:
+            application/json:
+              schema:
+                $ref: './openapi-schemas.yaml#/components/schemas/TeacherAvailability'
+
+  /teachers/{id}/availability-overrides:
+    post:
+      tags:
+        - Teachers
+      summary: Create availability override
+      description: Set leave or OT availability for specific date (TEACHER role)
+      operationId: createAvailabilityOverride
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                date:
+                  type: string
+                  format: date
+                start_time:
+                  type: string
+                  format: time
+                end_time:
+                  type: string
+                  format: time
+                is_available:
+                  type: boolean
+                reason:
+                  type: string
+              required:
+                - date
+                - is_available
+      responses:
+        '201':
+          description: Override created successfully
+          content:
+            application/json:
+              schema:
+                $ref: './openapi-schemas.yaml#/components/schemas/TeacherAvailabilityOverride'
+
+  /teachers/{id}/schedule:
+    get:
+      tags:
+        - Teachers
+      summary: Get teacher schedule
+      description: Retrieve teaching schedule for date range
+      operationId: getTeacherSchedule
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: date_from
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: date_to
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Teacher schedule
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeacherScheduleDTO'
+
+  /teachers/{id}/workload:
+    get:
+      tags:
+        - Teachers
+      summary: Get teacher workload report
+      description: Calculate teaching hours and session counts
+      operationId: getTeacherWorkload
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: date_from
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: date_to
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Teacher workload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeacherWorkloadDTO'
+
+  /teachers/{id}/requests:
+    get:
+      tags:
+        - Teachers
+      summary: Get teacher requests
+      description: Retrieve teacher leave, swap, OT, and reschedule requests
+      operationId: getTeacherRequests
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: request_type
+          in: query
+          schema:
+            $ref: './openapi-schemas.yaml#/components/schemas/TeacherRequestTypeEnum'
+        - name: status
+          in: query
+          schema:
+            $ref: './openapi-schemas.yaml#/components/schemas/RequestStatusEnum'
+        - $ref: './openapi-schemas.yaml#/components/parameters/PageParam'
+      responses:
+        '200':
+          description: List of teacher requests
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TeacherRequestDTO'
+                  pagination:
+                    $ref: './openapi-schemas.yaml#/components/schemas/Pagination'
+
+    post:
+      tags:
+        - Teachers
+      summary: Create teacher request
+      description: Submit leave or reschedule request (TEACHER role)
+      operationId: createTeacherRequest
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTeacherRequestRequest'
+      responses:
+        '201':
+          description: Request created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeacherRequestDTO'
+
+  /teacher-requests/{request_id}/approve:
+    post:
+      tags:
+        - Teachers
+      summary: Approve teacher request
+      description: Approve with optional substitute assignment (ACADEMIC_STAFF or MANAGER role)
+      operationId: approveTeacherRequest
+      parameters:
+        - name: request_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                substitute_teacher_id:
+                  type: integer
+                  format: int64
+                resolution:
+                  type: string
+              required:
+                - resolution
+      responses:
+        '200':
+          description: Request approved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeacherRequestApprovalResponse'
+
+  /teacher-requests/{request_id}/reject:
+    post:
+      tags:
+        - Teachers
+      summary: Reject teacher request
+      operationId: rejectTeacherRequest
+      parameters:
+        - name: request_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                resolution:
+                  type: string
+              required:
+                - resolution
+      responses:
+        '200':
+          description: Request rejected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    format: int64
+                  status:
+                    type: string
+                  resolution:
+                    type: string
+                  decided_by:
+                    type: integer
+                    format: int64
+                  decided_at:
+                    type: string
+                    format: date-time
+
+components:
+  schemas:
+    TeacherProfileDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        user_account_id:
+          type: integer
+          format: int64
+        employee_code:
+          type: string
+        full_name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        note:
+          type: string
+        skills:
+          type: array
+          items:
+            $ref: './openapi-schemas.yaml#/components/schemas/TeacherSkill'
+        availability:
+          type: array
+          items:
+            $ref: './openapi-schemas.yaml#/components/schemas/TeacherAvailability'
+        branches:
+          type: array
+          items:
+            $ref: './openapi-schemas.yaml#/components/schemas/BranchReference'
+        created_at:
+          type: string
+          format: date-time
+
+    TeacherScheduleDTO:
+      type: object
+      properties:
+        teacher_id:
+          type: integer
+          format: int64
+        teacher_name:
+          type: string
+        date_from:
+          type: string
+          format: date
+        date_to:
+          type: string
+          format: date
+        sessions:
+          type: array
+          items:
+            type: object
+            properties:
+              session_id:
+                type: integer
+                format: int64
+              class_id:
+                type: integer
+                format: int64
+              class_code:
+                type: string
+              date:
+                type: string
+                format: date
+              start_time:
+                type: string
+                format: time
+              end_time:
+                type: string
+                format: time
+              skill:
+                $ref: './openapi-schemas.yaml#/components/schemas/SkillEnum'
+              role:
+                $ref: './openapi-schemas.yaml#/components/schemas/TeachingRoleEnum'
+              resource:
+                type: object
+                properties:
+                  type:
+                    $ref: './openapi-schemas.yaml#/components/schemas/ResourceTypeEnum'
+                  name:
+                    type: string
+              status:
+                $ref: './openapi-schemas.yaml#/components/schemas/SessionStatusEnum'
+        summary:
+          type: object
+          properties:
+            total_sessions:
+              type: integer
+            total_hours:
+              type: number
+              format: float
+            by_status:
+              type: object
+              additionalProperties:
+                type: integer
+
+    TeacherWorkloadDTO:
+      type: object
+      properties:
+        teacher_id:
+          type: integer
+          format: int64
+        teacher_name:
+          type: string
+        period:
+          type: object
+          properties:
+            from:
+              type: string
+              format: date
+            to:
+              type: string
+              format: date
+        summary:
+          type: object
+          properties:
+            total_sessions_taught:
+              type: integer
+            total_hours:
+              type: number
+              format: float
+            classes_count:
+              type: integer
+            ot_sessions:
+              type: integer
+            ot_hours:
+              type: number
+              format: float
+        by_class:
+          type: array
+          items:
+            type: object
+            properties:
+              class_id:
+                type: integer
+                format: int64
+              class_code:
+                type: string
+              sessions_taught:
+                type: integer
+              hours:
+                type: number
+                format: float
+        by_skill:
+          type: array
+          items:
+            type: object
+            properties:
+              skill:
+                $ref: './openapi-schemas.yaml#/components/schemas/SkillEnum'
+              sessions:
+                type: integer
+              hours:
+                type: number
+                format: float
+
+    TeacherRequestDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        teacher_id:
+          type: integer
+          format: int64
+        session_id:
+          type: integer
+          format: int64
+        session:
+          type: object
+          properties:
+            date:
+              type: string
+              format: date
+            start_time:
+              type: string
+              format: time
+            end_time:
+              type: string
+              format: time
+            class_code:
+              type: string
+        request_type:
+          $ref: './openapi-schemas.yaml#/components/schemas/TeacherRequestTypeEnum'
+        status:
+          $ref: './openapi-schemas.yaml#/components/schemas/RequestStatusEnum'
+        note:
+          type: string
+        resolution:
+          type: string
+          nullable: true
+        submitted_at:
+          type: string
+          format: date-time
+        decided_by:
+          type: integer
+          format: int64
+          nullable: true
+        decided_at:
+          type: string
+          format: date-time
+          nullable: true
+
+    CreateTeacherRequestRequest:
+      type: object
+      properties:
+        session_id:
+          type: integer
+          format: int64
+        request_type:
+          $ref: './openapi-schemas.yaml#/components/schemas/TeacherRequestTypeEnum'
+        note:
+          type: string
+      required:
+        - session_id
+        - request_type
+
+    TeacherRequestApprovalResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        status:
+          type: string
+        resolution:
+          type: string
+        decided_by:
+          type: integer
+          format: int64
+        decided_at:
+          type: string
+          format: date-time
+        substitute_teacher:
+          type: object
+          properties:
+            teacher_id:
+              type: integer
+              format: int64
+            teacher_name:
+              type: string
+          nullable: true
+        ot_request_created:
+          type: object
+          properties:
+            id:
+              type: integer
+              format: int64
+            teacher_id:
+              type: integer
+              format: int64
+            session_id:
+              type: integer
+              format: int64
+            request_type:
+              type: string
+            status:
+              type: string
+          nullable: true

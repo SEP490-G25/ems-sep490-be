@@ -1,0 +1,721 @@
+# Module 2: Organization & Resources
+# OpenAPI specification for branches, time slots, and resources management
+
+paths:
+  /branches:
+    get:
+      tags:
+        - Branches
+      summary: Get all branches
+      description: Retrieve list of branches with optional filtering
+      operationId: getAllBranches
+      parameters:
+        - name: center_id
+          in: query
+          description: Filter by center ID
+          schema:
+            type: integer
+            format: int64
+        - name: status
+          in: query
+          description: Filter by branch status
+          schema:
+            $ref: './openapi-schemas.yaml#/components/schemas/BranchStatusEnum'
+        - $ref: './openapi-schemas.yaml#/components/parameters/PageParam'
+        - $ref: './openapi-schemas.yaml#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: List of branches
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/BranchDTO'
+                  pagination:
+                    $ref: './openapi-schemas.yaml#/components/schemas/Pagination'
+        '401':
+          $ref: './openapi-schemas.yaml#/components/responses/UnauthorizedError'
+        '500':
+          $ref: './openapi-schemas.yaml#/components/responses/InternalServerError'
+
+    post:
+      tags:
+        - Branches
+      summary: Create new branch
+      description: |
+        Create a new branch (requires MANAGER or ADMIN role).
+        Branch code must be unique within the center.
+      operationId: createBranch
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBranchRequest'
+      responses:
+        '201':
+          description: Branch created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BranchDTO'
+        '400':
+          $ref: './openapi-schemas.yaml#/components/responses/ValidationError'
+        '401':
+          $ref: './openapi-schemas.yaml#/components/responses/UnauthorizedError'
+        '403':
+          $ref: './openapi-schemas.yaml#/components/responses/ForbiddenError'
+        '409':
+          description: Branch code already exists
+          content:
+            application/json:
+              schema:
+                $ref: './openapi-schemas.yaml#/components/schemas/ErrorResponse'
+        '500':
+          $ref: './openapi-schemas.yaml#/components/responses/InternalServerError'
+
+  /branches/{id}:
+    get:
+      tags:
+        - Branches
+      summary: Get branch details
+      description: Retrieve detailed information about a specific branch including time slots and resources
+      operationId: getBranchById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Branch ID
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Branch details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BranchDetailDTO'
+        '401':
+          $ref: './openapi-schemas.yaml#/components/responses/UnauthorizedError'
+        '404':
+          $ref: './openapi-schemas.yaml#/components/responses/NotFoundError'
+        '500':
+          $ref: './openapi-schemas.yaml#/components/responses/InternalServerError'
+
+    put:
+      tags:
+        - Branches
+      summary: Update branch
+      description: Update branch information (requires MANAGER or ADMIN role)
+      operationId: updateBranch
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Branch ID
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateBranchRequest'
+      responses:
+        '200':
+          description: Branch updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BranchDTO'
+        '400':
+          $ref: './openapi-schemas.yaml#/components/responses/ValidationError'
+        '401':
+          $ref: './openapi-schemas.yaml#/components/responses/UnauthorizedError'
+        '403':
+          $ref: './openapi-schemas.yaml#/components/responses/ForbiddenError'
+        '404':
+          $ref: './openapi-schemas.yaml#/components/responses/NotFoundError'
+        '500':
+          $ref: './openapi-schemas.yaml#/components/responses/InternalServerError'
+
+  /branches/{branch_id}/time-slots:
+    get:
+      tags:
+        - Time Slots
+      summary: Get time slots by branch
+      description: Retrieve all time slot templates for a specific branch
+      operationId: getTimeSlotsByBranch
+      parameters:
+        - name: branch_id
+          in: path
+          required: true
+          description: Branch ID
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: List of time slots
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: './openapi-schemas.yaml#/components/schemas/TimeSlot'
+        '401':
+          $ref: './openapi-schemas.yaml#/components/responses/UnauthorizedError'
+        '404':
+          $ref: './openapi-schemas.yaml#/components/responses/NotFoundError'
+        '500':
+          $ref: './openapi-schemas.yaml#/components/responses/InternalServerError'
+
+    post:
+      tags:
+        - Time Slots
+      summary: Create time slot
+      description: Create a new time slot template for a branch (requires MANAGER or CENTER_HEAD role)
+      operationId: createTimeSlot
+      parameters:
+        - name: branch_id
+          in: path
+          required: true
+          description: Branch ID
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTimeSlotRequest'
+      responses:
+        '201':
+          description: Time slot created successfully
+          content:
+            application/json:
+              schema:
+                $ref: './openapi-schemas.yaml#/components/schemas/TimeSlot'
+        '400':
+          $ref: './openapi-schemas.yaml#/components/responses/ValidationError'
+        '401':
+          $ref: './openapi-schemas.yaml#/components/responses/UnauthorizedError'
+        '403':
+          $ref: './openapi-schemas.yaml#/components/responses/ForbiddenError'
+        '500':
+          $ref: './openapi-schemas.yaml#/components/responses/InternalServerError'
+
+  /branches/{branch_id}/time-slots/{id}:
+    put:
+      tags:
+        - Time Slots
+      summary: Update time slot
+      description: Update an existing time slot template
+      operationId: updateTimeSlot
+      parameters:
+        - name: branch_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTimeSlotRequest'
+      responses:
+        '200':
+          description: Time slot updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: './openapi-schemas.yaml#/components/schemas/TimeSlot'
+        '400':
+          $ref: './openapi-schemas.yaml#/components/responses/ValidationError'
+        '401':
+          $ref: './openapi-schemas.yaml#/components/responses/UnauthorizedError'
+        '403':
+          $ref: './openapi-schemas.yaml#/components/responses/ForbiddenError'
+        '404':
+          $ref: './openapi-schemas.yaml#/components/responses/NotFoundError'
+        '500':
+          $ref: './openapi-schemas.yaml#/components/responses/InternalServerError'
+
+    delete:
+      tags:
+        - Time Slots
+      summary: Delete time slot
+      description: Delete a time slot template (only if not used by any class)
+      operationId: deleteTimeSlot
+      parameters:
+        - name: branch_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: Time slot deleted successfully
+        '401':
+          $ref: './openapi-schemas.yaml#/components/responses/UnauthorizedError'
+        '403':
+          $ref: './openapi-schemas.yaml#/components/responses/ForbiddenError'
+        '404':
+          $ref: './openapi-schemas.yaml#/components/responses/NotFoundError'
+        '409':
+          description: Cannot delete - time slot is in use
+          content:
+            application/json:
+              schema:
+                $ref: './openapi-schemas.yaml#/components/schemas/ErrorResponse'
+        '500':
+          $ref: './openapi-schemas.yaml#/components/responses/InternalServerError'
+
+  /branches/{branch_id}/resources:
+    get:
+      tags:
+        - Resources
+      summary: Get resources by branch
+      description: |
+        Retrieve all resources (rooms and virtual) for a specific branch.
+        Supports filtering by availability and resource type.
+      operationId: getResourcesByBranch
+      parameters:
+        - name: branch_id
+          in: path
+          required: true
+          description: Branch ID
+          schema:
+            type: integer
+            format: int64
+        - name: resource_type
+          in: query
+          description: Filter by resource type
+          schema:
+            $ref: './openapi-schemas.yaml#/components/schemas/ResourceTypeEnum'
+        - name: available_date
+          in: query
+          description: Check availability on specific date (YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+        - name: available_start_time
+          in: query
+          description: Check availability start time (HH:MM:SS)
+          schema:
+            type: string
+            format: time
+        - name: available_end_time
+          in: query
+          description: Check availability end time (HH:MM:SS)
+          schema:
+            type: string
+            format: time
+      responses:
+        '200':
+          description: List of resources
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: './openapi-schemas.yaml#/components/schemas/Resource'
+        '401':
+          $ref: './openapi-schemas.yaml#/components/responses/UnauthorizedError'
+        '404':
+          $ref: './openapi-schemas.yaml#/components/responses/NotFoundError'
+        '500':
+          $ref: './openapi-schemas.yaml#/components/responses/InternalServerError'
+
+    post:
+      tags:
+        - Resources
+      summary: Create resource
+      description: |
+        Create a new resource (ROOM or VIRTUAL) for a branch.
+        Requires MANAGER or CENTER_HEAD role.
+      operationId: createResource
+      parameters:
+        - name: branch_id
+          in: path
+          required: true
+          description: Branch ID
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateResourceRequest'
+            examples:
+              room:
+                summary: Create a physical room
+                value:
+                  resource_type: "ROOM"
+                  name: "Phòng 201"
+                  location: "Tầng 2"
+                  capacity: 30
+                  equipment: "Smart TV, Whiteboard, Air Conditioner"
+                  description: "Phòng học lớn, ánh sáng tốt"
+              virtual:
+                summary: Create a virtual meeting account
+                value:
+                  resource_type: "VIRTUAL"
+                  name: "Zoom Account 2"
+                  meeting_url: "https://zoom.us/j/yyyyy"
+                  meeting_id: "987654321"
+                  account_email: "zoom2@example.com"
+                  license_type: "Business"
+                  expiry_date: "2026-06-30"
+      responses:
+        '201':
+          description: Resource created successfully
+          content:
+            application/json:
+              schema:
+                $ref: './openapi-schemas.yaml#/components/schemas/Resource'
+        '400':
+          $ref: './openapi-schemas.yaml#/components/responses/ValidationError'
+        '401':
+          $ref: './openapi-schemas.yaml#/components/responses/UnauthorizedError'
+        '403':
+          $ref: './openapi-schemas.yaml#/components/responses/ForbiddenError'
+        '500':
+          $ref: './openapi-schemas.yaml#/components/responses/InternalServerError'
+
+  /branches/{branch_id}/resources/{id}:
+    put:
+      tags:
+        - Resources
+      summary: Update resource
+      description: Update resource information
+      operationId: updateResource
+      parameters:
+        - name: branch_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateResourceRequest'
+      responses:
+        '200':
+          description: Resource updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: './openapi-schemas.yaml#/components/schemas/Resource'
+        '400':
+          $ref: './openapi-schemas.yaml#/components/responses/ValidationError'
+        '401':
+          $ref: './openapi-schemas.yaml#/components/responses/UnauthorizedError'
+        '403':
+          $ref: './openapi-schemas.yaml#/components/responses/ForbiddenError'
+        '404':
+          $ref: './openapi-schemas.yaml#/components/responses/NotFoundError'
+        '500':
+          $ref: './openapi-schemas.yaml#/components/responses/InternalServerError'
+
+    delete:
+      tags:
+        - Resources
+      summary: Delete resource
+      description: Delete a resource (only if not assigned to any future session)
+      operationId: deleteResource
+      parameters:
+        - name: branch_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: Resource deleted successfully
+        '401':
+          $ref: './openapi-schemas.yaml#/components/responses/UnauthorizedError'
+        '403':
+          $ref: './openapi-schemas.yaml#/components/responses/ForbiddenError'
+        '404':
+          $ref: './openapi-schemas.yaml#/components/responses/NotFoundError'
+        '409':
+          description: Cannot delete - resource is assigned to future sessions
+          content:
+            application/json:
+              schema:
+                $ref: './openapi-schemas.yaml#/components/schemas/ErrorResponse'
+        '500':
+          $ref: './openapi-schemas.yaml#/components/responses/InternalServerError'
+
+components:
+  schemas:
+    BranchDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        center_id:
+          type: integer
+          format: int64
+        code:
+          type: string
+          example: "HN-CG"
+        name:
+          type: string
+          example: "Cầu Giấy"
+        address:
+          type: string
+          example: "123 Đường ABC, Cầu Giấy, Hà Nội"
+        location:
+          type: string
+          example: "21.0285,105.8542"
+          description: "GPS coordinates (latitude,longitude)"
+        phone:
+          type: string
+          example: "+84243xxxx"
+        capacity:
+          type: integer
+          example: 500
+          description: "Maximum student capacity"
+        status:
+          $ref: './openapi-schemas.yaml#/components/schemas/BranchStatusEnum'
+        opening_date:
+          type: string
+          format: date
+        created_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - center_id
+        - code
+        - name
+        - status
+
+    BranchDetailDTO:
+      allOf:
+        - $ref: '#/components/schemas/BranchDTO'
+        - type: object
+          properties:
+            time_slots:
+              type: array
+              items:
+                $ref: './openapi-schemas.yaml#/components/schemas/TimeSlot'
+            resources:
+              type: array
+              items:
+                $ref: './openapi-schemas.yaml#/components/schemas/Resource'
+            updated_at:
+              type: string
+              format: date-time
+
+    CreateBranchRequest:
+      type: object
+      properties:
+        center_id:
+          type: integer
+          format: int64
+        code:
+          type: string
+          example: "HN-HK"
+          pattern: '^[A-Z0-9-]+$'
+        name:
+          type: string
+          example: "Hoàn Kiếm"
+        address:
+          type: string
+        location:
+          type: string
+          description: "GPS coordinates (latitude,longitude)"
+        phone:
+          type: string
+          pattern: '^\+[0-9]{10,15}$'
+        capacity:
+          type: integer
+          minimum: 1
+        status:
+          $ref: './openapi-schemas.yaml#/components/schemas/BranchStatusEnum'
+        opening_date:
+          type: string
+          format: date
+      required:
+        - center_id
+        - code
+        - name
+        - capacity
+        - status
+
+    UpdateBranchRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        address:
+          type: string
+        location:
+          type: string
+        phone:
+          type: string
+        capacity:
+          type: integer
+          minimum: 1
+        status:
+          $ref: './openapi-schemas.yaml#/components/schemas/BranchStatusEnum'
+        opening_date:
+          type: string
+          format: date
+
+    CreateTimeSlotRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Slot 3 - Tối"
+        start_time:
+          type: string
+          format: time
+          example: "18:00:00"
+        end_time:
+          type: string
+          format: time
+          example: "20:30:00"
+        duration_min:
+          type: integer
+          example: 150
+          description: "Duration in minutes"
+      required:
+        - name
+        - start_time
+        - end_time
+        - duration_min
+
+    UpdateTimeSlotRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        start_time:
+          type: string
+          format: time
+        end_time:
+          type: string
+          format: time
+        duration_min:
+          type: integer
+
+    CreateResourceRequest:
+      type: object
+      properties:
+        resource_type:
+          $ref: './openapi-schemas.yaml#/components/schemas/ResourceTypeEnum'
+        name:
+          type: string
+        location:
+          type: string
+          description: "Physical location (for ROOM type)"
+        capacity:
+          type: integer
+          description: "Seating capacity (for ROOM type)"
+        equipment:
+          type: string
+          description: "Available equipment (for ROOM type)"
+        description:
+          type: string
+        meeting_url:
+          type: string
+          format: uri
+          description: "Meeting URL (for VIRTUAL type)"
+        meeting_id:
+          type: string
+          description: "Meeting ID (for VIRTUAL type)"
+        account_email:
+          type: string
+          format: email
+          description: "Account email (for VIRTUAL type)"
+        license_type:
+          type: string
+          description: "License type (for VIRTUAL type)"
+        expiry_date:
+          type: string
+          format: date
+          description: "License expiry date (for VIRTUAL type)"
+      required:
+        - resource_type
+        - name
+
+    UpdateResourceRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        location:
+          type: string
+        capacity:
+          type: integer
+        equipment:
+          type: string
+        description:
+          type: string
+        meeting_url:
+          type: string
+          format: uri
+        meeting_id:
+          type: string
+        account_email:
+          type: string
+          format: email
+        license_type:
+          type: string
+        expiry_date:
+          type: string
+          format: date
+        is_available:
+          type: boolean

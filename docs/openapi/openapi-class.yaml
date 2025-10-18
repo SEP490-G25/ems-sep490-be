@@ -1,0 +1,508 @@
+# Module 4: Class Management
+# OpenAPI specification for class management and scheduling
+
+paths:
+  /classes:
+    get:
+      tags:
+        - Classes
+      summary: Get all classes
+      description: Retrieve list of classes with optional filtering
+      operationId: getAllClasses
+      parameters:
+        - $ref: './openapi-schemas.yaml#/components/parameters/BranchIdParam'
+        - name: course_id
+          in: query
+          schema:
+            type: integer
+            format: int64
+        - name: status
+          in: query
+          schema:
+            $ref: './openapi-schemas.yaml#/components/schemas/ClassStatusEnum'
+        - name: modality
+          in: query
+          schema:
+            $ref: './openapi-schemas.yaml#/components/schemas/ModalityEnum'
+        - $ref: './openapi-schemas.yaml#/components/parameters/DateFromParam'
+        - $ref: './openapi-schemas.yaml#/components/parameters/DateToParam'
+        - $ref: './openapi-schemas.yaml#/components/parameters/PageParam'
+        - $ref: './openapi-schemas.yaml#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: List of classes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ClassDTO'
+                  pagination:
+                    $ref: './openapi-schemas.yaml#/components/schemas/Pagination'
+
+    post:
+      tags:
+        - Classes
+      summary: Create class
+      description: |
+        Create a new class and auto-generate sessions (requires MANAGER or ACADEMIC_STAFF role).
+        System automatically generates sessions based on course template and schedule.
+      operationId: createClass
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateClassRequest'
+      responses:
+        '201':
+          description: Class created successfully with sessions generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateClassResponse'
+        '400':
+          $ref: './openapi-schemas.yaml#/components/responses/ValidationError'
+        '403':
+          $ref: './openapi-schemas.yaml#/components/responses/ForbiddenError'
+
+  /classes/{id}:
+    get:
+      tags:
+        - Classes
+      summary: Get class details
+      description: Retrieve detailed class information including schedule and enrollment
+      operationId: getClassById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Class details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClassDetailDTO'
+        '404':
+          $ref: './openapi-schemas.yaml#/components/responses/NotFoundError'
+
+    put:
+      tags:
+        - Classes
+      summary: Update class
+      operationId: updateClass
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateClassRequest'
+      responses:
+        '200':
+          description: Class updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClassDTO'
+        '400':
+          $ref: './openapi-schemas.yaml#/components/responses/ValidationError'
+        '404':
+          $ref: './openapi-schemas.yaml#/components/responses/NotFoundError'
+
+  /classes/{id}/submit:
+    post:
+      tags:
+        - Classes
+      summary: Submit class for approval
+      description: Submit class for manager approval (requires ACADEMIC_STAFF role)
+      operationId: submitClass
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Class submitted for approval
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    format: int64
+                  code:
+                    type: string
+                  status:
+                    type: string
+                  submitted_at:
+                    type: string
+                    format: date-time
+                  message:
+                    type: string
+        '403':
+          $ref: './openapi-schemas.yaml#/components/responses/ForbiddenError'
+        '404':
+          $ref: './openapi-schemas.yaml#/components/responses/NotFoundError'
+
+  /classes/{id}/approve:
+    post:
+      tags:
+        - Classes
+      summary: Approve or reject class
+      description: Approve or reject a submitted class (requires MANAGER or CENTER_HEAD role)
+      operationId: approveClass
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                action:
+                  type: string
+                  enum: [approve, reject]
+                rejection_reason:
+                  type: string
+                  nullable: true
+              required:
+                - action
+      responses:
+        '200':
+          description: Class approval decision recorded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    format: int64
+                  code:
+                    type: string
+                  status:
+                    type: string
+                  approved_by:
+                    type: integer
+                    format: int64
+                  approved_at:
+                    type: string
+                    format: date-time
+                  rejection_reason:
+                    type: string
+                    nullable: true
+        '400':
+          $ref: './openapi-schemas.yaml#/components/responses/ValidationError'
+        '403':
+          $ref: './openapi-schemas.yaml#/components/responses/ForbiddenError'
+        '404':
+          $ref: './openapi-schemas.yaml#/components/responses/NotFoundError'
+
+  /classes/{id}/validate:
+    post:
+      tags:
+        - Classes
+      summary: Validate class schedule
+      description: Check for scheduling conflicts (resource, teacher, capacity)
+      operationId: validateClass
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClassValidationResponse'
+        '404':
+          $ref: './openapi-schemas.yaml#/components/responses/NotFoundError'
+
+  /classes/{id}/schedule:
+    put:
+      tags:
+        - Classes
+      summary: Update class schedule
+      description: |
+        Update schedule for future sessions (requires MANAGER role).
+        Changes apply only to sessions after the effective date.
+      operationId: updateClassSchedule
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateScheduleRequest'
+      responses:
+        '200':
+          description: Schedule updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    format: int64
+                  code:
+                    type: string
+                  sessions_updated:
+                    type: integer
+                  conflicts_detected:
+                    type: array
+                    items:
+                      $ref: './openapi-schemas.yaml#/components/schemas/Conflict'
+                  message:
+                    type: string
+        '400':
+          $ref: './openapi-schemas.yaml#/components/responses/ValidationError'
+        '403':
+          $ref: './openapi-schemas.yaml#/components/responses/ForbiddenError'
+        '404':
+          $ref: './openapi-schemas.yaml#/components/responses/NotFoundError'
+
+components:
+  schemas:
+    ClassDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        branch_id:
+          type: integer
+          format: int64
+        course_id:
+          type: integer
+          format: int64
+        code:
+          type: string
+          example: "ENG-A1-2025-01"
+        name:
+          type: string
+        modality:
+          $ref: './openapi-schemas.yaml#/components/schemas/ModalityEnum'
+        start_date:
+          type: string
+          format: date
+        planned_end_date:
+          type: string
+          format: date
+        schedule_days:
+          type: array
+          items:
+            type: integer
+          description: "Days of week (1=Monday, 7=Sunday)"
+        max_capacity:
+          type: integer
+        current_enrollment:
+          type: integer
+        status:
+          $ref: './openapi-schemas.yaml#/components/schemas/ClassStatusEnum'
+        created_by:
+          type: integer
+          format: int64
+        approved_by:
+          type: integer
+          format: int64
+          nullable: true
+        approved_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+
+    ClassDetailDTO:
+      allOf:
+        - $ref: '#/components/schemas/ClassDTO'
+        - type: object
+          properties:
+            branch:
+              $ref: './openapi-schemas.yaml#/components/schemas/BranchReference'
+            course:
+              $ref: './openapi-schemas.yaml#/components/schemas/CourseReference'
+            actual_end_date:
+              type: string
+              format: date
+              nullable: true
+            schedule_mapping:
+              type: object
+              additionalProperties:
+                type: object
+                properties:
+                  start_time:
+                    type: string
+                    format: time
+                  end_time:
+                    type: string
+                    format: time
+                  slot_id:
+                    type: integer
+                    format: int64
+            submitted_at:
+              type: string
+              format: date-time
+              nullable: true
+            rejection_reason:
+              type: string
+              nullable: true
+            sessions_count:
+              type: integer
+            sessions_completed:
+              type: integer
+
+    CreateClassRequest:
+      type: object
+      properties:
+        branch_id:
+          type: integer
+          format: int64
+        course_id:
+          type: integer
+          format: int64
+        code:
+          type: string
+        name:
+          type: string
+        modality:
+          $ref: './openapi-schemas.yaml#/components/schemas/ModalityEnum'
+        start_date:
+          type: string
+          format: date
+        schedule_days:
+          type: array
+          items:
+            type: integer
+          description: "Days of week (e.g., [1, 3, 5] for Mon-Wed-Fri)"
+        schedule_mapping:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              slot_id:
+                type: integer
+                format: int64
+          description: "Map of day_of_week to slot_id"
+        max_capacity:
+          type: integer
+      required:
+        - branch_id
+        - course_id
+        - code
+        - name
+        - modality
+        - start_date
+        - schedule_days
+        - schedule_mapping
+        - max_capacity
+
+    CreateClassResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        code:
+          type: string
+        status:
+          type: string
+        sessions_generated:
+          type: integer
+        created_by:
+          type: integer
+          format: int64
+        created_at:
+          type: string
+          format: date-time
+        message:
+          type: string
+
+    UpdateClassRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        max_capacity:
+          type: integer
+        status:
+          $ref: './openapi-schemas.yaml#/components/schemas/ClassStatusEnum'
+
+    UpdateScheduleRequest:
+      type: object
+      properties:
+        effective_from:
+          type: string
+          format: date
+          description: "Changes apply to sessions on or after this date"
+        target_dow:
+          type: integer
+          description: "Target day of week to change (1-7)"
+        new_slot_id:
+          type: integer
+          format: int64
+        reason:
+          type: string
+      required:
+        - effective_from
+        - target_dow
+        - new_slot_id
+
+    ClassValidationResponse:
+      type: object
+      properties:
+        is_valid:
+          type: boolean
+        conflicts:
+          type: array
+          items:
+            $ref: './openapi-schemas.yaml#/components/schemas/Conflict'
+        warnings:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+              message:
+                type: string
+              session_id:
+                type: integer
+                format: int64
+                nullable: true

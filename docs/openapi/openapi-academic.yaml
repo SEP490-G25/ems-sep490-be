@@ -1,0 +1,1145 @@
+# Module 3: Academic Structure
+# OpenAPI specification for subjects, levels, courses, phases, sessions, PLO/CLO, and materials
+
+paths:
+  /subjects:
+    get:
+      tags:
+        - Subjects
+      summary: Get all subjects
+      description: Retrieve list of subjects with optional filtering
+      operationId: getAllSubjects
+      parameters:
+        - name: status
+          in: query
+          schema:
+            $ref: './openapi-schemas.yaml#/components/schemas/SubjectStatusEnum'
+        - $ref: './openapi-schemas.yaml#/components/parameters/PageParam'
+        - $ref: './openapi-schemas.yaml#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: List of subjects
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SubjectDTO'
+                  pagination:
+                    $ref: './openapi-schemas.yaml#/components/schemas/Pagination'
+        '401':
+          $ref: './openapi-schemas.yaml#/components/responses/UnauthorizedError'
+
+    post:
+      tags:
+        - Subjects
+      summary: Create subject
+      description: Create a new subject (requires SUBJECT_LEADER role)
+      operationId: createSubject
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSubjectRequest'
+      responses:
+        '201':
+          description: Subject created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubjectDTO'
+        '400':
+          $ref: './openapi-schemas.yaml#/components/responses/ValidationError'
+        '401':
+          $ref: './openapi-schemas.yaml#/components/responses/UnauthorizedError'
+        '403':
+          $ref: './openapi-schemas.yaml#/components/responses/ForbiddenError'
+
+  /subjects/{id}:
+    get:
+      tags:
+        - Subjects
+      summary: Get subject details
+      operationId: getSubjectById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Subject details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubjectDetailDTO'
+        '404':
+          $ref: './openapi-schemas.yaml#/components/responses/NotFoundError'
+
+  /subjects/{subject_id}/levels:
+    get:
+      tags:
+        - Levels
+      summary: Get levels by subject
+      operationId: getLevelsBySubject
+      parameters:
+        - name: subject_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: List of levels
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LevelDTO'
+
+    post:
+      tags:
+        - Levels
+      summary: Create level
+      description: Create a new level for a subject (requires SUBJECT_LEADER role)
+      operationId: createLevel
+      parameters:
+        - name: subject_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateLevelRequest'
+      responses:
+        '201':
+          description: Level created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LevelDTO'
+        '400':
+          $ref: './openapi-schemas.yaml#/components/responses/ValidationError'
+        '403':
+          $ref: './openapi-schemas.yaml#/components/responses/ForbiddenError'
+
+  /subjects/{subject_id}/levels/{id}:
+    put:
+      tags:
+        - Levels
+      summary: Update level
+      operationId: updateLevel
+      parameters:
+        - name: subject_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateLevelRequest'
+      responses:
+        '200':
+          description: Level updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LevelDTO'
+        '404':
+          $ref: './openapi-schemas.yaml#/components/responses/NotFoundError'
+
+  /courses:
+    get:
+      tags:
+        - Courses
+      summary: Get all courses
+      description: Retrieve list of courses with optional filtering
+      operationId: getAllCourses
+      parameters:
+        - name: subject_id
+          in: query
+          schema:
+            type: integer
+            format: int64
+        - name: level_id
+          in: query
+          schema:
+            type: integer
+            format: int64
+        - name: status
+          in: query
+          schema:
+            $ref: './openapi-schemas.yaml#/components/schemas/SubjectStatusEnum'
+        - name: approved
+          in: query
+          description: Filter by approval status
+          schema:
+            type: boolean
+        - $ref: './openapi-schemas.yaml#/components/parameters/PageParam'
+        - $ref: './openapi-schemas.yaml#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: List of courses
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CourseDTO'
+                  pagination:
+                    $ref: './openapi-schemas.yaml#/components/schemas/Pagination'
+
+    post:
+      tags:
+        - Courses
+      summary: Create course
+      description: Create a new course (requires SUBJECT_LEADER role)
+      operationId: createCourse
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCourseRequest'
+      responses:
+        '201':
+          description: Course created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseDTO'
+        '400':
+          $ref: './openapi-schemas.yaml#/components/responses/ValidationError'
+        '403':
+          $ref: './openapi-schemas.yaml#/components/responses/ForbiddenError'
+
+  /courses/{id}:
+    get:
+      tags:
+        - Courses
+      summary: Get course details
+      description: Retrieve detailed course information including phases, sessions, CLOs, and materials
+      operationId: getCourseById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Course details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseDetailDTO'
+        '404':
+          $ref: './openapi-schemas.yaml#/components/responses/NotFoundError'
+
+    put:
+      tags:
+        - Courses
+      summary: Update course
+      operationId: updateCourse
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCourseRequest'
+      responses:
+        '200':
+          description: Course updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseDTO'
+        '400':
+          $ref: './openapi-schemas.yaml#/components/responses/ValidationError'
+        '404':
+          $ref: './openapi-schemas.yaml#/components/responses/NotFoundError'
+
+  /courses/{id}/submit:
+    post:
+      tags:
+        - Courses
+      summary: Submit course for approval
+      description: Submit course for manager approval (requires SUBJECT_LEADER role)
+      operationId: submitCourse
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Course submitted for approval
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    format: int64
+                  code:
+                    type: string
+                  status:
+                    type: string
+                  submitted_at:
+                    type: string
+                    format: date-time
+                  message:
+                    type: string
+        '403':
+          $ref: './openapi-schemas.yaml#/components/responses/ForbiddenError'
+        '404':
+          $ref: './openapi-schemas.yaml#/components/responses/NotFoundError'
+
+  /courses/{id}/approve:
+    post:
+      tags:
+        - Courses
+      summary: Approve or reject course
+      description: Approve or reject a submitted course (requires CENTER_HEAD or MANAGER role)
+      operationId: approveCourse
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApprovalRequest'
+      responses:
+        '200':
+          description: Course approval decision recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseApprovalResponse'
+        '400':
+          $ref: './openapi-schemas.yaml#/components/responses/ValidationError'
+        '403':
+          $ref: './openapi-schemas.yaml#/components/responses/ForbiddenError'
+        '404':
+          $ref: './openapi-schemas.yaml#/components/responses/NotFoundError'
+
+  /courses/{course_id}/phases:
+    get:
+      tags:
+        - Course Phases
+      summary: Get phases by course
+      operationId: getPhasesByCourse
+      parameters:
+        - name: course_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: List of course phases
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CoursePhaseDTO'
+
+    post:
+      tags:
+        - Course Phases
+      summary: Create course phase
+      description: Create a new phase for a course (requires SUBJECT_LEADER role)
+      operationId: createPhase
+      parameters:
+        - name: course_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePhaseRequest'
+      responses:
+        '201':
+          description: Phase created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoursePhaseDTO'
+        '400':
+          $ref: './openapi-schemas.yaml#/components/responses/ValidationError'
+        '403':
+          $ref: './openapi-schemas.yaml#/components/responses/ForbiddenError'
+
+  /phases/{phase_id}/sessions:
+    get:
+      tags:
+        - Course Sessions
+      summary: Get sessions by phase
+      description: Retrieve all course session templates for a specific phase
+      operationId: getSessionsByPhase
+      parameters:
+        - name: phase_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: List of course sessions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CourseSessionDTO'
+
+    post:
+      tags:
+        - Course Sessions
+      summary: Create course session
+      description: Create a new session template for a phase (requires SUBJECT_LEADER role)
+      operationId: createCourseSession
+      parameters:
+        - name: phase_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCourseSessionRequest'
+      responses:
+        '201':
+          description: Course session created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseSessionDTO'
+        '400':
+          $ref: './openapi-schemas.yaml#/components/responses/ValidationError'
+        '403':
+          $ref: './openapi-schemas.yaml#/components/responses/ForbiddenError'
+
+  /subjects/{subject_id}/plos:
+    get:
+      tags:
+        - PLO & CLO
+      summary: Get PLOs by subject
+      description: Retrieve Program Learning Outcomes for a subject
+      operationId: getPLOsBySubject
+      parameters:
+        - name: subject_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: List of PLOs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PLODTO'
+
+    post:
+      tags:
+        - PLO & CLO
+      summary: Create PLO
+      description: Create a Program Learning Outcome (requires SUBJECT_LEADER role)
+      operationId: createPLO
+      parameters:
+        - name: subject_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePLORequest'
+      responses:
+        '201':
+          description: PLO created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PLODTO'
+        '400':
+          $ref: './openapi-schemas.yaml#/components/responses/ValidationError'
+        '403':
+          $ref: './openapi-schemas.yaml#/components/responses/ForbiddenError'
+
+  /courses/{course_id}/clos:
+    get:
+      tags:
+        - PLO & CLO
+      summary: Get CLOs by course
+      description: Retrieve Course Learning Outcomes for a course
+      operationId: getCLOsByCourse
+      parameters:
+        - name: course_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: List of CLOs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CLODTO'
+
+    post:
+      tags:
+        - PLO & CLO
+      summary: Create CLO
+      description: Create a Course Learning Outcome (requires SUBJECT_LEADER role)
+      operationId: createCLO
+      parameters:
+        - name: course_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCLORequest'
+      responses:
+        '201':
+          description: CLO created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CLODTO'
+        '400':
+          $ref: './openapi-schemas.yaml#/components/responses/ValidationError'
+        '403':
+          $ref: './openapi-schemas.yaml#/components/responses/ForbiddenError'
+
+  /courses/{course_id}/materials:
+    post:
+      tags:
+        - Course Materials
+      summary: Upload course material
+      description: Upload material for course, phase, or session (requires SUBJECT_LEADER or ACADEMIC_STAFF role)
+      operationId: uploadCourseMaterial
+      parameters:
+        - name: course_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Material file
+                title:
+                  type: string
+                  description: Material title
+                phase_id:
+                  type: integer
+                  format: int64
+                  description: Optional phase ID
+                course_session_id:
+                  type: integer
+                  format: int64
+                  description: Optional course session ID
+              required:
+                - file
+                - title
+      responses:
+        '201':
+          description: Material uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseMaterialDTO'
+        '400':
+          $ref: './openapi-schemas.yaml#/components/responses/ValidationError'
+        '403':
+          $ref: './openapi-schemas.yaml#/components/responses/ForbiddenError'
+
+components:
+  schemas:
+    SubjectDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        code:
+          type: string
+          example: "ENG-GEN"
+        name:
+          type: string
+          example: "English General"
+        description:
+          type: string
+        status:
+          $ref: './openapi-schemas.yaml#/components/schemas/SubjectStatusEnum'
+        created_by:
+          type: integer
+          format: int64
+        created_at:
+          type: string
+          format: date-time
+        levels_count:
+          type: integer
+        courses_count:
+          type: integer
+
+    SubjectDetailDTO:
+      allOf:
+        - $ref: '#/components/schemas/SubjectDTO'
+        - type: object
+          properties:
+            levels:
+              type: array
+              items:
+                $ref: '#/components/schemas/LevelDTO'
+
+    CreateSubjectRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          pattern: '^[A-Z0-9-]+$'
+        name:
+          type: string
+        description:
+          type: string
+        status:
+          $ref: './openapi-schemas.yaml#/components/schemas/SubjectStatusEnum'
+      required:
+        - code
+        - name
+        - status
+
+    LevelDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        subject_id:
+          type: integer
+          format: int64
+        code:
+          type: string
+          example: "A1"
+        name:
+          type: string
+          example: "Beginner A1"
+        standard_type:
+          type: string
+          example: "CEFR"
+        expected_duration_hours:
+          type: number
+          format: float
+        sort_order:
+          type: integer
+        description:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    CreateLevelRequest:
+      type: object
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        standard_type:
+          type: string
+        expected_duration_hours:
+          type: number
+          format: float
+        sort_order:
+          type: integer
+        description:
+          type: string
+      required:
+        - code
+        - name
+        - sort_order
+
+    UpdateLevelRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        standard_type:
+          type: string
+        expected_duration_hours:
+          type: number
+        description:
+          type: string
+
+    CourseDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        subject_id:
+          type: integer
+          format: int64
+        level_id:
+          type: integer
+          format: int64
+        code:
+          type: string
+          example: "ENG-A1-V1"
+        name:
+          type: string
+        version:
+          type: integer
+        description:
+          type: string
+        total_hours:
+          type: number
+          format: float
+        duration_weeks:
+          type: integer
+        session_per_week:
+          type: integer
+        hours_per_session:
+          type: number
+          format: float
+        status:
+          $ref: './openapi-schemas.yaml#/components/schemas/SubjectStatusEnum'
+        approved_by_manager:
+          type: integer
+          format: int64
+          nullable: true
+        approved_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_by:
+          type: integer
+          format: int64
+        created_at:
+          type: string
+          format: date-time
+        phases_count:
+          type: integer
+        sessions_count:
+          type: integer
+
+    CourseDetailDTO:
+      allOf:
+        - $ref: '#/components/schemas/CourseDTO'
+        - type: object
+          properties:
+            prerequisites:
+              type: string
+            target_audience:
+              type: string
+            teaching_methods:
+              type: string
+            phases:
+              type: array
+              items:
+                $ref: '#/components/schemas/CoursePhaseDTO'
+            clos:
+              type: array
+              items:
+                $ref: '#/components/schemas/CLODTO'
+            materials:
+              type: array
+              items:
+                $ref: '#/components/schemas/CourseMaterialDTO'
+
+    CreateCourseRequest:
+      type: object
+      properties:
+        subject_id:
+          type: integer
+          format: int64
+        level_id:
+          type: integer
+          format: int64
+        version:
+          type: integer
+        code:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        total_hours:
+          type: number
+          format: float
+        duration_weeks:
+          type: integer
+        session_per_week:
+          type: integer
+        hours_per_session:
+          type: number
+          format: float
+        prerequisites:
+          type: string
+        target_audience:
+          type: string
+        teaching_methods:
+          type: string
+        effective_date:
+          type: string
+          format: date
+        status:
+          $ref: './openapi-schemas.yaml#/components/schemas/SubjectStatusEnum'
+      required:
+        - subject_id
+        - level_id
+        - version
+        - code
+        - name
+        - total_hours
+        - duration_weeks
+        - session_per_week
+        - hours_per_session
+
+    UpdateCourseRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        prerequisites:
+          type: string
+        target_audience:
+          type: string
+        teaching_methods:
+          type: string
+        status:
+          $ref: './openapi-schemas.yaml#/components/schemas/SubjectStatusEnum'
+
+    ApprovalRequest:
+      type: object
+      properties:
+        action:
+          type: string
+          enum:
+            - approve
+            - reject
+        rejection_reason:
+          type: string
+          nullable: true
+      required:
+        - action
+
+    CourseApprovalResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        code:
+          type: string
+        approved_by_manager:
+          type: integer
+          format: int64
+          nullable: true
+        approved_at:
+          type: string
+          format: date-time
+          nullable: true
+        status:
+          type: string
+
+    CoursePhaseDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        course_id:
+          type: integer
+          format: int64
+        phase_number:
+          type: integer
+        name:
+          type: string
+        duration_weeks:
+          type: integer
+        learning_focus:
+          type: string
+        sort_order:
+          type: integer
+        sessions_count:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+
+    CreatePhaseRequest:
+      type: object
+      properties:
+        phase_number:
+          type: integer
+        name:
+          type: string
+        duration_weeks:
+          type: integer
+        learning_focus:
+          type: string
+        sort_order:
+          type: integer
+      required:
+        - phase_number
+        - name
+        - duration_weeks
+        - sort_order
+
+    CourseSessionDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        phase_id:
+          type: integer
+          format: int64
+        sequence_no:
+          type: integer
+        topic:
+          type: string
+        student_task:
+          type: string
+        skill_set:
+          type: array
+          items:
+            $ref: './openapi-schemas.yaml#/components/schemas/SkillEnum'
+        clos:
+          type: array
+          items:
+            $ref: '#/components/schemas/CLOReference'
+        materials:
+          type: array
+          items:
+            $ref: '#/components/schemas/CourseMaterialDTO'
+        created_at:
+          type: string
+          format: date-time
+
+    CreateCourseSessionRequest:
+      type: object
+      properties:
+        sequence_no:
+          type: integer
+        topic:
+          type: string
+        student_task:
+          type: string
+        skill_set:
+          type: array
+          items:
+            $ref: './openapi-schemas.yaml#/components/schemas/SkillEnum'
+      required:
+        - sequence_no
+        - topic
+
+    PLODTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        subject_id:
+          type: integer
+          format: int64
+        code:
+          type: string
+        description:
+          type: string
+        mapped_clos_count:
+          type: integer
+
+    CreatePLORequest:
+      type: object
+      properties:
+        code:
+          type: string
+        description:
+          type: string
+      required:
+        - code
+        - description
+
+    CLODTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        course_id:
+          type: integer
+          format: int64
+        code:
+          type: string
+        description:
+          type: string
+        mapped_plos:
+          type: array
+          items:
+            $ref: '#/components/schemas/PLOReference'
+        mapped_sessions_count:
+          type: integer
+
+    CreateCLORequest:
+      type: object
+      properties:
+        code:
+          type: string
+        description:
+          type: string
+      required:
+        - code
+        - description
+
+    PLOReference:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        code:
+          type: string
+        description:
+          type: string
+
+    CLOReference:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        code:
+          type: string
+        description:
+          type: string
+
+    CourseMaterialDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        course_id:
+          type: integer
+          format: int64
+        phase_id:
+          type: integer
+          format: int64
+          nullable: true
+        course_session_id:
+          type: integer
+          format: int64
+          nullable: true
+        title:
+          type: string
+        url:
+          type: string
+          format: uri
+        uploaded_by:
+          type: integer
+          format: int64
+        created_at:
+          type: string
+          format: date-time
