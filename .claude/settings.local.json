@@ -5,7 +5,8 @@
       "Bash(find:*)",
       "Bash(./mvnw.cmd clean compile:*)",
       "Bash(wc:*)",
-      "Bash(./mvnw clean test:*)"
+      "Bash(./mvnw clean test:*)",
+      "Bash(dir /B \"D:\\Workspace\\projects\\EMS-SEP490\\ems-sep490-be\\docs\")"
     ],
     "deny": [],
     "ask": []
