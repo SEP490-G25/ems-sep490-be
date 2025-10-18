@@ -4,7 +4,8 @@
       "Bash(mvn spring-boot:run:*)",
       "Bash(find:*)",
       "Bash(./mvnw.cmd clean compile:*)",
-      "Bash(wc:*)"
+      "Bash(wc:*)",
+      "Bash(./mvnw clean test:*)"
     ],
     "deny": [],
     "ask": []

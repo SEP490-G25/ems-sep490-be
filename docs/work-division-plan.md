@@ -91,28 +91,28 @@
 
 **Tasks**:
 1. **JWT Authentication Implementation**
-   - [ ] Configure Spring Security với JWT
-   - [ ] Implement JwtTokenProvider (generate, validate, parse)
-   - [ ] Implement login logic:
+   - [x] Configure Spring Security với JWT
+   - [x] Implement JwtTokenProvider (generate, validate, parse)
+   - [x] Implement login logic:
      - Validate email/phone + password
      - Query UserAccount với roles và branches
      - Generate access_token + refresh_token
      - Return LoginResponseDTO
-   - [ ] Implement refresh token logic:
+   - [x] Implement refresh token logic:
      - Validate refresh_token
      - Generate new access_token
      - Return RefreshTokenResponseDTO
-   - [ ] Implement logout với token blacklist (Redis hoặc in-memory cache)
+   - [x] Implement logout với token blacklist (Redis hoặc in-memory cache)
 
 2. **RBAC Implementation**
-   - [ ] Create SecurityConfig với role-based access
-   - [ ] Implement @PreAuthorize annotations cho controllers
-   - [ ] Multi-branch access control (check user_branches)
+   - [x] Create SecurityConfig với role-based access
+   - [x] Implement @PreAuthorize annotations cho controllers
+   - [x] Multi-branch access control (check user_branches)
 
 3. **Testing**
-   - [ ] Unit tests cho AuthService
-   - [ ] Integration tests cho /auth endpoints
-   - [ ] Test cases: successful login, invalid credentials, expired token, etc.
+   - [x] Unit tests cho AuthService
+   - [x] Integration tests cho /auth endpoints
+   - [x] Test cases: successful login, invalid credentials, expired token, etc.
 
 **Deliverables**:
 - ✅ Working login/logout API
