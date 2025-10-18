@@ -32,15 +32,27 @@ Language training centers face complex operational challenges:
 - Create/manage user accounts and assign roles
 - Configure system-wide settings (capacity policies, attendance lock times, request lead times)
 
-#### **CENTER HEAD / MANAGER** (Center Level)
-- **Scope**: Manage entire center with multiple branches
+#### **MANAGER** (System/Multi-Branch Operations Manager)
+- **Scope**: Entire system or multiple branches (strategic oversight)
 - **Responsibilities**:
-  - Approve courses designed by Subject Leaders
-  - Approve classes created by Academic Staff
-  - Oversee resource allocation across branches
-  - Review executive dashboards (enrollment trends, branch performance, teacher workload)
-  - Handle escalated requests and conflicts
-  - Make strategic decisions (opening new branches, hiring teachers)
+  - **Strategic Management**: Monitor KPIs across all branches, operational excellence, performance analytics
+  - **High-Level Approvals**: Approve courses designed by Subject Leaders (curriculum standardization)
+  - **Cross-Branch Coordination**: Oversee resource allocation, teacher assignments across multiple branches
+  - **Executive Oversight**: Review executive dashboards (enrollment trends, branch performance, teacher workload)
+  - **Strategic Decisions**: Opening new branches, hiring policies, system-wide policies
+  - **Escalated Requests**: Handle complex cross-branch conflicts and escalated issues
+- **Key Distinction**: Focuses on **system-wide operational excellence** and strategic decisions, not day-to-day branch operations
+
+#### **CENTER HEAD** (Branch Director)
+- **Scope**: ONE specific branch (direct branch management)
+- **Responsibilities**:
+  - **Branch Operations**: Direct management of daily activities within their branch
+  - **Operational Approvals**: Approve classes created by Academic Staff for their branch
+  - **Resource Management**: Manage rooms, Zoom accounts, and resources within the branch
+  - **Branch Performance**: Monitor and improve branch-level KPIs and quality
+  - **Request Handling**: Approve student/teacher requests within branch scope (absence, make-up, transfers)
+  - **Staff Supervision**: Oversee Academic Staff, Teachers at the branch
+- **Key Distinction**: Focuses on **direct branch operational execution** and tactical day-to-day management
 
 #### **SUBJECT LEADER** (Curriculum Level)
 - **Scope**: Subject-specific curriculum design
@@ -50,7 +62,7 @@ Language training centers face complex operational challenges:
   - Define learning outcomes (PLO - Program Learning Outcomes, CLO - Course Learning Outcomes)
   - Map CLOs to course sessions for outcome tracking
   - Upload course materials (slides, worksheets, videos)
-  - Submit courses for approval by Manager/Center Head
+  - Submit courses for approval by Manager (strategic curriculum approval)
   - **Does NOT** handle day-to-day operations or class scheduling
 
 #### **ACADEMIC STAFF (Giáo vụ)** (Branch Operations Level) ⭐ **KEY OPERATIONAL ROLE**
@@ -98,17 +110,17 @@ Language training centers face complex operational challenges:
 | **Decision** | **Who Initiates** | **Who Approves** | **Impact** |
 |-------------|------------------|-----------------|-----------|
 | Create Subject/Level | Subject Leader | Auto-approved | Curriculum structure |
-| Create Course | Subject Leader | Manager/Center Head | Must be approved before use |
-| Create Class | Academic Staff | Center Head/Manager | Must be approved before enrollment |
+| Create Course | Subject Leader | **Manager** (strategic curriculum approval) | Must be approved before use across system |
+| Create Class | Academic Staff | **Center Head** (branch) OR **Manager** (cross-branch) | Must be approved before enrollment |
 | Enroll Students | Academic Staff | Auto (with capacity check) | Immediate enrollment |
 | Assign Teacher | Academic Staff | Auto (with conflict check) | Immediate assignment |
 | Student Absence | Student/Academic Staff | Academic Staff | Attendance status update |
 | Student Make-up | Student | Academic Staff | New student_session created |
-| Student Transfer | Student | Academic Staff | Enrollment + schedule sync |
+| Student Transfer | Student | Academic Staff OR Center Head | Enrollment + schedule sync |
 | Teacher Leave | Teacher/Academic Staff | Academic Staff (must find solution) | Requires substitute/reschedule/cancel |
 | Teacher OT | Teacher (registers availability) | Academic Staff (when assigned) | OT request auto-created |
-| Reschedule Session | Academic Staff | Academic Staff | All parties notified |
-| Cancel Session | Academic Staff | Center Head/Manager | All students marked excused |
+| Reschedule Session | Academic Staff | Academic Staff OR Center Head | All parties notified |
+| Cancel Session | Academic Staff | **Center Head** (branch) OR **Manager** (cross-branch) | All students marked excused |
 
 ---
 
@@ -130,13 +142,13 @@ Language training centers face complex operational challenges:
 6. **Define PLOs** (program-level outcomes for the subject)
 7. **Define CLOs** (course-level outcomes) and **map to sessions** to track which sessions achieve which outcomes
 8. **Upload Materials** (slides, worksheets) at course/phase/session level
-9. **Submit for Approval** → Manager/Center Head reviews and approves or rejects
+9. **Submit for Approval** → **Manager** reviews and approves or rejects (strategic curriculum decision)
 
 **Result**: Approved course templates ready for Academic Staff to use when creating classes
 
 ---
 
-### **3.2 Class Creation & Session Generation Flow** (Academic Staff → Manager Approval)
+### **3.2 Class Creation & Session Generation Flow** (Academic Staff → Center Head/Manager Approval)
 **Objective**: Convert a course template into a real, scheduled class with assigned resources and teachers
 
 **Steps**:
@@ -182,9 +194,10 @@ Language training centers face complex operational challenges:
 
 6. **Academic Staff submits class** → Status: `draft` → `submitted_at` timestamp
 
-7. **Manager/Center Head reviews**:
+7. **Center Head (for their branch) OR Manager (cross-branch authority) reviews**:
    - If approved: Status → `scheduled`, can now enroll students
    - If rejected: Status → `draft`, Academic Staff must fix issues
+   - **Note**: Center Head approves classes for their branch; Manager can approve across all branches
 
 **Result**: Fully scheduled class with 36 sessions, all with assigned rooms/Zoom and teachers, ready for student enrollment
 
@@ -194,7 +207,7 @@ Language training centers face complex operational challenges:
 **Objective**: Register students into classes and auto-generate their personal schedules
 
 **Business Context**:
-A large corporate client (e.g., Viettel) sends 500 employees for training. Center Head divides them across branches by level:
+A large corporate client (e.g., Viettel) sends 500 employees for training. **Manager** (with cross-branch oversight) divides them across branches by level:
 - 100 Beginners → Cầu Giấy branch
 - 150 Intermediate → Hoàn Kiếm branch
 - 250 Advanced → distributed across 3 branches
@@ -542,7 +555,7 @@ Each branch's Academic Staff receives their student list and creates classes acc
 
 ---
 
-### **3.7 Bulk Class Schedule Reschedule** (Academic Staff/Center Head)
+### **3.7 Bulk Class Schedule Reschedule** (Academic Staff with Center Head approval)
 **Scenario**: Entire class needs to change schedule (e.g., from morning to afternoon, or change one weekday)
 
 **Example 1**: Change entire class from "Morning 1 (08:00-10:30)" to "Afternoon 2 (14:00-16:30)" starting Feb 15
@@ -629,7 +642,7 @@ Each branch's Academic Staff receives their student list and creates classes acc
    - action_items: "Remind teacher to follow course materials"
    - status: open/in_progress/resolved/closed
 3. QA team follows up until resolved
-4. Manager reviews QA reports in dashboard
+4. Manager (system-wide) and Center Head (branch-level) review QA reports in their respective dashboards
 
 **Result**: Data-driven quality monitoring, issues tracked to resolution, teacher performance evaluated
 
@@ -663,8 +676,8 @@ Each branch's Academic Staff receives their student list and creates classes acc
 - **Detection**: System checks conflicts **before** assignment, blocks if conflict found
 
 ### **4.5 Approval Workflow**
-- **Course Approval**: Subject Leader designs → Manager/Center Head approves → can be used
-- **Class Approval**: Academic Staff creates → Center Head/Manager approves → can enroll students
+- **Course Approval**: Subject Leader designs → **Manager** approves (strategic curriculum decision) → can be used across system
+- **Class Approval**: Academic Staff creates → **Center Head** (branch) OR **Manager** (cross-branch) approves → can enroll students
 - **Request Approval**: Student/Teacher submits → Academic Staff approves → system executes
 
 ### **4.6 Data Integrity (No Deletion)**
@@ -678,7 +691,7 @@ Each branch's Academic Staff receives their student list and creates classes acc
 ### **4.7 Attendance Lock**
 - **Rule**: After T hours (e.g., 24 hours) after session ends, attendance is locked
 - **Rationale**: Prevent retroactive changes, ensure reports are stable
-- **Exception**: Admin/Manager can unlock for valid reasons (with audit log)
+- **Exception**: Admin or Manager can unlock for valid reasons (with audit log)
 
 ### **4.8 Request Lead Time**
 - **Rule**: Students must submit absence/transfer requests at least X days before session
@@ -744,9 +757,9 @@ Each branch's Academic Staff receives their student list and creates classes acc
 **Impact**: Higher operational costs, teacher dissatisfaction
 
 **Current Mitigation**:
-- Manager/Center Head has cross-branch visibility via dashboard
-- Can reassign teachers across branches via user_branches
-- Can suggest students transfer to less crowded branch
+- **Manager** has cross-branch visibility via executive dashboard
+- Manager can reassign teachers across branches via user_branches
+- Manager can coordinate student transfers to less crowded branches
 
 **Remaining Challenge**: No automated load balancing; requires manual management oversight
 

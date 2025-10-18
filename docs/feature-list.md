@@ -10,9 +10,9 @@ Phiên bản cập nhật dựa trên database schema thực tế và luồng ng
    1.1.4 Hệ thống audit log người gán quyền (assigned_by) và thời điểm (assigned_at)
    1.2 Role-Based Access Control (RBAC)
    1.2.1 Hệ thống kiểm tra quyền truy cập dựa trên role và branch assignment
-   1.2.2 Manager có quyền xem/quản lý toàn bộ branch thuộc center của mình
-   1.2.3 Center Head có quyền quản lý một branch cụ thể (class, resource, enrollment)
-   1.2.4 Academic Staff có quyền vận hành hằng ngày tại branch (ghi danh, tạo lớp, xử lý request)
+   1.2.2 Manager có quyền xem/quản lý toàn bộ hệ thống hoặc nhiều branch (multi-branch oversight, strategic operations)
+   1.2.3 Center Head có quyền quản lý trực tiếp MỘT branch cụ thể (class, resource, enrollment, daily operations)
+   1.2.4 Academic Staff có quyền vận hành hằng ngày tại branch được phân công (ghi danh, tạo lớp, xử lý request)
 
 2. Organization & Infrastructure
    Mục tiêu: Quản lý cấu trúc tổ chức (center → branch), tài nguyên (phòng/zoom), và khung giờ học.
@@ -41,7 +41,7 @@ Phiên bản cập nhật dựa trên database schema thực tế và luồng ng
    3.2.1 Subject Leader tạo Course thuộc Subject + Level (code unique, version, total_hours, duration_weeks, session_per_week, hours_per_session)
    3.2.2 Subject Leader điền thông tin chi tiết (description, prerequisites, target_audience, teaching_methods, effective_date)
    3.2.3 Hệ thống lưu hash_checksum để phát hiện thay đổi nội dung
-   3.2.4 Subject Leader gửi duyệt course → Manager/Center Head phê duyệt (approved_by_manager, approved_at) hoặc từ chối (rejection_reason)
+   3.2.4 Subject Leader gửi duyệt course → Manager phê duyệt (strategic curriculum decision - approved_by_manager, approved_at) hoặc từ chối (rejection_reason)
    3.2.5 Chỉ course đã được duyệt mới được sử dụng để mở lớp
    3.3 Course Structure (Phase & Session Template)
    3.3.1 Subject Leader chia Course thành các Phase (phase_number unique theo course, name, duration_weeks, learning_focus, sort_order)
@@ -90,7 +90,7 @@ Phiên bản cập nhật dựa trên database schema thực tế và luồng ng
    4.4.3 Academic Staff phân công teacher OT → hệ thống tự động tạo teacher_request(type='ot', status='approved') để ghi nhận cho tính lương
 
 5. Class & Session Management
-   Mục tiêu: Academic Staff tạo lớp dựa trên course template, sinh tự động session, phân công teacher và resource; Center Head/Manager duyệt.
+   Mục tiêu: Academic Staff tạo lớp dựa trên course template, sinh tự động session, phân công teacher và resource; Center Head (branch-level) hoặc Manager (cross-branch) duyệt.
    5.1 Class Creation
    5.1.1 Academic Staff tạo class mới:
    Chọn branch, course (đã được duyệt)
@@ -135,11 +135,11 @@ Phiên bản cập nhật dựa trên database schema thực tế và luồng ng
    5.4.3 Constraint: primary key (session_id, teacher_id, skill) đảm bảo không trùng kỹ năng trong một session
    5.5 Class Approval Workflow
    5.5.1 Academic Staff submit class để duyệt (cập nhật submitted_at)
-   5.5.2 Manager/Center Head review và phê duyệt (cập nhật approved_by, approved_at, status='scheduled')
+   5.5.2 Center Head (for their branch) hoặc Manager (cross-branch authority) review và phê duyệt (cập nhật approved_by, approved_at, status='scheduled')
    5.5.3 Nếu từ chối, điền rejection_reason và trả lại status='draft'
    5.5.4 Chỉ class đã được approved mới có thể ghi danh học viên
    5.6 Class Schedule Modification (Reschedule)
-   5.6.1 Academic Staff/Center Head có thể đổi lịch toàn bộ buổi học của class:
+   5.6.1 Academic Staff (với Center Head approval) có thể đổi lịch toàn bộ buổi học của class:
    Chọn khung giờ mới từ time_slot_template
    Chọn ngày hiệu lực (effective_date)
    Chọn target_dow (nếu chỉ đổi một ngày trong tuần) hoặc NULL (đổi tất cả)
@@ -206,7 +206,7 @@ Phiên bản cập nhật dựa trên database schema thực tế và luồng ng
    7.4.3 Hệ thống hiển thị điểm/nhận xét cho student theo policy (hiển thị ngay hoặc sau khi kết thúc phase)
 
 8. Request & Approval Flows
-   Mục tiêu: Xử lý các yêu cầu thay đổi lịch học từ Student và Teacher; Academic Staff/Manager duyệt; hệ thống tự động cập nhật dữ liệu.
+   Mục tiêu: Xử lý các yêu cầu thay đổi lịch học từ Student và Teacher; Academic Staff (operational) hoặc Center Head/Manager (escalated) duyệt; hệ thống tự động cập nhật dữ liệu.
    8.1 Student Requests
    8.1.1 Absence Request
    Student tạo student_request(type='absence', target_session_id, reason)
@@ -252,7 +252,7 @@ Phiên bản cập nhật dựa trên database schema thực tế và luồng ng
    8.2 Teacher Requests
    8.2.1 Leave Request (Xin nghỉ)
    Step 1: Teacher tạo teacher_request(type='leave', session_id, reason)
-   Step 2: Academic Staff/Manager tìm giải pháp:
+   Step 2: Academic Staff tìm giải pháp (có thể escalate lên Center Head nếu phức tạp):
    Option A: Tìm giáo viên thay thế
    Hệ thống gợi ý teacher khả dụng (call function find_available_substitute_teachers):
    Skill khớp với course_session.skill_set
@@ -317,7 +317,7 @@ Phiên bản cập nhật dựa trên database schema thực tế và luồng ng
    9.3 Student Feedback (Voice-of-Student)
    9.3.1 Student đánh giá sau buổi học hoặc sau phase:
    Insert student_feedback(student_id, session_id, phase_id, rating 1-5, comment, submitted_at)
-   9.3.2 Hệ thống tổng hợp rating theo lớp/phase để QA và Manager review
+   9.3.2 Hệ thống tổng hợp rating theo lớp/phase để QA, Center Head và Manager review
    9.3.3 QA sử dụng feedback để đánh giá chất lượng giảng dạy và đề xuất cải thiện
    9.4 QA Report Management
    9.4.1 QA tạo qa_report để ghi nhận vấn đề:
@@ -328,7 +328,7 @@ Phiên bản cập nhật dựa trên database schema thực tế và luồng ng
    action_items (hành động khắc phục)
    9.4.2 QA theo dõi tiến độ lớp vs syllabus (session đã dạy vs course_session expected)
    9.4.3 QA đánh giá teacher theo tiêu chí (thái độ, phương pháp, tuân thủ syllabus)
-   9.4.4 QA tổng hợp báo cáo định kỳ gửi Manager/Center Head
+   9.4.4 QA tổng hợp báo cáo định kỳ gửi Center Head (branch-level) và Manager (system-wide)
 
 10. Reporting & Analytics
     Mục tiêu: Cung cấp dashboard và báo cáo cho các cấp quản lý (Manager, Center Head) để theo dõi KPI và ra quyết định.
@@ -384,17 +384,20 @@ Phiên bản cập nhật dựa trên database schema thực tế và luồng ng
     10.8.2 Thống kê request theo status: pending/approved/rejected/cancelled
     10.8.3 Tỷ lệ chấp thuận/từ chối theo loại request và theo approver
     10.9 Executive Dashboards
-    10.9.1 Center Head Dashboard:
-    Tổng quan: số branch, số lớp đang chạy, tổng học viên
-    Top 3 branch theo enrollment/revenue/attendance rate
-    Trend: enrollment, attendance rate, CLO attainment theo tháng
-    10.9.2 Manager Dashboard:
-    Vận hành ngày: lớp cần điểm danh, conflict cần giải quyết
-    Cảnh báo: teacher vượt ngưỡng nghỉ/đổi, lớp fill rate thấp, học viên sắp vượt ngưỡng nghỉ
-    Hiệu suất: utilization phòng/zoom, tiến độ lớp vs syllabus
+    10.9.1 Center Head Dashboard (Branch-Level):
+    Tổng quan: số lớp đang chạy tại branch, tổng học viên tại branch
+    Performance: fill rate, attendance rate, teacher workload tại branch
+    Vận hành ngày: lớp cần điểm danh, conflict cần giải quyết (branch-specific)
+    Trend: enrollment, attendance rate, CLO attainment theo tháng (branch-specific)
+    10.9.2 Manager Dashboard (System-Wide/Multi-Branch):
+    Tổng quan: tất cả branches, tổng lớp, tổng học viên toàn hệ thống
+    Top 3 branch theo enrollment/revenue/attendance rate (cross-branch comparison)
+    Cảnh báo: teacher vượt ngưỡng nghỉ/đổi, lớp fill rate thấp, học viên sắp vượt ngưỡng nghỉ (system-wide)
+    Hiệu suất: utilization phòng/zoom, tiến độ lớp vs syllabus (aggregated across branches)
+    Strategic KPIs: cross-branch resource allocation, teacher workload distribution
     10.10 Export & Scheduling
     10.10.1 Export CSV/Excel cho tất cả báo cáo
-    10.10.2 Lịch gửi báo cáo tự động qua email (daily/weekly) cho Manager/Center Head
+    10.10.2 Lịch gửi báo cáo tự động qua email (daily/weekly) cho Center Head (branch reports) và Manager (system-wide reports)
     10.10.3 Subscribe to alerts: email/SMS khi có cảnh báo (conflict, low attendance, missing report)
 
 11. System Configuration & Integration
@@ -421,7 +424,7 @@ Phiên bản cập nhật dựa trên database schema thực tế và luồng ng
     11.4 Authentication & Authorization
     11.4.1 Tích hợp OAuth2/SSO nếu cần (Google, Microsoft)
     11.4.2 JWT-based authentication cho API
-    11.4.3 Multi-factor authentication cho role nhạy cảm (Admin, Center Head)
+    11.4.3 Multi-factor authentication cho role nhạy cảm (Admin, Manager, Center Head)
     11.4.4 Session management: logout khỏi tất cả thiết bị, force logout khi đổi mật khẩu
     11.5 Audit Trail & Logging
     11.5.1 Hệ thống log mọi thao tác quan trọng:
@@ -432,7 +435,7 @@ Phiên bản cập nhật dựa trên database schema thực tế và luồng ng
     Teacher/resource assignment: created_by trong các bảng liên quan
     11.5.2 Audit log table (tùy chọn nếu cần chi tiết hơn):
     user_id, action_type, entity_type, entity_id, old_value, new_value, timestamp
-    11.5.3 Admin/Manager có thể query audit log để điều tra sự cố
+    11.5.3 Admin và Manager có thể query audit log toàn hệ thống để điều tra sự cố; Center Head có thể query audit log của branch mình
     11.6 Backup & Data Retention
     11.6.1 Daily backup database tự động
     11.6.2 Soft delete policy: không xoá student_session, enrollment quá khứ (chỉ đánh dấu status)
