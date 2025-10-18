@@ -1,0 +1,321 @@
+openapi: 3.0.3
+
+info:
+  title: Education Management System (EMS) API
+  version: 1.0.0
+  description: |
+    RESTful API for Education Management System designed for language training centers.
+
+    **Features:**
+    - Multi-tenant operations (Centers → Branches)
+    - Course curriculum management
+    - Class scheduling with conflict detection
+    - Teacher & student management
+    - Attendance tracking
+    - Assessment & scoring
+    - Request workflows (teacher leave, student makeup, transfers)
+    - Comprehensive reporting & dashboards
+
+    **Session-First Design:**
+    Sessions are the source of truth for all schedule-related operations. Changes at the session level
+    automatically propagate to related entities (students, teachers, resources).
+
+    **Tech Stack:**
+    - Spring Boot 3.5.6
+    - Java 21
+    - PostgreSQL 16
+    - JWT Authentication
+
+  contact:
+    name: EMS Development Team
+    email: support@ems.example.com
+  license:
+    name: Proprietary
+    url: https://ems.example.com/license
+
+servers:
+  - url: https://api.ems.example.com/v1
+    description: Production server
+  - url: https://api-staging.ems.example.com/v1
+    description: Staging server
+  - url: http://localhost:8080/v1
+    description: Local development server
+
+security:
+  - BearerAuth: []
+
+tags:
+  - name: Authentication
+    description: Authentication and authorization operations
+  - name: Branches
+    description: Branch management operations
+  - name: Time Slots
+    description: Time slot template management
+  - name: Resources
+    description: Resource (rooms & virtual) management
+  - name: Subjects
+    description: Subject management
+  - name: Levels
+    description: Level management
+  - name: Courses
+    description: Course management and approval workflows
+  - name: Course Phases
+    description: Course phase management
+  - name: Course Sessions
+    description: Course session templates
+  - name: PLO & CLO
+    description: Program and Course Learning Outcomes
+  - name: Course Materials
+    description: Course material uploads
+  - name: Classes
+    description: Class management and scheduling
+  - name: Sessions
+    description: Session management and assignments
+  - name: Teachers
+    description: Teacher profile and operations
+  - name: Students
+    description: Student profile and operations
+  - name: Attendance
+    description: Attendance recording and reporting
+  - name: Assessments
+    description: Assessment and score management
+  - name: Reports
+    description: Analytics and reports
+  - name: Dashboards
+    description: Role-based dashboards
+  - name: Advanced
+    description: Advanced features (webhooks, search, conflicts, audit logs)
+  - name: Notifications
+    description: User notification management
+  - name: System Admin
+    description: System administration (user management, roles, settings)
+  - name: Export
+    description: Data export operations
+
+# Import all module paths
+paths:
+  # Module 1: Authentication & Authorization
+  /auth/login:
+    $ref: './openapi-auth.yaml#/paths/~1auth~1login'
+  /auth/refresh:
+    $ref: './openapi-auth.yaml#/paths/~1auth~1refresh'
+  /auth/logout:
+    $ref: './openapi-auth.yaml#/paths/~1auth~1logout'
+
+  # Module 2: Organization & Resources
+  /branches:
+    $ref: './openapi-org-res.yaml#/paths/~1branches'
+  /branches/{id}:
+    $ref: './openapi-org-res.yaml#/paths/~1branches~1{id}'
+  /branches/{branch_id}/time-slots:
+    $ref: './openapi-org-res.yaml#/paths/~1branches~1{branch_id}~1time-slots'
+  /branches/{branch_id}/time-slots/{id}:
+    $ref: './openapi-org-res.yaml#/paths/~1branches~1{branch_id}~1time-slots~1{id}'
+  /branches/{branch_id}/resources:
+    $ref: './openapi-org-res.yaml#/paths/~1branches~1{branch_id}~1resources'
+  /branches/{branch_id}/resources/{id}:
+    $ref: './openapi-org-res.yaml#/paths/~1branches~1{branch_id}~1resources~1{id}'
+
+  # Module 3: Academic Structure
+  /subjects:
+    $ref: './openapi-academic.yaml#/paths/~1subjects'
+  /subjects/{id}:
+    $ref: './openapi-academic.yaml#/paths/~1subjects~1{id}'
+  /subjects/{subject_id}/levels:
+    $ref: './openapi-academic.yaml#/paths/~1subjects~1{subject_id}~1levels'
+  /subjects/{subject_id}/levels/{id}:
+    $ref: './openapi-academic.yaml#/paths/~1subjects~1{subject_id}~1levels~1{id}'
+  /courses:
+    $ref: './openapi-academic.yaml#/paths/~1courses'
+  /courses/{id}:
+    $ref: './openapi-academic.yaml#/paths/~1courses~1{id}'
+  /courses/{id}/submit:
+    $ref: './openapi-academic.yaml#/paths/~1courses~1{id}~1submit'
+  /courses/{id}/approve:
+    $ref: './openapi-academic.yaml#/paths/~1courses~1{id}~1approve'
+  /courses/{course_id}/phases:
+    $ref: './openapi-academic.yaml#/paths/~1courses~1{course_id}~1phases'
+  /phases/{phase_id}/sessions:
+    $ref: './openapi-academic.yaml#/paths/~1phases~1{phase_id}~1sessions'
+  /subjects/{subject_id}/plos:
+    $ref: './openapi-academic.yaml#/paths/~1subjects~1{subject_id}~1plos'
+  /courses/{course_id}/clos:
+    $ref: './openapi-academic.yaml#/paths/~1courses~1{course_id}~1clos'
+  /courses/{course_id}/materials:
+    $ref: './openapi-academic.yaml#/paths/~1courses~1{course_id}~1materials'
+
+  # Module 4: Class Management
+  /classes:
+    $ref: './openapi-class.yaml#/paths/~1classes'
+  /classes/{id}:
+    $ref: './openapi-class.yaml#/paths/~1classes~1{id}'
+  /classes/{id}/submit:
+    $ref: './openapi-class.yaml#/paths/~1classes~1{id}~1submit'
+  /classes/{id}/approve:
+    $ref: './openapi-class.yaml#/paths/~1classes~1{id}~1approve'
+  /classes/{id}/validate:
+    $ref: './openapi-class.yaml#/paths/~1classes~1{id}~1validate'
+  /classes/{id}/schedule:
+    $ref: './openapi-class.yaml#/paths/~1classes~1{id}~1schedule'
+
+  # Module 5: Session Management
+  /classes/{class_id}/sessions:
+    $ref: './openapi-session.yaml#/paths/~1classes~1{class_id}~1sessions'
+  /sessions/{id}:
+    $ref: './openapi-session.yaml#/paths/~1sessions~1{id}'
+  /sessions/{id}/cancel:
+    $ref: './openapi-session.yaml#/paths/~1sessions~1{id}~1cancel'
+  /sessions/{session_id}/teachers:
+    $ref: './openapi-session.yaml#/paths/~1sessions~1{session_id}~1teachers'
+  /sessions/{session_id}/available-teachers:
+    $ref: './openapi-session.yaml#/paths/~1sessions~1{session_id}~1available-teachers'
+  /sessions/{session_id}/resources:
+    $ref: './openapi-session.yaml#/paths/~1sessions~1{session_id}~1resources'
+  /sessions/{session_id}/available-resources:
+    $ref: './openapi-session.yaml#/paths/~1sessions~1{session_id}~1available-resources'
+
+  # Module 6: Teacher Operations
+  /teachers/{id}:
+    $ref: './openapi-teacher.yaml#/paths/~1teachers~1{id}'
+  /teachers/{id}/skills:
+    $ref: './openapi-teacher.yaml#/paths/~1teachers~1{id}~1skills'
+  /teachers/{id}/availability:
+    $ref: './openapi-teacher.yaml#/paths/~1teachers~1{id}~1availability'
+  /teachers/{id}/availability-overrides:
+    $ref: './openapi-teacher.yaml#/paths/~1teachers~1{id}~1availability-overrides'
+  /teachers/{id}/schedule:
+    $ref: './openapi-teacher.yaml#/paths/~1teachers~1{id}~1schedule'
+  /teachers/{id}/workload:
+    $ref: './openapi-teacher.yaml#/paths/~1teachers~1{id}~1workload'
+  /teachers/{id}/requests:
+    $ref: './openapi-teacher.yaml#/paths/~1teachers~1{id}~1requests'
+  /teacher-requests/{request_id}/approve:
+    $ref: './openapi-teacher.yaml#/paths/~1teacher-requests~1{request_id}~1approve'
+  /teacher-requests/{request_id}/reject:
+    $ref: './openapi-teacher.yaml#/paths/~1teacher-requests~1{request_id}~1reject'
+
+  # Module 7: Student Operations
+  /students:
+    $ref: './openapi-student.yaml#/paths/~1students'
+  /students/{id}:
+    $ref: './openapi-student.yaml#/paths/~1students~1{id}'
+  /students/import:
+    $ref: './openapi-student.yaml#/paths/~1students~1import'
+  /students/{id}/enrollments:
+    $ref: './openapi-student.yaml#/paths/~1students~1{id}~1enrollments'
+  /classes/{class_id}/enrollments:
+    $ref: './openapi-student.yaml#/paths/~1classes~1{class_id}~1enrollments'
+  /classes/{class_id}/enrollments/bulk:
+    $ref: './openapi-student.yaml#/paths/~1classes~1{class_id}~1enrollments~1bulk'
+  /students/{id}/schedule:
+    $ref: './openapi-student.yaml#/paths/~1students~1{id}~1schedule'
+  /students/{id}/requests:
+    $ref: './openapi-student.yaml#/paths/~1students~1{id}~1requests'
+  /students/{id}/requests/absence:
+    $ref: './openapi-student.yaml#/paths/~1students~1{id}~1requests~1absence'
+  /students/{id}/requests/makeup:
+    $ref: './openapi-student.yaml#/paths/~1students~1{id}~1requests~1makeup'
+  /students/{id}/requests/transfer:
+    $ref: './openapi-student.yaml#/paths/~1students~1{id}~1requests~1transfer'
+  /student-requests/{request_id}/approve:
+    $ref: './openapi-student.yaml#/paths/~1student-requests~1{request_id}~1approve'
+  /students/{id}/attendance:
+    $ref: './openapi-student.yaml#/paths/~1students~1{id}~1attendance'
+
+  # Module 8: Attendance & Session Reporting
+  /sessions/{session_id}/attendance:
+    $ref: './openapi-attendance.yaml#/paths/~1sessions~1{session_id}~1attendance'
+  /sessions/{session_id}/students/{student_id}/attendance:
+    $ref: './openapi-attendance.yaml#/paths/~1sessions~1{session_id}~1students~1{student_id}~1attendance'
+  /sessions/{session_id}/report:
+    $ref: './openapi-attendance.yaml#/paths/~1sessions~1{session_id}~1report'
+
+  # Module 9: Assessments & Scores
+  /classes/{class_id}/assessments:
+    $ref: './openapi-assessment.yaml#/paths/~1classes~1{class_id}~1assessments'
+  /assessments/{assessment_id}/scores:
+    $ref: './openapi-assessment.yaml#/paths/~1assessments~1{assessment_id}~1scores'
+  /assessments/{assessment_id}/scores/import:
+    $ref: './openapi-assessment.yaml#/paths/~1assessments~1{assessment_id}~1scores~1import'
+  /students/{id}/feedback:
+    $ref: './openapi-assessment.yaml#/paths/~1students~1{id}~1feedback'
+  /classes/{class_id}/feedback:
+    $ref: './openapi-assessment.yaml#/paths/~1classes~1{class_id}~1feedback'
+
+  # Module 10: Reports & Analytics
+  /reports/enrollments:
+    $ref: './openapi-reports.yaml#/paths/~1reports~1enrollments'
+  /reports/attendance:
+    $ref: './openapi-reports.yaml#/paths/~1reports~1attendance'
+  /reports/class-utilization:
+    $ref: './openapi-reports.yaml#/paths/~1reports~1class-utilization'
+  /reports/teacher-workload:
+    $ref: './openapi-reports.yaml#/paths/~1reports~1teacher-workload'
+  /reports/resource-utilization:
+    $ref: './openapi-reports.yaml#/paths/~1reports~1resource-utilization'
+  /reports/clo-attainment:
+    $ref: './openapi-reports.yaml#/paths/~1reports~1clo-attainment'
+  /reports/feedback-rating:
+    $ref: './openapi-reports.yaml#/paths/~1reports~1feedback-rating'
+  /reports/daily-runsheet:
+    $ref: './openapi-reports.yaml#/paths/~1reports~1daily-runsheet'
+
+  # Module 11: Dashboards
+  /dashboards/center-head:
+    $ref: './openapi-dashboards.yaml#/paths/~1dashboards~1center-head'
+  /dashboards/manager:
+    $ref: './openapi-dashboards.yaml#/paths/~1dashboards~1manager'
+  /dashboards/teacher:
+    $ref: './openapi-dashboards.yaml#/paths/~1dashboards~1teacher'
+  /dashboards/student:
+    $ref: './openapi-dashboards.yaml#/paths/~1dashboards~1student'
+
+  # Module 12: Advanced Features
+  /webhooks:
+    $ref: './openapi-advanced.yaml#/paths/~1webhooks'
+  /search:
+    $ref: './openapi-advanced.yaml#/paths/~1search'
+  /conflicts/check:
+    $ref: './openapi-advanced.yaml#/paths/~1conflicts~1check'
+  /sessions/bulk-update:
+    $ref: './openapi-advanced.yaml#/paths/~1sessions~1bulk-update'
+  /teachers/{teacher_id}/bulk-assign:
+    $ref: './openapi-advanced.yaml#/paths/~1teachers~1{teacher_id}~1bulk-assign'
+  /audit-logs:
+    $ref: './openapi-advanced.yaml#/paths/~1audit-logs'
+
+  # Notifications
+  /notifications:
+    $ref: './openapi-advanced.yaml#/paths/~1notifications'
+  /notifications/{id}/read:
+    $ref: './openapi-advanced.yaml#/paths/~1notifications~1{id}~1read'
+  /notifications/mark-all-read:
+    $ref: './openapi-advanced.yaml#/paths/~1notifications~1mark-all-read'
+
+  # Module 13: System Administration & Health
+  /users:
+    $ref: './openapi-system.yaml#/paths/~1users'
+  /users/{id}:
+    $ref: './openapi-system.yaml#/paths/~1users~1{id}'
+  /users/{id}/reset-password:
+    $ref: './openapi-system.yaml#/paths/~1users~1{id}~1reset-password'
+  /roles:
+    $ref: './openapi-system.yaml#/paths/~1roles'
+  /users/{user_id}/roles:
+    $ref: './openapi-system.yaml#/paths/~1users~1{user_id}~1roles'
+  /users/{user_id}/roles/{role_id}:
+    $ref: './openapi-system.yaml#/paths/~1users~1{user_id}~1roles~1{role_id}'
+  /system/settings:
+    $ref: './openapi-system.yaml#/paths/~1system~1settings'
+  /health:
+    $ref: './openapi-system.yaml#/paths/~1health'
+
+  # Export Operations
+  /classes/{class_id}/export:
+    $ref: './openapi-advanced.yaml#/paths/~1classes~1{class_id}~1export'
+  /reports/{report_type}/export:
+    $ref: './openapi-advanced.yaml#/paths/~1reports~1{report_type}~1export'
+
+# Import shared components
+components:
+  $ref: './openapi-schemas.yaml#/components'

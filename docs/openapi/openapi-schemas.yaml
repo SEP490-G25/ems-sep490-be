@@ -1,0 +1,747 @@
+# OpenAPI Schemas - Shared Components
+# Education Management System (EMS)
+# Version: 1.0
+# This file contains all shared schemas, enums, and reusable components
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT Bearer token authentication
+
+  schemas:
+    # ==================== COMMON SCHEMAS ====================
+
+    Pagination:
+      type: object
+      properties:
+        current_page:
+          type: integer
+          example: 1
+        total_pages:
+          type: integer
+          example: 10
+        total_items:
+          type: integer
+          example: 200
+        limit:
+          type: integer
+          example: 20
+        has_next:
+          type: boolean
+          example: true
+        has_prev:
+          type: boolean
+          example: false
+      required:
+        - current_page
+        - total_pages
+        - total_items
+        - limit
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "validation_error"
+        message:
+          type: string
+          example: "Invalid input data"
+        details:
+          type: object
+          additionalProperties: true
+        timestamp:
+          type: string
+          format: date-time
+      required:
+        - error
+        - message
+
+    # ==================== ENUMS ====================
+
+    SessionStatusEnum:
+      type: string
+      enum:
+        - planned
+        - cancelled
+        - done
+      description: "Status of a session"
+
+    SessionTypeEnum:
+      type: string
+      enum:
+        - CLASS
+        - MAKEUP
+        - EXAM
+        - OTHER
+      description: "Type of session"
+
+    AttendanceStatusEnum:
+      type: string
+      enum:
+        - planned
+        - present
+        - absent
+        - late
+        - excused
+        - remote
+      description: "Attendance status for student session"
+
+    EnrollmentStatusEnum:
+      type: string
+      enum:
+        - enrolled
+        - waitlisted
+        - transferred
+        - dropped
+        - completed
+      description: "Student enrollment status"
+
+    RequestStatusEnum:
+      type: string
+      enum:
+        - pending
+        - approved
+        - rejected
+        - cancelled
+      description: "Status of a request"
+
+    TeacherRequestTypeEnum:
+      type: string
+      enum:
+        - leave
+        - swap
+        - ot
+        - reschedule
+      description: "Type of teacher request"
+
+    StudentRequestTypeEnum:
+      type: string
+      enum:
+        - absence
+        - makeup
+        - transfer
+        - reschedule
+      description: "Type of student request"
+
+    ResourceTypeEnum:
+      type: string
+      enum:
+        - ROOM
+        - VIRTUAL
+      description: "Type of resource (physical room or virtual meeting)"
+
+    ModalityEnum:
+      type: string
+      enum:
+        - OFFLINE
+        - ONLINE
+        - HYBRID
+      description: "Class delivery modality"
+
+    SkillEnum:
+      type: string
+      enum:
+        - general
+        - reading
+        - writing
+        - speaking
+        - listening
+      description: "Teaching skill type"
+
+    TeachingRoleEnum:
+      type: string
+      enum:
+        - primary
+        - assistant
+      description: "Teacher's role in a session"
+
+    BranchStatusEnum:
+      type: string
+      enum:
+        - active
+        - inactive
+        - closed
+        - planned
+      description: "Branch operational status"
+
+    ClassStatusEnum:
+      type: string
+      enum:
+        - draft
+        - scheduled
+        - ongoing
+        - completed
+        - cancelled
+      description: "Class status"
+
+    SubjectStatusEnum:
+      type: string
+      enum:
+        - active
+        - inactive
+      description: "Subject status"
+
+    AssessmentKindEnum:
+      type: string
+      enum:
+        - quiz
+        - midterm
+        - final
+        - assignment
+        - project
+        - oral
+        - practice
+        - other
+      description: "Type of assessment"
+
+    # ==================== SHARED DTOs ====================
+
+    BranchReference:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        code:
+          type: string
+        name:
+          type: string
+      required:
+        - id
+        - code
+        - name
+
+    CourseReference:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        code:
+          type: string
+        name:
+          type: string
+        total_hours:
+          type: number
+          format: float
+      required:
+        - id
+        - code
+        - name
+
+    ClassReference:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        code:
+          type: string
+        name:
+          type: string
+      required:
+        - id
+        - code
+        - name
+
+    TeacherReference:
+      type: object
+      properties:
+        teacher_id:
+          type: integer
+          format: int64
+        teacher_name:
+          type: string
+        employee_code:
+          type: string
+      required:
+        - teacher_id
+        - teacher_name
+
+    StudentReference:
+      type: object
+      properties:
+        student_id:
+          type: integer
+          format: int64
+        student_code:
+          type: string
+        student_name:
+          type: string
+      required:
+        - student_id
+        - student_code
+        - student_name
+
+    ResourceReference:
+      type: object
+      properties:
+        resource_id:
+          type: integer
+          format: int64
+        resource_type:
+          $ref: '#/components/schemas/ResourceTypeEnum'
+        resource_name:
+          type: string
+        capacity:
+          type: integer
+      required:
+        - resource_id
+        - resource_type
+        - resource_name
+
+    # ==================== TIME SLOT ====================
+
+    TimeSlot:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        branch_id:
+          type: integer
+          format: int64
+        name:
+          type: string
+          example: "Slot 1 - Sáng"
+        start_time:
+          type: string
+          format: time
+          example: "08:00:00"
+        end_time:
+          type: string
+          format: time
+          example: "10:30:00"
+        duration_min:
+          type: integer
+          example: 150
+        created_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - branch_id
+        - name
+        - start_time
+        - end_time
+        - duration_min
+
+    # ==================== RESOURCE ====================
+
+    Resource:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        branch_id:
+          type: integer
+          format: int64
+        resource_type:
+          $ref: '#/components/schemas/ResourceTypeEnum'
+        name:
+          type: string
+        location:
+          type: string
+          nullable: true
+          description: "Physical location (for ROOM type)"
+        capacity:
+          type: integer
+          nullable: true
+        equipment:
+          type: string
+          nullable: true
+        meeting_url:
+          type: string
+          nullable: true
+          description: "Meeting URL (for VIRTUAL type)"
+        meeting_id:
+          type: string
+          nullable: true
+        account_email:
+          type: string
+          nullable: true
+        license_type:
+          type: string
+          nullable: true
+        expiry_date:
+          type: string
+          format: date
+          nullable: true
+        is_available:
+          type: boolean
+      required:
+        - id
+        - branch_id
+        - resource_type
+        - name
+
+    # ==================== TEACHER SKILL ====================
+
+    TeacherSkill:
+      type: object
+      properties:
+        skill:
+          $ref: '#/components/schemas/SkillEnum'
+        level:
+          type: integer
+          minimum: 1
+          maximum: 5
+          description: "Proficiency level (1-5)"
+      required:
+        - skill
+        - level
+
+    # ==================== TEACHER AVAILABILITY ====================
+
+    TeacherAvailability:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        day_of_week:
+          type: integer
+          minimum: 1
+          maximum: 7
+          description: "Day of week (1=Monday, 7=Sunday)"
+        start_time:
+          type: string
+          format: time
+        end_time:
+          type: string
+          format: time
+        note:
+          type: string
+          nullable: true
+      required:
+        - id
+        - day_of_week
+        - start_time
+        - end_time
+
+    TeacherAvailabilityOverride:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        date:
+          type: string
+          format: date
+        start_time:
+          type: string
+          format: time
+        end_time:
+          type: string
+          format: time
+        is_available:
+          type: boolean
+        reason:
+          type: string
+      required:
+        - id
+        - date
+        - is_available
+
+    # ==================== ATTENDANCE SUMMARY ====================
+
+    AttendanceSummary:
+      type: object
+      properties:
+        total_students:
+          type: integer
+        present:
+          type: integer
+        absent:
+          type: integer
+        late:
+          type: integer
+        excused:
+          type: integer
+        planned:
+          type: integer
+          nullable: true
+        remote:
+          type: integer
+          nullable: true
+        attendance_rate:
+          type: number
+          format: float
+          nullable: true
+      required:
+        - total_students
+        - present
+        - absent
+        - late
+        - excused
+
+    # ==================== CONFLICT ====================
+
+    Conflict:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - resource_conflict
+            - teacher_conflict
+            - capacity_exceeded
+          description: "Type of conflict"
+        session_id:
+          type: integer
+          format: int64
+          nullable: true
+        date:
+          type: string
+          format: date
+          nullable: true
+        start_time:
+          type: string
+          format: time
+          nullable: true
+        end_time:
+          type: string
+          format: time
+          nullable: true
+        resource_id:
+          type: integer
+          format: int64
+          nullable: true
+        resource_name:
+          type: string
+          nullable: true
+        teacher_id:
+          type: integer
+          format: int64
+          nullable: true
+        teacher_name:
+          type: string
+          nullable: true
+        conflicting_class_id:
+          type: integer
+          format: int64
+          nullable: true
+        conflicting_class_code:
+          type: string
+          nullable: true
+        conflicting_session_id:
+          type: integer
+          format: int64
+          nullable: true
+        message:
+          type: string
+          nullable: true
+      required:
+        - type
+
+    # ==================== COURSE SESSION REFERENCE ====================
+
+    CourseSessionReference:
+      type: object
+      properties:
+        sequence_no:
+          type: integer
+        topic:
+          type: string
+        skill_set:
+          type: array
+          items:
+            $ref: '#/components/schemas/SkillEnum'
+      required:
+        - sequence_no
+        - topic
+
+  # ==================== COMMON PARAMETERS ====================
+
+  parameters:
+    PageParam:
+      name: page
+      in: query
+      description: "Page number (starts from 1)"
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+
+    LimitParam:
+      name: limit
+      in: query
+      description: "Number of items per page"
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+
+    SortByParam:
+      name: sort_by
+      in: query
+      description: "Field name to sort by"
+      schema:
+        type: string
+
+    SortOrderParam:
+      name: sort_order
+      in: query
+      description: "Sort order"
+      schema:
+        type: string
+        enum:
+          - asc
+          - desc
+        default: asc
+
+    DateFromParam:
+      name: date_from
+      in: query
+      description: "Start date filter (YYYY-MM-DD)"
+      schema:
+        type: string
+        format: date
+
+    DateToParam:
+      name: date_to
+      in: query
+      description: "End date filter (YYYY-MM-DD)"
+      schema:
+        type: string
+        format: date
+
+    BranchIdParam:
+      name: branch_id
+      in: query
+      description: "Filter by branch ID"
+      schema:
+        type: integer
+        format: int64
+
+  # ==================== COMMON RESPONSES ====================
+
+  responses:
+    UnauthorizedError:
+      description: "Authentication required"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "unauthorized"
+            message: "Authentication required"
+            timestamp: "2025-01-15T10:30:00Z"
+
+    ForbiddenError:
+      description: "Insufficient permissions"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "forbidden"
+            message: "You do not have permission to perform this action"
+            required_role: "MANAGER"
+            timestamp: "2025-01-15T10:30:00Z"
+
+    NotFoundError:
+      description: "Resource not found"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "not_found"
+            message: "Resource not found"
+            timestamp: "2025-01-15T10:30:00Z"
+
+    ValidationError:
+      description: "Invalid input data"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "validation_error"
+            message: "Invalid input data"
+            details:
+              email: "Invalid email format"
+              start_date: "Start date must be before end date"
+            timestamp: "2025-01-15T10:30:00Z"
+
+    ConflictError:
+      description: "Resource conflict"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "capacity_exceeded"
+            message: "Class is at maximum capacity"
+            max_capacity: 25
+            current_enrollment: 25
+            timestamp: "2025-01-15T10:30:00Z"
+
+    BusinessLogicError:
+      description: "Business logic error"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              message:
+                type: string
+              conflicts:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Conflict'
+              timestamp:
+                type: string
+                format: date-time
+          example:
+            error: "business_logic_error"
+            message: "Cannot approve class with unresolved conflicts"
+            conflicts:
+              - type: "resource_conflict"
+                session_id: 15
+                resource_id: 1
+                message: "Room 101 is already booked for this time slot"
+            timestamp: "2025-01-15T10:30:00Z"
+
+    InternalServerError:
+      description: "Internal server error"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "internal_server_error"
+            message: "An unexpected error occurred. Please try again later."
+            request_id: "req_abc123xyz"
+            timestamp: "2025-01-15T10:30:00Z"
+
+    RateLimitError:
+      description: "Rate limit exceeded"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              message:
+                type: string
+              retry_after:
+                type: integer
+              timestamp:
+                type: string
+                format: date-time
+          example:
+            error: "rate_limit_exceeded"
+            message: "Too many requests. Please try again later."
+            retry_after: 3600
+            timestamp: "2025-01-15T10:30:00Z"

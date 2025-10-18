@@ -1,0 +1,340 @@
+# Module 8: Attendance & Session Reporting
+# OpenAPI specification for attendance recording and session reporting
+
+paths:
+  /sessions/{session_id}/attendance:
+    get:
+      tags:
+        - Attendance
+      summary: Get session attendance list
+      operationId: getSessionAttendance
+      parameters:
+        - name: session_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Session attendance list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionAttendanceDTO'
+
+    post:
+      tags:
+        - Attendance
+      summary: Record attendance
+      description: Record attendance for all students in session (TEACHER role)
+      operationId: recordAttendance
+      parameters:
+        - name: session_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecordAttendanceRequest'
+      responses:
+        '200':
+          description: Attendance recorded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceRecordResponse'
+
+  /sessions/{session_id}/students/{student_id}/attendance:
+    put:
+      tags:
+        - Attendance
+      summary: Update single student attendance
+      description: Update individual student's attendance status (TEACHER role)
+      operationId: updateStudentAttendance
+      parameters:
+        - name: session_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: student_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                attendance_status:
+                  $ref: './openapi-schemas.yaml#/components/schemas/AttendanceStatusEnum'
+                note:
+                  type: string
+              required:
+                - attendance_status
+      responses:
+        '200':
+          description: Attendance updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  student_session_id:
+                    type: integer
+                    format: int64
+                  student_id:
+                    type: integer
+                    format: int64
+                  session_id:
+                    type: integer
+                    format: int64
+                  attendance_status:
+                    $ref: './openapi-schemas.yaml#/components/schemas/AttendanceStatusEnum'
+                  note:
+                    type: string
+                  recorded_at:
+                    type: string
+                    format: date-time
+
+  /sessions/{session_id}/report:
+    get:
+      tags:
+        - Attendance
+      summary: Get session report
+      operationId: getSessionReport
+      parameters:
+        - name: session_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Session report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionReportDTO'
+
+    post:
+      tags:
+        - Attendance
+      summary: Submit session report
+      description: Submit teaching report after session (TEACHER role)
+      operationId: submitSessionReport
+      parameters:
+        - name: session_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitSessionReportRequest'
+      responses:
+        '200':
+          description: Session report submitted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  session_id:
+                    type: integer
+                    format: int64
+                  status:
+                    type: string
+                  teacher_note:
+                    type: string
+                  reported_at:
+                    type: string
+                    format: date-time
+                  message:
+                    type: string
+
+components:
+  schemas:
+    SessionAttendanceDTO:
+      type: object
+      properties:
+        session_id:
+          type: integer
+          format: int64
+        class:
+          $ref: './openapi-schemas.yaml#/components/schemas/ClassReference'
+        date:
+          type: string
+          format: date
+        start_time:
+          type: string
+          format: time
+        end_time:
+          type: string
+          format: time
+        status:
+          $ref: './openapi-schemas.yaml#/components/schemas/SessionStatusEnum'
+        students:
+          type: array
+          items:
+            type: object
+            properties:
+              student_session_id:
+                type: integer
+                format: int64
+              student_id:
+                type: integer
+                format: int64
+              student_code:
+                type: string
+              student_name:
+                type: string
+              is_makeup:
+                type: boolean
+              attendance_status:
+                $ref: './openapi-schemas.yaml#/components/schemas/AttendanceStatusEnum'
+              note:
+                type: string
+                nullable: true
+              recorded_at:
+                type: string
+                format: date-time
+                nullable: true
+        summary:
+          $ref: './openapi-schemas.yaml#/components/schemas/AttendanceSummary'
+
+    RecordAttendanceRequest:
+      type: object
+      properties:
+        attendances:
+          type: array
+          items:
+            type: object
+            properties:
+              student_id:
+                type: integer
+                format: int64
+              attendance_status:
+                $ref: './openapi-schemas.yaml#/components/schemas/AttendanceStatusEnum'
+              note:
+                type: string
+                nullable: true
+            required:
+              - student_id
+              - attendance_status
+      required:
+        - attendances
+
+    AttendanceRecordResponse:
+      type: object
+      properties:
+        session_id:
+          type: integer
+          format: int64
+        total_students:
+          type: integer
+        recorded:
+          type: integer
+        summary:
+          $ref: './openapi-schemas.yaml#/components/schemas/AttendanceSummary'
+        recorded_at:
+          type: string
+          format: date-time
+        message:
+          type: string
+
+    SubmitSessionReportRequest:
+      type: object
+      properties:
+        status:
+          $ref: './openapi-schemas.yaml#/components/schemas/SessionStatusEnum'
+        actual_start_time:
+          type: string
+          format: time
+        actual_end_time:
+          type: string
+          format: time
+        content_covered:
+          type: string
+        homework_assigned:
+          type: string
+        notes:
+          type: string
+        next_session_preparation:
+          type: string
+      required:
+        - status
+
+    SessionReportDTO:
+      type: object
+      properties:
+        session_id:
+          type: integer
+          format: int64
+        class:
+          $ref: './openapi-schemas.yaml#/components/schemas/ClassReference'
+        date:
+          type: string
+          format: date
+        planned_time:
+          type: object
+          properties:
+            start:
+              type: string
+              format: time
+            end:
+              type: string
+              format: time
+        actual_time:
+          type: object
+          properties:
+            start:
+              type: string
+              format: time
+            end:
+              type: string
+              format: time
+        status:
+          $ref: './openapi-schemas.yaml#/components/schemas/SessionStatusEnum'
+        course_session:
+          $ref: './openapi-schemas.yaml#/components/schemas/CourseSessionReference'
+        attendance_summary:
+          $ref: './openapi-schemas.yaml#/components/schemas/AttendanceSummary'
+        report:
+          type: object
+          properties:
+            content_covered:
+              type: string
+            homework_assigned:
+              type: string
+            notes:
+              type: string
+            next_session_preparation:
+              type: string
+            reported_by:
+              type: object
+              properties:
+                teacher_id:
+                  type: integer
+                  format: int64
+                teacher_name:
+                  type: string
+            reported_at:
+              type: string
+              format: date-time

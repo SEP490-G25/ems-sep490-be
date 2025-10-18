@@ -1,0 +1,222 @@
+# Module 11: Dashboards
+# OpenAPI specification for role-based dashboards
+
+paths:
+  /dashboards/center-head:
+    get:
+      tags:
+        - Dashboards
+      summary: Get center head dashboard
+      description: Dashboard for branch managers with operational overview
+      operationId: getCenterHeadDashboard
+      parameters:
+        - name: branch_id
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: date
+          in: query
+          schema:
+            type: string
+            format: date
+            default: today
+      responses:
+        '200':
+          description: Center head dashboard data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CenterHeadDashboardDTO'
+
+  /dashboards/manager:
+    get:
+      tags:
+        - Dashboards
+      summary: Get manager dashboard
+      description: Executive dashboard with KPIs and analytics
+      operationId: getManagerDashboard
+      parameters:
+        - name: center_id
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: period
+          in: query
+          schema:
+            type: string
+            enum: [week, month, quarter]
+            default: month
+      responses:
+        '200':
+          description: Manager dashboard data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ManagerDashboardDTO'
+
+  /dashboards/teacher:
+    get:
+      tags:
+        - Dashboards
+      summary: Get teacher dashboard
+      description: Teacher's personal dashboard with schedule and tasks
+      operationId: getTeacherDashboard
+      parameters:
+        - name: teacher_id
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: date
+          in: query
+          schema:
+            type: string
+            format: date
+            default: today
+      responses:
+        '200':
+          description: Teacher dashboard data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeacherDashboardDTO'
+
+  /dashboards/student:
+    get:
+      tags:
+        - Dashboards
+      summary: Get student dashboard
+      description: Student's personal dashboard with schedule and progress
+      operationId: getStudentDashboard
+      parameters:
+        - name: student_id
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Student dashboard data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentDashboardDTO'
+
+components:
+  schemas:
+    CenterHeadDashboardDTO:
+      type: object
+      properties:
+        branch:
+          type: object
+        date:
+          type: string
+          format: date
+        overview:
+          type: object
+          properties:
+            active_classes:
+              type: integer
+            total_students:
+              type: integer
+            total_teachers:
+              type: integer
+            sessions_today:
+              type: integer
+        today_schedule:
+          type: object
+        resource_utilization:
+          type: object
+        attendance_this_week:
+          type: object
+        pending_requests:
+          type: object
+        alerts:
+          type: array
+          items:
+            type: object
+        conflicts:
+          type: array
+          items:
+            $ref: './openapi-schemas.yaml#/components/schemas/Conflict'
+
+    ManagerDashboardDTO:
+      type: object
+      properties:
+        center:
+          type: object
+        period:
+          type: string
+        date_range:
+          type: object
+        overview:
+          type: object
+        by_branch:
+          type: array
+          items:
+            type: object
+        kpis:
+          type: object
+        trends:
+          type: object
+        top_teachers:
+          type: array
+          items:
+            type: object
+        pending_approvals:
+          type: object
+
+    TeacherDashboardDTO:
+      type: object
+      properties:
+        teacher:
+          type: object
+        date:
+          type: string
+          format: date
+        today_schedule:
+          type: array
+          items:
+            type: object
+        this_week_summary:
+          type: object
+        pending_tasks:
+          type: array
+          items:
+            type: object
+        my_classes:
+          type: array
+          items:
+            type: object
+        requests:
+          type: object
+
+    StudentDashboardDTO:
+      type: object
+      properties:
+        student:
+          type: object
+        current_classes:
+          type: array
+          items:
+            type: object
+        upcoming_sessions:
+          type: array
+          items:
+            type: object
+        recent_scores:
+          type: array
+          items:
+            type: object
+        alerts:
+          type: array
+          items:
+            type: object
+        pending_requests:
+          type: integer

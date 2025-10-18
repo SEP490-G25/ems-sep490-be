@@ -1,0 +1,598 @@
+# Module 13: System Administration & Health
+# OpenAPI specification for user management, roles, system settings, and health monitoring
+
+paths:
+  # ==================== USER MANAGEMENT ====================
+
+  /users:
+    get:
+      tags:
+        - System Admin
+      summary: Get all users
+      description: Get all users (ADMIN role)
+      operationId: getAllUsers
+      parameters:
+        - name: role
+          in: query
+          description: Filter by role code
+          schema:
+            type: string
+        - $ref: './openapi-schemas.yaml#/components/parameters/BranchIdParam'
+        - name: status
+          in: query
+          description: Filter by status
+          schema:
+            type: string
+            enum: [active, inactive, pending]
+        - $ref: './openapi-schemas.yaml#/components/parameters/PageParam'
+        - $ref: './openapi-schemas.yaml#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/UserDTO'
+                  pagination:
+                    $ref: './openapi-schemas.yaml#/components/schemas/Pagination'
+        '401':
+          $ref: './openapi-schemas.yaml#/components/responses/UnauthorizedError'
+        '403':
+          $ref: './openapi-schemas.yaml#/components/responses/ForbiddenError'
+
+    post:
+      tags:
+        - System Admin
+      summary: Create user
+      description: Create new user (ADMIN role)
+      operationId: createUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateUserResponse'
+        '400':
+          $ref: './openapi-schemas.yaml#/components/responses/ValidationError'
+        '401':
+          $ref: './openapi-schemas.yaml#/components/responses/UnauthorizedError'
+        '403':
+          $ref: './openapi-schemas.yaml#/components/responses/ForbiddenError'
+
+  /users/{id}:
+    put:
+      tags:
+        - System Admin
+      summary: Update user
+      description: Update user information (ADMIN role)
+      operationId: updateUser
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+      responses:
+        '200':
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDTO'
+        '400':
+          $ref: './openapi-schemas.yaml#/components/responses/ValidationError'
+        '401':
+          $ref: './openapi-schemas.yaml#/components/responses/UnauthorizedError'
+        '403':
+          $ref: './openapi-schemas.yaml#/components/responses/ForbiddenError'
+        '404':
+          $ref: './openapi-schemas.yaml#/components/responses/NotFoundError'
+
+  /users/{id}/reset-password:
+    post:
+      tags:
+        - System Admin
+      summary: Reset user password
+      description: Reset user password (ADMIN role)
+      operationId: resetUserPassword
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Password reset successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user_id:
+                    type: integer
+                    format: int64
+                  temporary_password:
+                    type: string
+                  expires_at:
+                    type: string
+                    format: date-time
+                  message:
+                    type: string
+        '401':
+          $ref: './openapi-schemas.yaml#/components/responses/UnauthorizedError'
+        '403':
+          $ref: './openapi-schemas.yaml#/components/responses/ForbiddenError'
+        '404':
+          $ref: './openapi-schemas.yaml#/components/responses/NotFoundError'
+
+  # ==================== ROLE MANAGEMENT ====================
+
+  /roles:
+    get:
+      tags:
+        - System Admin
+      summary: Get all roles
+      description: Get all system roles (ADMIN role)
+      operationId: getAllRoles
+      responses:
+        '200':
+          description: List of roles
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/RoleDTO'
+        '401':
+          $ref: './openapi-schemas.yaml#/components/responses/UnauthorizedError'
+        '403':
+          $ref: './openapi-schemas.yaml#/components/responses/ForbiddenError'
+
+  /users/{user_id}/roles:
+    post:
+      tags:
+        - System Admin
+      summary: Assign role to user
+      description: Assign role to user (ADMIN role)
+      operationId: assignRoleToUser
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                role_id:
+                  type: integer
+                  format: int64
+              required:
+                - role_id
+      responses:
+        '201':
+          description: Role assigned successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user_id:
+                    type: integer
+                    format: int64
+                  role_id:
+                    type: integer
+                    format: int64
+                  role_code:
+                    type: string
+                  assigned_at:
+                    type: string
+                    format: date-time
+        '400':
+          $ref: './openapi-schemas.yaml#/components/responses/ValidationError'
+        '401':
+          $ref: './openapi-schemas.yaml#/components/responses/UnauthorizedError'
+        '403':
+          $ref: './openapi-schemas.yaml#/components/responses/ForbiddenError'
+        '404':
+          $ref: './openapi-schemas.yaml#/components/responses/NotFoundError'
+
+  /users/{user_id}/roles/{role_id}:
+    delete:
+      tags:
+        - System Admin
+      summary: Remove role from user
+      description: Remove role from user (ADMIN role)
+      operationId: removeRoleFromUser
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: role_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: Role removed successfully
+        '401':
+          $ref: './openapi-schemas.yaml#/components/responses/UnauthorizedError'
+        '403':
+          $ref: './openapi-schemas.yaml#/components/responses/ForbiddenError'
+        '404':
+          $ref: './openapi-schemas.yaml#/components/responses/NotFoundError'
+
+  # ==================== SYSTEM CONFIGURATION ====================
+
+  /system/settings:
+    get:
+      tags:
+        - System Admin
+      summary: Get system settings
+      description: Get system configuration (ADMIN role)
+      operationId: getSystemSettings
+      responses:
+        '200':
+          description: System settings
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemSettingsDTO'
+        '401':
+          $ref: './openapi-schemas.yaml#/components/responses/UnauthorizedError'
+        '403':
+          $ref: './openapi-schemas.yaml#/components/responses/ForbiddenError'
+
+    put:
+      tags:
+        - System Admin
+      summary: Update system settings
+      description: Update system configuration (ADMIN role)
+      operationId: updateSystemSettings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+              description: "Key-value pairs of settings to update"
+              example:
+                attendance:
+                  max_absences_per_course: 4
+                  late_arrival_threshold_minutes: 10
+      responses:
+        '200':
+          description: Settings updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  updated_settings:
+                    type: object
+                    additionalProperties: true
+                  updated_at:
+                    type: string
+                    format: date-time
+                  updated_by:
+                    type: integer
+                    format: int64
+        '400':
+          $ref: './openapi-schemas.yaml#/components/responses/ValidationError'
+        '401':
+          $ref: './openapi-schemas.yaml#/components/responses/UnauthorizedError'
+        '403':
+          $ref: './openapi-schemas.yaml#/components/responses/ForbiddenError'
+
+  # ==================== HEALTH CHECK ====================
+
+  /health:
+    get:
+      tags:
+        - System Admin
+      summary: Health check
+      description: System health check endpoint
+      operationId: healthCheck
+      responses:
+        '200':
+          description: System is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheckDTO'
+        '503':
+          description: System is unhealthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheckDTO'
+
+components:
+  schemas:
+    # ==================== USER SCHEMAS ====================
+
+    UserDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        full_name:
+          type: string
+        status:
+          type: string
+          enum: [active, inactive, pending]
+        roles:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                format: int64
+              code:
+                type: string
+              name:
+                type: string
+        branches:
+          type: array
+          items:
+            $ref: './openapi-schemas.yaml#/components/schemas/BranchReference'
+        last_login_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+
+    CreateUserRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        full_name:
+          type: string
+        role_ids:
+          type: array
+          items:
+            type: integer
+            format: int64
+          minItems: 1
+        branch_ids:
+          type: array
+          items:
+            type: integer
+            format: int64
+          minItems: 1
+        status:
+          type: string
+          enum: [active, inactive, pending]
+          default: active
+      required:
+        - email
+        - full_name
+        - role_ids
+        - branch_ids
+
+    CreateUserResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        email:
+          type: string
+        full_name:
+          type: string
+        status:
+          type: string
+        temporary_password:
+          type: string
+          description: Temporary password for first login
+        created_at:
+          type: string
+          format: date-time
+        message:
+          type: string
+
+    UpdateUserRequest:
+      type: object
+      properties:
+        full_name:
+          type: string
+        phone:
+          type: string
+        status:
+          type: string
+          enum: [active, inactive, pending]
+        role_ids:
+          type: array
+          items:
+            type: integer
+            format: int64
+        branch_ids:
+          type: array
+          items:
+            type: integer
+            format: int64
+
+    # ==================== ROLE SCHEMAS ====================
+
+    RoleDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        code:
+          type: string
+          enum: [VISITOR, STUDENT, TEACHER, SUBJECT_LEADER, ACADEMIC_STAFF, QA, MANAGER, CENTER_HEAD, ADMIN]
+        name:
+          type: string
+        description:
+          type: string
+
+    # ==================== SYSTEM SETTINGS SCHEMAS ====================
+
+    SystemSettingsDTO:
+      type: object
+      properties:
+        general:
+          type: object
+          properties:
+            system_name:
+              type: string
+              example: "EMS - Education Management System"
+            timezone:
+              type: string
+              example: "Asia/Ho_Chi_Minh"
+            date_format:
+              type: string
+              example: "DD/MM/YYYY"
+            time_format:
+              type: string
+              example: "HH:mm"
+        attendance:
+          type: object
+          properties:
+            max_absences_per_course:
+              type: integer
+              example: 3
+              description: Maximum allowed absences per course
+            late_arrival_threshold_minutes:
+              type: integer
+              example: 15
+              description: Minutes after start time to mark as late
+            attendance_lock_hours_after_session:
+              type: integer
+              example: 24
+              description: Hours after session to lock attendance editing
+        enrollment:
+          type: object
+          properties:
+            allow_late_join_sessions:
+              type: integer
+              example: 2
+              description: Number of sessions after start that late enrollment is allowed
+            waitlist_enabled:
+              type: boolean
+              example: true
+            auto_enroll_from_waitlist:
+              type: boolean
+              example: true
+        requests:
+          type: object
+          properties:
+            student_request_approval_required:
+              type: boolean
+              example: true
+            teacher_request_approval_required:
+              type: boolean
+              example: true
+            makeup_request_advance_days:
+              type: integer
+              example: 2
+              description: Days in advance student must request makeup
+        notifications:
+          type: object
+          properties:
+            email_enabled:
+              type: boolean
+              example: true
+            sms_enabled:
+              type: boolean
+              example: true
+            push_enabled:
+              type: boolean
+              example: true
+
+    # ==================== HEALTH CHECK SCHEMAS ====================
+
+    HealthCheckDTO:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+          description: Overall system health status
+        timestamp:
+          type: string
+          format: date-time
+        version:
+          type: string
+          example: "1.0.0"
+        services:
+          type: object
+          properties:
+            database:
+              $ref: '#/components/schemas/ServiceHealthDTO'
+            storage:
+              $ref: '#/components/schemas/ServiceHealthDTO'
+            cache:
+              $ref: '#/components/schemas/ServiceHealthDTO'
+            email:
+              $ref: '#/components/schemas/ServiceHealthDTO'
+        uptime_seconds:
+          type: integer
+          description: System uptime in seconds
+          example: 1234567
+
+    ServiceHealthDTO:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [up, down, degraded]
+        response_time_ms:
+          type: integer
+          description: Response time in milliseconds
+        error:
+          type: string
+          nullable: true
+          description: Error message if service is down
+      required:
+        - status
