@@ -34,9 +34,9 @@ public class TimeSlotController {
     @GetMapping
     public ResponseEntity<ResponseObject<List<TimeSlotDTO>>> getTimeSlotsByBranch(
             @PathVariable Long branchId) {
-        // TODO: Implement get time slots logic
+        List<TimeSlotDTO> result = timeSlotService.getTimeSlotsByBranch(branchId);
         return ResponseEntity.ok(
-                new ResponseObject<>(HttpStatus.OK.value(), "Time slots retrieved successfully", null)
+                new ResponseObject<>(HttpStatus.OK.value(), "Time slots retrieved successfully", result)
         );
     }
 
@@ -52,9 +52,9 @@ public class TimeSlotController {
     public ResponseEntity<ResponseObject<TimeSlotDTO>> getTimeSlotById(
             @PathVariable Long branchId,
             @PathVariable Long id) {
-        // TODO: Implement get time slot by ID logic
+        TimeSlotDTO result = timeSlotService.getTimeSlotById(branchId, id);
         return ResponseEntity.ok(
-                new ResponseObject<>(HttpStatus.OK.value(), "Time slot retrieved successfully", null)
+                new ResponseObject<>(HttpStatus.OK.value(), "Time slot retrieved successfully", result)
         );
     }
 
@@ -71,9 +71,9 @@ public class TimeSlotController {
     public ResponseEntity<ResponseObject<TimeSlotDTO>> createTimeSlot(
             @PathVariable Long branchId,
             @Valid @RequestBody CreateTimeSlotRequestDTO request) {
-        // TODO: Implement create time slot logic
+        TimeSlotDTO result = timeSlotService.createTimeSlot(branchId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(
-                new ResponseObject<>(HttpStatus.CREATED.value(), "Time slot created successfully", null)
+                new ResponseObject<>(HttpStatus.CREATED.value(), "Time slot created successfully", result)
         );
     }
 
@@ -92,9 +92,9 @@ public class TimeSlotController {
             @PathVariable Long branchId,
             @PathVariable Long id,
             @Valid @RequestBody UpdateTimeSlotRequestDTO request) {
-        // TODO: Implement update time slot logic
+        TimeSlotDTO result = timeSlotService.updateTimeSlot(branchId, id, request);
         return ResponseEntity.ok(
-                new ResponseObject<>(HttpStatus.OK.value(), "Time slot updated successfully", null)
+                new ResponseObject<>(HttpStatus.OK.value(), "Time slot updated successfully", result)
         );
     }
 
@@ -111,7 +111,7 @@ public class TimeSlotController {
     public ResponseEntity<Void> deleteTimeSlot(
             @PathVariable Long branchId,
             @PathVariable Long id) {
-        // TODO: Implement delete time slot logic
+        timeSlotService.deleteTimeSlot(branchId, id);
         return ResponseEntity.noContent().build();
     }
 }
