@@ -6,7 +6,8 @@
       "Bash(./mvnw.cmd clean compile:*)",
       "Bash(wc:*)",
       "Bash(./mvnw clean test:*)",
-      "Bash(dir /B \"D:\\Workspace\\projects\\EMS-SEP490\\ems-sep490-be\\docs\")"
+      "Bash(dir /B \"D:\\Workspace\\projects\\EMS-SEP490\\ems-sep490-be\\docs\")",
+      "Skill(commit-helper)"
     ],
     "deny": [],
     "ask": []
