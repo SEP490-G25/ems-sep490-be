@@ -22,7 +22,9 @@ public class TimeSlotDTO {
 
     private LocalTime endTime;
 
-    private Integer durationMin;
+    private Integer durationMinutes;
 
     private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
 }

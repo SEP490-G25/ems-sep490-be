@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
@@ -26,6 +27,8 @@ public class ResourceDTO {
 
     private String equipment;
 
+    private String description;
+
     // For VIRTUAL type
     private String meetingUrl;
 
@@ -37,7 +40,11 @@ public class ResourceDTO {
 
     private LocalDate expiryDate;
 
-    private String description;
+    private LocalDate renewalDate;
 
-    private Boolean isAvailable;
+    private Long createdBy;
+
+    private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
 }
