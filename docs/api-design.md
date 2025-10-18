@@ -523,7 +523,7 @@ Response 200:
 "message": "Course submitted for approval"
 }
 
-Approve/Reject Course (CENTER_HEAD, MANAGER)
+Approve/Reject Course (MANAGER only - strategic curriculum decision)
 POST /courses/{id}/approve
 
 Request Body:
@@ -896,7 +896,7 @@ POST /classes/{id}/submit
   "message": "Class submitted for approval"
 }
 
-Approve/Reject Class (MANAGER, CENTER_HEAD)
+Approve/Reject Class (CENTER_HEAD for their branch, MANAGER for cross-branch authority)
 POST /classes/{id}/approve
 
 Request Body:
@@ -920,7 +920,7 @@ Response 200:
   "rejection_reason": null
 }
 
-Update Class Schedule (MANAGER)
+Update Class Schedule (ACADEMIC_STAFF with CENTER_HEAD approval)
 PUT /classes/{id}/schedule
 
 Request Body:
@@ -1662,7 +1662,7 @@ Response 200:
   ]
 }
 
-Approve Teacher Request with Substitute (ACADEMIC_STAFF, MANAGER)
+Approve Teacher Request with Substitute (ACADEMIC_STAFF, escalate to CENTER_HEAD if complex)
 POST /teacher-requests/{request_id}/approve
 
 Request Body:
@@ -1691,7 +1691,7 @@ Response 200:
   }
 }
 
-Reject Teacher Request (ACADEMIC_STAFF, MANAGER)
+Reject Teacher Request (ACADEMIC_STAFF, CENTER_HEAD)
 POST /teacher-requests/{request_id}/reject
 
 Request Body:
@@ -2280,7 +2280,7 @@ Error Response 400:
   ]
 }
 
-Approve Transfer Request (ACADEMIC_STAFF, MANAGER)
+Approve Transfer Request (ACADEMIC_STAFF, CENTER_HEAD)
 POST /student-requests/{request_id}/approve-transfer
 
 Response 200:
@@ -2306,7 +2306,7 @@ Response 200:
   "message": "Transfer completed successfully"
 }
 
-Reject Student Request (ACADEMIC_STAFF, MANAGER)
+Reject Student Request (ACADEMIC_STAFF, CENTER_HEAD)
 POST /student-requests/{request_id}/reject
 
 Request Body:
@@ -4529,13 +4529,13 @@ POST /courses
 Step 2: Submit for Approval
 POST /courses/15/submit
 
-Step 3: Approve Course (Center Head)
+Step 3: Approve Course (Manager - strategic curriculum decision)
 POST /courses/15/approve
 {
   "action": "approve"
 }
 
-Step 4: Create Class (Manager)
+Step 4: Create Class (Academic Staff at branch)
 POST /classes
 {
   "branch_id": 1,
@@ -4570,7 +4570,7 @@ Step 7: Validate and Submit Class
 POST /classes/5/validate
 POST /classes/5/submit
 
-Step 8: Approve Class (Manager/Center Head)
+Step 8: Approve Class (Center Head for their branch, Manager for cross-branch)
 POST /classes/5/approve
 {
   "action": "approve"
@@ -4619,10 +4619,10 @@ POST /teachers/5/requests
   "note": "Có việc gia đình đột xuất"
 }
 
-Step 2: Manager Finds Substitutes
+Step 2: Academic Staff Finds Substitutes
 GET /teacher-requests/10/substitute-teachers
 
-Step 3: Manager Approves with Substitute
+Step 3: Academic Staff Approves with Substitute
 POST /teacher-requests/10/approve
 {
   "substitute_teacher_id": 8,

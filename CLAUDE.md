@@ -94,6 +94,68 @@ docker-compose down -v --remove-orphans
 
 ## Architecture & Design Patterns
 
+### User Roles & Access Control
+
+The system implements Role-Based Access Control (RBAC) with the following role hierarchy:
+
+**1. ADMIN (System Administrator)**
+- **Scope:** Entire system
+- **Responsibilities:** System configuration, user account management, global settings
+- **Access:** All centers and branches
+
+**2. MANAGER (Operations Manager)**
+- **Scope:** Multiple branches or entire system
+- **Responsibilities:**
+  - **Strategic management:** KPI monitoring, performance analytics, resource allocation across branches
+  - **High-level approvals:** Course approvals, strategic decisions (opening branches, hiring policies)
+  - **Cross-branch coordination:** Manage teacher allocation, resource optimization across branches
+  - **Executive oversight:** Review executive dashboards, handle escalated requests
+- **Access:** All branches under their management (configured via `user_branches`)
+- **Key Distinction:** Focuses on **system-wide operational excellence** rather than day-to-day branch operations
+
+**3. CENTER_HEAD (Branch Director)**
+- **Scope:** ONE specific branch
+- **Responsibilities:**
+  - **Branch operations:** Direct management of one branch's daily activities
+  - **Operational approvals:** Approve classes, handle branch-specific requests
+  - **Resource management:** Manage rooms, resources, and staff within the branch
+  - **Branch performance:** Monitor and improve branch-level KPIs
+- **Access:** Single branch only (configured via `user_branches`)
+- **Key Distinction:** Focuses on **direct branch management** and operational execution
+
+**4. ACADEMIC STAFF (Giáo vụ)**
+- **Scope:** Assigned branch(es)
+- **Responsibilities:** Daily operations (class creation, enrollment, request processing, teacher/resource assignment)
+- **Access:** Branches assigned via `user_branches`
+
+**5. SUBJECT LEADER**
+- **Scope:** Subject/curriculum domain
+- **Responsibilities:** Curriculum design, course creation, learning outcome mapping
+- **Access:** Subject-specific, branch-independent
+
+**6. TEACHER**
+- **Scope:** Assigned classes/sessions
+- **Responsibilities:** Teaching, attendance recording, grading
+- **Access:** Sessions assigned via `teaching_slot`
+
+**7. STUDENT**
+- **Scope:** Enrolled classes
+- **Responsibilities:** Attend sessions, submit requests
+- **Access:** Classes enrolled via `enrollment`
+
+**8. QA (Quality Assurance)**
+- **Scope:** Monitoring role
+- **Responsibilities:** Quality monitoring, QA reports, feedback aggregation
+- **Access:** Read-only across branches for monitoring
+
+**Important Notes:**
+- **Manager vs Center Head distinction:**
+  - **MANAGER:** Strategic, multi-branch, system-wide operations, high-level approvals
+  - **CENTER_HEAD:** Tactical, single-branch, day-to-day operations, operational approvals
+- Both roles can approve courses and classes, but Manager has cross-branch authority
+- Access control enforced via `user_branches` table (many-to-many relationship)
+- Some operations require either MANAGER OR CENTER_HEAD approval (implementation uses `@PreAuthorize("hasAnyRole('MANAGER', 'CENTER_HEAD')")`)
+
 ### Session-First Design Pattern
 The core architectural principle is that **session is the source of truth** for all schedule-related operations. This pattern affects:
 
@@ -307,7 +369,8 @@ org.fyp.emssep490be/
 ## Key Business Rules & Workflows
 
 ### 1. Course Approval Workflow
-- Subject Leader creates Course → Manager approves (`approved_by_manager`, `approved_at`)
+- Subject Leader creates Course → **Manager** approves (`approved_by_manager`, `approved_at`)
+- **Note:** Manager handles course approvals as a **strategic decision** (curriculum standardization across branches)
 - Only approved courses can be used to create classes
 - Rejection requires `rejection_reason`
 
@@ -317,8 +380,9 @@ org.fyp.emssep490be/
   - `Course.session_per_week` × `Course.duration_weeks`
   - `ClassEntity.schedule_days[]` (which days of week: 2=Monday, 3=Tuesday, etc.)
   - `ClassEntity.start_date` + week offset calculation
-- Academic Staff assigns teachers/resources, then submits for approval
-- Center Head/Manager approves → status becomes `scheduled`
+- **Academic Staff** (at branch level) assigns teachers/resources, then submits for approval
+- **Center Head** (for their branch) OR **Manager** (cross-branch authority) approves → status becomes `scheduled`
+- **Note:** Center Head approves classes for operational execution at their branch; Manager can approve across all branches
 
 ### 3. Enrollment & Synchronization
 - Students can only enroll in `scheduled` or `ongoing` classes
