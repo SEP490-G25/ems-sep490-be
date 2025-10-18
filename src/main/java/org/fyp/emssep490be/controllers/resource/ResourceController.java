@@ -44,9 +44,10 @@ public class ResourceController {
             @RequestParam(required = false) LocalDate availableDate,
             @RequestParam(required = false) LocalTime availableStartTime,
             @RequestParam(required = false) LocalTime availableEndTime) {
-        // TODO: Implement get resources logic with availability check
+        List<ResourceDTO> result = resourceService.getResourcesByBranch(
+                branchId, resourceType, availableDate, availableStartTime, availableEndTime);
         return ResponseEntity.ok(
-                new ResponseObject<>(HttpStatus.OK.value(), "Resources retrieved successfully", null)
+                new ResponseObject<>(HttpStatus.OK.value(), "Resources retrieved successfully", result)
         );
     }
 
@@ -62,9 +63,9 @@ public class ResourceController {
     public ResponseEntity<ResponseObject<ResourceDTO>> getResourceById(
             @PathVariable Long branchId,
             @PathVariable Long id) {
-        // TODO: Implement get resource by ID logic
+        ResourceDTO result = resourceService.getResourceById(branchId, id);
         return ResponseEntity.ok(
-                new ResponseObject<>(HttpStatus.OK.value(), "Resource retrieved successfully", null)
+                new ResponseObject<>(HttpStatus.OK.value(), "Resource retrieved successfully", result)
         );
     }
 
@@ -81,9 +82,9 @@ public class ResourceController {
     public ResponseEntity<ResponseObject<ResourceDTO>> createResource(
             @PathVariable Long branchId,
             @Valid @RequestBody CreateResourceRequestDTO request) {
-        // TODO: Implement create resource logic
+        ResourceDTO result = resourceService.createResource(branchId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(
-                new ResponseObject<>(HttpStatus.CREATED.value(), "Resource created successfully", null)
+                new ResponseObject<>(HttpStatus.CREATED.value(), "Resource created successfully", result)
         );
     }
 
@@ -102,9 +103,9 @@ public class ResourceController {
             @PathVariable Long branchId,
             @PathVariable Long id,
             @Valid @RequestBody UpdateResourceRequestDTO request) {
-        // TODO: Implement update resource logic
+        ResourceDTO result = resourceService.updateResource(branchId, id, request);
         return ResponseEntity.ok(
-                new ResponseObject<>(HttpStatus.OK.value(), "Resource updated successfully", null)
+                new ResponseObject<>(HttpStatus.OK.value(), "Resource updated successfully", result)
         );
     }
 
@@ -121,7 +122,7 @@ public class ResourceController {
     public ResponseEntity<Void> deleteResource(
             @PathVariable Long branchId,
             @PathVariable Long id) {
-        // TODO: Implement delete resource logic
+        resourceService.deleteResource(branchId, id);
         return ResponseEntity.noContent().build();
     }
 }

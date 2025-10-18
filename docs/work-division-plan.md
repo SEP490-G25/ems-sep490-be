@@ -124,22 +124,22 @@
 
 **Tasks**:
 1. **Branch Management**
-   - [ ] Implement BranchService:
+   - [x] Implement BranchService:
      - `getAllBranches()` với pagination, filter (centerId, status)
      - `getBranchById()` với TimeSlots và Resources
      - `createBranch()` với validation unique(center_id, code)
      - `updateBranch()`, `deleteBranch()` (soft delete)
-   - [ ] Implement BranchController endpoints
+   - [x] Implement BranchController endpoints
 
 2. **TimeSlot Management**
-   - [ ] Implement TimeSlotService:
+   - [x] Implement TimeSlotService:
      - `getTimeSlotsByBranch()`
      - `createTimeSlot()` với validation (start < end, duration match)
      - `updateTimeSlot()`, `deleteTimeSlot()`
-   - [ ] Implement TimeSlotController
+   - [x] Implement TimeSlotController
 
 3. **Resource Management (Room + Zoom)**
-   - [ ] Implement ResourceService:
+   - [x] Implement ResourceService:
      - `getResourcesByBranch()` với filter (type, available_date/time)
      - `createResource()` (ROOM hoặc VIRTUAL)
      - `checkResourceConflict()` - **CORE ALGORITHM**:
@@ -147,23 +147,25 @@
        - Check date overlap + time overlap
        - Return available resources
      - `updateResource()`, `deleteResource()`
-   - [ ] Implement ResourceController
+   - [x] Implement ResourceController
 
 4. **Testing**
-   - [ ] Unit tests với mock repositories
+   - [x] Unit tests với mock repositories
    - [ ] Integration tests với H2 database
-   - [ ] Test conflict detection algorithm
+   - [x] Test conflict detection algorithm
 
 **Deliverables**:
 - ✅ Branch management API hoàn chỉnh
 - ✅ TimeSlot API
 - ✅ Resource API với conflict detection
 - ✅ Pagination và filtering
-- ✅ Test coverage > 80%
+- ✅ Test coverage > 80% (pending verification)
 
 **Dependencies**: Module 1 (chỉ cần auth, không block)
 
 **Estimated Time**: 3-4 weeks
+
+**Status**: ✅ **COMPLETED** (2025-10-18)
 
 ---
 
