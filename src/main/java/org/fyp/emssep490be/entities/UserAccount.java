@@ -32,6 +32,9 @@ public class UserAccount {
     @Column(name = "full_name", nullable = false)
     private String fullName;
 
+    @Column(name = "password_hash", nullable = false)
+    private String passwordHash;
+
     private String status;
 
     @Column(name = "last_login_at")
