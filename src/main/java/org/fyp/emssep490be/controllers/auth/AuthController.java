@@ -34,9 +34,9 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<ResponseObject<LoginResponseDTO>> login(
             @Valid @RequestBody LoginRequestDTO request) {
-        // TODO: Implement login logic
+        LoginResponseDTO response = authService.login(request);
         return ResponseEntity.ok(
-                new ResponseObject<>(HttpStatus.OK.value(), "Login successful", null)
+                new ResponseObject<>(HttpStatus.OK.value(), "Login successful", response)
         );
     }
 
@@ -51,9 +51,9 @@ public class AuthController {
     @PostMapping("/refresh")
     public ResponseEntity<ResponseObject<RefreshTokenResponseDTO>> refreshToken(
             @Valid @RequestBody RefreshTokenRequestDTO request) {
-        // TODO: Implement refresh token logic
+        RefreshTokenResponseDTO response = authService.refreshToken(request);
         return ResponseEntity.ok(
-                new ResponseObject<>(HttpStatus.OK.value(), "Token refreshed successfully", null)
+                new ResponseObject<>(HttpStatus.OK.value(), "Token refreshed successfully", response)
         );
     }
 
@@ -66,9 +66,11 @@ public class AuthController {
      * @return No content
      */
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(
+    public ResponseEntity<ResponseObject<Void>> logout(
             @RequestHeader("Authorization") String authorization) {
-        // TODO: Implement logout logic
-        return ResponseEntity.noContent().build();
+        authService.logout(authorization);
+        return ResponseEntity.ok(
+                new ResponseObject<>(HttpStatus.OK.value(), "Logout successful", null)
+        );
     }
 }
