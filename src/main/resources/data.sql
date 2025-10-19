@@ -53,37 +53,37 @@ ON CONFLICT (center_id, code) DO NOTHING;
 
 -- =========================================
 -- 4. USER ACCOUNTS
--- Password for all users: "password123" (hashed with BCrypt)
+-- Password for all users: "12345678" (hashed with BCrypt)
 -- =========================================
 INSERT INTO user_account (email, phone, full_name, password_hash, status, created_at, updated_at) VALUES
     -- Admin user
-    ('admin@ems.vn', '0900000001', 'System Administrator', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'active', NOW(), NOW()),
+    ('admin@ems.vn', '0900000001', 'System Administrator', '$2a$12$x48a8bwuljECYA7u3lnPduHY6NTeEzmxA1RNmXgqlTF9LF6.HG7aK', 'active', NOW(), NOW()),
 
     -- Manager users
-    ('manager@ems.vn', '0900000002', 'Nguyen Van Manager', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'active', NOW(), NOW()),
+    ('manager@ems.vn', '0900000002', 'Nguyen Van Manager', '$2a$12$x48a8bwuljECYA7u3lnPduHY6NTeEzmxA1RNmXgqlTF9LF6.HG7aK', 'active', NOW(), NOW()),
 
     -- Center Head users (one per branch)
-    ('centerhead.hn01@ems.vn', '0900000003', 'Tran Thi Head HN1', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'active', NOW(), NOW()),
-    ('centerhead.hn02@ems.vn', '0900000004', 'Le Van Head HN2', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'active', NOW(), NOW()),
-    ('centerhead.hcm01@ems.vn', '0900000005', 'Pham Thi Head HCM1', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'active', NOW(), NOW()),
+    ('centerhead.hn01@ems.vn', '0900000003', 'Tran Thi Head HN1', '$2a$12$x48a8bwuljECYA7u3lnPduHY6NTeEzmxA1RNmXgqlTF9LF6.HG7aK', 'active', NOW(), NOW()),
+    ('centerhead.hn02@ems.vn', '0900000004', 'Le Van Head HN2', '$2a$12$x48a8bwuljECYA7u3lnPduHY6NTeEzmxA1RNmXgqlTF9LF6.HG7aK', 'active', NOW(), NOW()),
+    ('centerhead.hcm01@ems.vn', '0900000005', 'Pham Thi Head HCM1', '$2a$12$x48a8bwuljECYA7u3lnPduHY6NTeEzmxA1RNmXgqlTF9LF6.HG7aK', 'active', NOW(), NOW()),
 
     -- Academic Staff users
-    ('staff.hn01@ems.vn', '0900000010', 'Nguyen Van Staff HN1', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'active', NOW(), NOW()),
-    ('staff.hcm01@ems.vn', '0900000011', 'Tran Thi Staff HCM1', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'active', NOW(), NOW()),
+    ('staff.hn01@ems.vn', '0900000010', 'Nguyen Van Staff HN1', '$2a$12$x48a8bwuljECYA7u3lnPduHY6NTeEzmxA1RNmXgqlTF9LF6.HG7aK', 'active', NOW(), NOW()),
+    ('staff.hcm01@ems.vn', '0900000011', 'Tran Thi Staff HCM1', '$2a$12$x48a8bwuljECYA7u3lnPduHY6NTeEzmxA1RNmXgqlTF9LF6.HG7aK', 'active', NOW(), NOW()),
 
     -- Subject Leader users
-    ('subjectlead@ems.vn', '0900000020', 'Le Van Subject Leader', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'active', NOW(), NOW()),
+    ('subjectlead@ems.vn', '0900000020', 'Le Van Subject Leader', '$2a$12$x48a8bwuljECYA7u3lnPduHY6NTeEzmxA1RNmXgqlTF9LF6.HG7aK', 'active', NOW(), NOW()),
 
     -- Teacher users
-    ('teacher1@ems.vn', '0900000030', 'Pham Van Teacher 1', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'active', NOW(), NOW()),
-    ('teacher2@ems.vn', '0900000031', 'Hoang Thi Teacher 2', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'active', NOW(), NOW()),
+    ('teacher1@ems.vn', '0900000030', 'Pham Van Teacher 1', '$2a$12$x48a8bwuljECYA7u3lnPduHY6NTeEzmxA1RNmXgqlTF9LF6.HG7aK', 'active', NOW(), NOW()),
+    ('teacher2@ems.vn', '0900000031', 'Hoang Thi Teacher 2', '$2a$12$x48a8bwuljECYA7u3lnPduHY6NTeEzmxA1RNmXgqlTF9LF6.HG7aK', 'active', NOW(), NOW()),
 
     -- Student users
-    ('student1@ems.vn', '0900000040', 'Nguyen Van Student 1', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'active', NOW(), NOW()),
-    ('student2@ems.vn', '0900000041', 'Tran Thi Student 2', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'active', NOW(), NOW()),
+    ('student1@ems.vn', '0900000040', 'Nguyen Van Student 1', '$2a$12$x48a8bwuljECYA7u3lnPduHY6NTeEzmxA1RNmXgqlTF9LF6.HG7aK', 'active', NOW(), NOW()),
+    ('student2@ems.vn', '0900000041', 'Tran Thi Student 2', '$2a$12$x48a8bwuljECYA7u3lnPduHY6NTeEzmxA1RNmXgqlTF9LF6.HG7aK', 'active', NOW(), NOW()),
 
     -- QA user
-    ('qa@ems.vn', '0900000050', 'Le Van QA', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'active', NOW(), NOW())
+    ('qa@ems.vn', '0900000050', 'Le Van QA', '$2a$12$x48a8bwuljECYA7u3lnPduHY6NTeEzmxA1RNmXgqlTF9LF6.HG7aK', 'active', NOW(), NOW())
 ON CONFLICT (email) DO NOTHING;
 
 -- =========================================
