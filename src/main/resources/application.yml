@@ -20,12 +20,13 @@ spring:
 
   sql:
     init:
-      mode: always  # Change to 'always' only on first run to create enum types
+      mode: never  # Change to 'always' only on first run to create enum types
       schema-locations: classpath:schema.sql
+      data-locations: classpath:data.sql
       continue-on-error: true
 
   jpa:
-    defer-datasource-initialization: false
+    defer-datasource-initialization: true  # Must be true to run data.sql after Hibernate creates tables
     hibernate:
       ddl-auto: update   # <--- "create", "create-drop", "update", "validate", "none"
     properties:
