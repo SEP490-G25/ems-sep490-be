@@ -2,6 +2,7 @@ package org.fyp.emssep490be.controllers.auth;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.fyp.emssep490be.dtos.ResponseObject;
 import org.fyp.emssep490be.dtos.auth.LoginRequestDTO;
 import org.fyp.emssep490be.dtos.auth.LoginResponseDTO;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
  * Controller for Authentication & Authorization operations
  * Base path: /api/v1/auth
  */
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
@@ -34,6 +36,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<ResponseObject<LoginResponseDTO>> login(
             @Valid @RequestBody LoginRequestDTO request) {
+        log.info("Login request received: {}", request);
         LoginResponseDTO response = authService.login(request);
         return ResponseEntity.ok(
                 new ResponseObject<>(HttpStatus.OK.value(), "Login successful", response)
