@@ -22,6 +22,14 @@ public enum ErrorCode {
     RESOURCE_CONFLICT(2202, "Resource is already booked for the specified time"),
     RESOURCE_INVALID_TYPE(2203, "Invalid resource type"),
 
+    // User errors (1000-1099)
+    USER_NOT_FOUND(1000, "User not found"),
+    USER_EMAIL_ALREADY_EXISTS(1001, "Email already exists"),
+    USER_PHONE_ALREADY_EXISTS(1002, "Phone number already exists"),
+    ROLE_NOT_FOUND(1003, "Role not found"),
+    INVALID_PASSWORD(1004, "Invalid password"),
+    PASSWORD_MISMATCH(1005, "Old password does not match"),
+
     // Common errors (9000-9999)
     INVALID_INPUT(9000, "Invalid input provided"),
     INVALID_STATUS(9001, "Invalid status value"),
