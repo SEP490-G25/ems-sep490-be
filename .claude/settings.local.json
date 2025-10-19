@@ -7,7 +7,10 @@
       "Bash(wc:*)",
       "Bash(./mvnw clean test:*)",
       "Bash(dir /B \"D:\\Workspace\\projects\\EMS-SEP490\\ems-sep490-be\\docs\")",
-      "Skill(commit-helper)"
+      "Skill(commit-helper)",
+      "Bash(git add src/main/java/org/fyp/emssep490be/dtos/resource/ResourceDTO.java src/main/java/org/fyp/emssep490be/dtos/timeslot/TimeSlotDTO.java src/main/java/org/fyp/emssep490be/exceptions/ErrorCode.java src/main/java/org/fyp/emssep490be/services/branch/impl/BranchServiceImpl.java src/main/java/org/fyp/emssep490be/services/resource/impl/ResourceServiceImpl.java src/main/java/org/fyp/emssep490be/services/timeslot/impl/TimeSlotServiceImpl.java)",
+      "Bash(dir /B \"D:\\Workspace\\projects\\EMS-SEP490\\ems-sep490-be\\src\\main\\java\\org\\fyp\\emssep490be\\dtos\")",
+      "Bash(./mvnw test -Dtest=EmsSep490BeApplicationTests -e)"
     ],
     "deny": [],
     "ask": []

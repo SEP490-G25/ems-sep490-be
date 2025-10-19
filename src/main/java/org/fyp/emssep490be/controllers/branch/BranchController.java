@@ -40,9 +40,9 @@ public class BranchController {
             @RequestParam(required = false) String status,
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "20") Integer limit) {
-        // TODO: Implement get all branches logic
+        PagedResponseDTO<BranchDTO> result = branchService.getAllBranches(centerId, status, page, limit);
         return ResponseEntity.ok(
-                new ResponseObject<>(HttpStatus.OK.value(), "Branches retrieved successfully", null)
+                new ResponseObject<>(HttpStatus.OK.value(), "Branches retrieved successfully", result)
         );
     }
 
@@ -55,9 +55,9 @@ public class BranchController {
      */
     @GetMapping("/{id}")
     public ResponseEntity<ResponseObject<BranchDetailDTO>> getBranchById(@PathVariable Long id) {
-        // TODO: Implement get branch by ID logic
+        BranchDetailDTO result = branchService.getBranchById(id);
         return ResponseEntity.ok(
-                new ResponseObject<>(HttpStatus.OK.value(), "Branch retrieved successfully", null)
+                new ResponseObject<>(HttpStatus.OK.value(), "Branch retrieved successfully", result)
         );
     }
 
@@ -72,9 +72,9 @@ public class BranchController {
     @PostMapping
     public ResponseEntity<ResponseObject<BranchDTO>> createBranch(
             @Valid @RequestBody CreateBranchRequestDTO request) {
-        // TODO: Implement create branch logic
+        BranchDTO result = branchService.createBranch(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(
-                new ResponseObject<>(HttpStatus.CREATED.value(), "Branch created successfully", null)
+                new ResponseObject<>(HttpStatus.CREATED.value(), "Branch created successfully", result)
         );
     }
 
@@ -91,9 +91,9 @@ public class BranchController {
     public ResponseEntity<ResponseObject<BranchDTO>> updateBranch(
             @PathVariable Long id,
             @Valid @RequestBody UpdateBranchRequestDTO request) {
-        // TODO: Implement update branch logic
+        BranchDTO result = branchService.updateBranch(id, request);
         return ResponseEntity.ok(
-                new ResponseObject<>(HttpStatus.OK.value(), "Branch updated successfully", null)
+                new ResponseObject<>(HttpStatus.OK.value(), "Branch updated successfully", result)
         );
     }
 
@@ -107,7 +107,7 @@ public class BranchController {
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteBranch(@PathVariable Long id) {
-        // TODO: Implement delete branch logic
+        branchService.deleteBranch(id);
         return ResponseEntity.noContent().build();
     }
 }
