@@ -36,7 +36,6 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<ResponseObject<LoginResponseDTO>> login(
             @Valid @RequestBody LoginRequestDTO request) {
-        log.info("Login request received: {}", request);
         LoginResponseDTO response = authService.login(request);
         return ResponseEntity.ok(
                 new ResponseObject<>(HttpStatus.OK.value(), "Login successful", response)
