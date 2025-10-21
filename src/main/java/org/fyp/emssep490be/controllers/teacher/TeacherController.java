@@ -21,8 +21,8 @@ public class TeacherController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ResponseObject<TeacherProfileDTO>> getTeacherProfile(@PathVariable Long id) {
-        // TODO: Implement
-        return ResponseEntity.ok(new ResponseObject<>(HttpStatus.OK.value(), "Teacher profile retrieved", null));
+        TeacherProfileDTO profile = teacherService.getTeacherProfile(id);
+        return ResponseEntity.ok(new ResponseObject<>(HttpStatus.OK.value(), "Teacher profile retrieved", profile));
     }
 
     @GetMapping("/{id}/schedule")
@@ -30,13 +30,13 @@ public class TeacherController {
             @PathVariable Long id,
             @RequestParam(required = false) String dateFrom,
             @RequestParam(required = false) String dateTo) {
-        // TODO: Implement teacher schedule
-        return ResponseEntity.ok(new ResponseObject<>(HttpStatus.OK.value(), "Schedule retrieved", null));
+        Object schedule = teacherService.getTeacherSchedule(id, dateFrom, dateTo);
+        return ResponseEntity.ok(new ResponseObject<>(HttpStatus.OK.value(), "Schedule retrieved", schedule));
     }
 
     @GetMapping("/{id}/workload")
     public ResponseEntity<ResponseObject<Object>> getTeacherWorkload(@PathVariable Long id) {
-        // TODO: Implement workload calculation
-        return ResponseEntity.ok(new ResponseObject<>(HttpStatus.OK.value(), "Workload retrieved", null));
+        Object workload = teacherService.getTeacherWorkload(id);
+        return ResponseEntity.ok(new ResponseObject<>(HttpStatus.OK.value(), "Workload retrieved", workload));
     }
 }
