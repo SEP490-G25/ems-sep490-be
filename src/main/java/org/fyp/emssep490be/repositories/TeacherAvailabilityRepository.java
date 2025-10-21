@@ -9,4 +9,3 @@ import org.springframework.stereotype.Repository;
 public interface TeacherAvailabilityRepository extends JpaRepository<TeacherAvailability, Long> {
     List<TeacherAvailability> findByTeacherId(Long teacherId);
 }
-
