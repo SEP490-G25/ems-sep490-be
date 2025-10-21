@@ -30,6 +30,9 @@ public enum ErrorCode {
     INVALID_PASSWORD(1004, "Invalid password"),
     PASSWORD_MISMATCH(1005, "Old password does not match"),
 
+    // Teacher errors (3000-3099)
+    TEACHER_NOT_FOUND(3000, "Teacher not found"),
+
     // Common errors (9000-9999)
     INVALID_INPUT(9000, "Invalid input provided"),
     INVALID_STATUS(9001, "Invalid status value"),
