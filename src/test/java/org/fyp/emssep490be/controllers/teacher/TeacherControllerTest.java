@@ -68,11 +68,11 @@ class TeacherControllerTest {
         Long teacherId = 999L;
         
         when(teacherService.getTeacherProfile(teacherId))
-                .thenThrow(new RuntimeException("Teacher not found"));
+                .thenThrow(new org.fyp.emssep490be.exceptions.CustomException(org.fyp.emssep490be.exceptions.ErrorCode.TEACHER_NOT_FOUND));
 
         // When & Then
         mockMvc.perform(get("/api/v1/teachers/{id}", teacherId))
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -119,13 +119,13 @@ class TeacherControllerTest {
         CreateTeacherRequest request = createCreateTeacherRequest();
         
         when(teacherService.createTeacher(any(CreateTeacherRequest.class)))
-                .thenThrow(new RuntimeException("Employee code already exists"));
+                .thenThrow(new org.fyp.emssep490be.exceptions.CustomException(org.fyp.emssep490be.exceptions.ErrorCode.TEACHER_EMPLOYEE_CODE_ALREADY_EXISTS));
 
         // When & Then
         mockMvc.perform(post("/api/v1/teachers")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isBadRequest());
     }
 
     private TeacherProfileDTO createTeacherProfileDTO() {

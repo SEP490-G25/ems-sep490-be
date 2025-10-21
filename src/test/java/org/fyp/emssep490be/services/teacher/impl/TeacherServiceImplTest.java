@@ -197,7 +197,7 @@ class TeacherServiceImplTest {
         CustomException exception = assertThrows(CustomException.class, 
             () -> teacherService.createTeacher(request));
         
-        assertEquals(ErrorCode.INVALID_INPUT, exception.getErrorCode());
+        assertEquals(ErrorCode.TEACHER_EMPLOYEE_CODE_ALREADY_EXISTS, exception.getErrorCode());
         verify(teacherRepository).findByEmployeeCode(request.getEmployeeCode());
         verify(userAccountRepository, never()).existsByEmail(anyString());
     }
@@ -213,7 +213,7 @@ class TeacherServiceImplTest {
         CustomException exception = assertThrows(CustomException.class, 
             () -> teacherService.createTeacher(request));
         
-        assertEquals(ErrorCode.INVALID_INPUT, exception.getErrorCode());
+        assertEquals(ErrorCode.USER_EMAIL_ALREADY_EXISTS, exception.getErrorCode());
         verify(teacherRepository).findByEmployeeCode(request.getEmployeeCode());
         verify(userAccountRepository).existsByEmail(request.getEmail());
         verify(userAccountRepository, never()).existsByPhone(anyString());
@@ -231,7 +231,7 @@ class TeacherServiceImplTest {
         CustomException exception = assertThrows(CustomException.class, 
             () -> teacherService.createTeacher(request));
         
-        assertEquals(ErrorCode.INVALID_INPUT, exception.getErrorCode());
+        assertEquals(ErrorCode.USER_PHONE_ALREADY_EXISTS, exception.getErrorCode());
         verify(teacherRepository).findByEmployeeCode(request.getEmployeeCode());
         verify(userAccountRepository).existsByEmail(request.getEmail());
         verify(userAccountRepository).existsByPhone(request.getPhone());
