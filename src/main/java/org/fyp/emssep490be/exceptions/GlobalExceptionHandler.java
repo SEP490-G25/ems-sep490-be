@@ -56,22 +56,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(CustomException.class)
     public ResponseEntity<ResponseObject<Object>> handleCustomException(CustomException e) {
-        HttpStatus status = HttpStatus.BAD_REQUEST;
-        
-        // Map specific error codes to appropriate HTTP status
-        switch (e.getErrorCode()) {
-            case TEACHER_NOT_FOUND:
-                status = HttpStatus.NOT_FOUND;
-                break;
-            case INVALID_INPUT:
-                status = HttpStatus.BAD_REQUEST;
-                break;
-            default:
-                status = HttpStatus.BAD_REQUEST;
-                break;
-        }
-        
-        return ResponseEntity.status(status).body(new ResponseObject<>(e.getErrorCode().getCode(), e.getMessage(), null));
+        return ResponseEntity.badRequest().body(new ResponseObject<>(e.getErrorCode().getCode(), e.getMessage(), null));
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
