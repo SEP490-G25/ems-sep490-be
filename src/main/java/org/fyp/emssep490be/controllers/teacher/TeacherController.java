@@ -1,7 +1,9 @@
 package org.fyp.emssep490be.controllers.teacher;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.fyp.emssep490be.dtos.ResponseObject;
+import org.fyp.emssep490be.dtos.teacher.CreateTeacherRequest;
 import org.fyp.emssep490be.dtos.teacher.TeacherProfileDTO;
 import org.fyp.emssep490be.services.teacher.TeacherService;
 import org.springframework.http.HttpStatus;
@@ -25,18 +27,27 @@ public class TeacherController {
         return ResponseEntity.ok(new ResponseObject<>(HttpStatus.OK.value(), "Teacher profile retrieved", profile));
     }
 
-    @GetMapping("/{id}/schedule")
-    public ResponseEntity<ResponseObject<Object>> getTeacherSchedule(
-            @PathVariable Long id,
-            @RequestParam(required = false) String dateFrom,
-            @RequestParam(required = false) String dateTo) {
-        Object schedule = teacherService.getTeacherSchedule(id, dateFrom, dateTo);
-        return ResponseEntity.ok(new ResponseObject<>(HttpStatus.OK.value(), "Schedule retrieved", schedule));
+    @PostMapping
+    public ResponseEntity<ResponseObject<TeacherProfileDTO>> createTeacher(@Valid @RequestBody CreateTeacherRequest request) {
+        TeacherProfileDTO profile = teacherService.createTeacher(request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(new ResponseObject<>(HttpStatus.CREATED.value(), "Teacher created successfully", profile));
     }
 
-    @GetMapping("/{id}/workload")
-    public ResponseEntity<ResponseObject<Object>> getTeacherWorkload(@PathVariable Long id) {
-        Object workload = teacherService.getTeacherWorkload(id);
-        return ResponseEntity.ok(new ResponseObject<>(HttpStatus.OK.value(), "Workload retrieved", workload));
-    }
+    // TODO: Implement teacher schedule endpoint
+    // @GetMapping("/{id}/schedule")
+    // public ResponseEntity<ResponseObject<Object>> getTeacherSchedule(
+    //         @PathVariable Long id,
+    //         @RequestParam(required = false) String dateFrom,
+    //         @RequestParam(required = false) String dateTo) {
+    //     Object schedule = teacherService.getTeacherSchedule(id, dateFrom, dateTo);
+    //     return ResponseEntity.ok(new ResponseObject<>(HttpStatus.OK.value(), "Schedule retrieved", schedule));
+    // }
+
+    // TODO: Implement teacher workload endpoint
+    // @GetMapping("/{id}/workload")
+    // public ResponseEntity<ResponseObject<Object>> getTeacherWorkload(@PathVariable Long id) {
+    //     Object workload = teacherService.getTeacherWorkload(id);
+    //     return ResponseEntity.ok(new ResponseObject<>(HttpStatus.OK.value(), "Workload retrieved", workload));
+    // }
 }
