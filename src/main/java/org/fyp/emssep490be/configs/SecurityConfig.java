@@ -54,6 +54,8 @@ public class SecurityConfig {
                         .requestMatchers("/error").permitAll()
                         // Swagger/OpenAPI endpoints (development only)
                         .requestMatchers("/api-docs/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        // Teacher endpoints (temporary for testing)
+                        .requestMatchers("/api/v1/teachers/**").permitAll()
                         // All other endpoints require authentication
                         .anyRequest().authenticated()
                 )

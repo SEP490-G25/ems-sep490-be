@@ -20,7 +20,7 @@ spring:
 
   sql:
     init:
-      mode: never  # Change to 'always' only on first run to create enum types
+      mode: always  # Change to 'always' only on first run to create enum types
       schema-locations: classpath:schema.sql
       data-locations: classpath:data.sql
       continue-on-error: true
