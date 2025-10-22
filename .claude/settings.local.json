@@ -18,7 +18,10 @@
       "Bash(python3:*)",
       "Bash(chmod:*)",
       "Bash(/tmp/test_subject_level.sh)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(xargs cat:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []
