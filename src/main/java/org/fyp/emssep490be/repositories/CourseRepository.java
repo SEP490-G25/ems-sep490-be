@@ -13,6 +13,7 @@ import java.util.Optional;
 @Repository
 public interface CourseRepository extends JpaRepository<Course, Long> {
     Optional<Course> findByCode(String code);
+
     boolean existsByCode(String code);
 
     @Query("SELECT c FROM Course c WHERE " +
@@ -25,4 +26,14 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
                                 @Param("status") String status,
                                 @Param("approved") Boolean approved,
                                 Pageable pageable);
+
+    /**
+     * Count courses by subject ID
+     */
+    long countBySubjectId(Long subjectId);
+
+    /**
+     * Count courses by level ID
+     */
+    long countByLevelId(Long levelId);
 }

@@ -4,17 +4,20 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.fyp.emssep490be.dtos.level.LevelDTO;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
- * Basic Subject DTO for list views and simple responses
+ * DTO for Subject details including related levels
+ * Used when fetching complete subject information with relationships
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class SubjectDTO {
+public class SubjectDetailDTO {
 
     private Long id;
 
@@ -33,4 +36,9 @@ public class SubjectDTO {
     private Integer levelsCount;
 
     private Integer coursesCount;
+
+    /**
+     * List of levels under this subject
+     */
+    private List<LevelDTO> levels;
 }

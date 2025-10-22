@@ -1,14 +1,20 @@
 package org.fyp.emssep490be.services.student;
 
-import org.fyp.emssep490be.dtos.enrollment.CreateEnrollmentRequestDTO;
-import org.fyp.emssep490be.dtos.enrollment.EnrollmentDTO;
-import org.fyp.emssep490be.dtos.student.StudentProfileDTO;
+import org.fyp.emssep490be.dtos.student.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
+import java.time.LocalDate;
 
 public interface StudentService {
+    // CRUD Operations
+    StudentDTO createStudent(CreateStudentRequestDTO request);
+    StudentDTO updateStudent(Long id, UpdateStudentRequestDTO request);
+    BulkImportStudentResponseDTO bulkImportStudents(MultipartFile file, Long branchId);
+    
+    // Query Operations
+    Page<StudentListDTO> getAllStudents(String search, Long branchId, Pageable pageable);
     StudentProfileDTO getStudentProfile(Long id);
-    List<EnrollmentDTO> getStudentEnrollments(Long id);
-    EnrollmentDTO enrollStudent(Long id, CreateEnrollmentRequestDTO request);
-    Object getStudentSchedule(Long id);
+    StudentScheduleDTO getStudentSchedule(Long id, LocalDate dateFrom, LocalDate dateTo, Long classId);
 }

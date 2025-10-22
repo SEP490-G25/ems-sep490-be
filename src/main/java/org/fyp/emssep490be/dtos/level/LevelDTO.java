@@ -1,12 +1,17 @@
 package org.fyp.emssep490be.dtos.level;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+/**
+ * DTO for Level information
+ */
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class LevelDTO {

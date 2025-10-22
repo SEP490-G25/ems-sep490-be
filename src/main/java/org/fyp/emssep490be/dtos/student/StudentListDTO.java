@@ -5,37 +5,24 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 
 /**
- * Enhanced DTO for student profile with enrollment and attendance details
+ * DTO for student list/search operations
+ * Lightweight version without nested objects
  */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class StudentProfileDTO {
+public class StudentListDTO {
     
-    // Basic info
     private Long id;
-    private Long userId;
     private String studentCode;
     private String fullName;
     private String email;
     private String phone;
-    private LocalDate dateOfBirth;
-    private String guardianName;
-    private String guardianPhone;
-    
-    // Branch info
     private Long branchId;
     private String branchName;
-    
-    // Current enrollments
-    private List<CurrentClassDTO> currentClasses;
-    
-    // Metadata
     private LocalDateTime createdAt;
 }
