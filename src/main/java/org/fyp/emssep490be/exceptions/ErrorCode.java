@@ -49,6 +49,16 @@ public enum ErrorCode {
     STUDENT_NOT_FOUND(1100, "Student not found"),
     STUDENT_CODE_ALREADY_EXISTS(1101, "Student code already exists"),
 
+    // Enrollment errors (1200-1299)
+    ENROLLMENT_NOT_FOUND(1200, "Enrollment not found"),
+    ENROLLMENT_ALREADY_EXISTS(1201, "Student is already enrolled in this class"),
+    CLASS_CAPACITY_EXCEEDED(1202, "Class capacity exceeded"),
+    CLASS_NOT_AVAILABLE(1203, "Class is not available for enrollment"),
+    CANNOT_UNENROLL_COMPLETED_CLASS(1204, "Cannot remove student from completed class"),
+
+    // Class errors (4000-4099)
+    CLASS_NOT_FOUND(4000, "Class not found"),
+
     // Teacher errors (3000-3099)
     TEACHER_NOT_FOUND(3000, "Teacher not found"),
 

@@ -2,18 +2,17 @@ package org.fyp.emssep490be.services.student.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.fyp.emssep490be.dtos.enrollment.CreateEnrollmentRequestDTO;
-import org.fyp.emssep490be.dtos.enrollment.EnrollmentDTO;
 import org.fyp.emssep490be.dtos.student.*;
-import org.fyp.emssep490be.entities.Branch;
-import org.fyp.emssep490be.entities.Student;
-import org.fyp.emssep490be.entities.UserAccount;
+import org.fyp.emssep490be.entities.*;
+import org.fyp.emssep490be.entities.enums.AttendanceStatus;
+import org.fyp.emssep490be.entities.enums.EnrollmentStatus;
 import org.fyp.emssep490be.exceptions.CustomException;
 import org.fyp.emssep490be.exceptions.ErrorCode;
-import org.fyp.emssep490be.repositories.BranchRepository;
-import org.fyp.emssep490be.repositories.StudentRepository;
-import org.fyp.emssep490be.repositories.UserAccountRepository;
+import org.fyp.emssep490be.repositories.*;
 import org.fyp.emssep490be.services.student.StudentService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,10 +21,11 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.Year;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -36,6 +36,10 @@ public class StudentServiceImpl implements StudentService {
     private final StudentRepository studentRepository;
     private final UserAccountRepository userAccountRepository;
     private final BranchRepository branchRepository;
+    private final EnrollmentRepository enrollmentRepository;
+    private final StudentSessionRepository studentSessionRepository;
+    private final TeachingSlotRepository teachingSlotRepository;
+    private final SessionResourceRepository sessionResourceRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -253,49 +257,224 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     @Transactional(readOnly = true)
+    public Page<StudentListDTO> getAllStudents(String search, Long branchId, Pageable pageable) {
+        log.info("Getting all students with search: {}, branchId: {}", search, branchId);
+
+        // Build specification for dynamic query
+        Page<Student> students = studentRepository.findAll(
+                (root, query, cb) -> {
+                    List<jakarta.persistence.criteria.Predicate> predicates = new ArrayList<>();
+
+                    // Search filter (name, code, email)
+                    if (search != null && !search.isEmpty()) {
+                        String searchPattern = "%" + search.toLowerCase() + "%";
+                        predicates.add(cb.or(
+                                cb.like(cb.lower(root.get("studentCode")), searchPattern),
+                                cb.like(cb.lower(root.get("userAccount").get("fullName")), searchPattern),
+                                cb.like(cb.lower(root.get("userAccount").get("email")), searchPattern)
+                        ));
+                    }
+
+                    // Branch filter
+                    if (branchId != null) {
+                        predicates.add(cb.equal(root.get("branch").get("id"), branchId));
+                    }
+
+                    return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
+                },
+                pageable
+        );
+
+        // Map to DTOs
+        List<StudentListDTO> dtos = students.getContent().stream()
+                .map(this::mapToStudentListDTO)
+                .collect(Collectors.toList());
+
+        return new PageImpl<>(dtos, pageable, students.getTotalElements());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public StudentProfileDTO getStudentProfile(Long id) {
         log.info("Getting student profile for ID: {}", id);
         
         Student student = studentRepository.findById(id)
                 .orElseThrow(() -> new CustomException(ErrorCode.STUDENT_NOT_FOUND));
         
-        // TODO: Map to StudentProfileDTO with more details (enrollments, etc.)
-        return new StudentProfileDTO();
+        UserAccount userAccount = student.getUserAccount();
+        
+        // Get current enrollments (enrolled or ongoing)
+        List<Enrollment> enrollments = enrollmentRepository.findByStudentId(id).stream()
+                .filter(e -> e.getStatus() == EnrollmentStatus.ENROLLED || 
+                            e.getStatus() == EnrollmentStatus.WAITLISTED)
+                .collect(Collectors.toList());
+        
+        // Build current classes with attendance summary
+        List<CurrentClassDTO> currentClasses = enrollments.stream()
+                .map(enrollment -> {
+                    ClassEntity clazz = enrollment.getClazz();
+                    
+                    // Calculate attendance summary for this enrollment
+                    List<StudentSession> studentSessions = studentSessionRepository.findAll(
+                            (root, query, cb) -> cb.and(
+                                    cb.equal(root.get("id").get("studentId"), id),
+                                    cb.equal(root.get("session").get("clazz").get("id"), clazz.getId())
+                            )
+                    );
+                    
+                    int total = studentSessions.size();
+                    long attended = studentSessions.stream()
+                            .filter(ss -> ss.getAttendanceStatus() == AttendanceStatus.PRESENT)
+                            .count();
+                    long absent = studentSessions.stream()
+                            .filter(ss -> ss.getAttendanceStatus() == AttendanceStatus.ABSENT)
+                            .count();
+                    long excused = studentSessions.stream()
+                            .filter(ss -> ss.getAttendanceStatus() == AttendanceStatus.EXCUSED)
+                            .count();
+                    
+                    double rate = total > 0 ? (double) attended / total : 0.0;
+                    
+                    AttendanceSummaryDTO summary = AttendanceSummaryDTO.builder()
+                            .totalSessions(total)
+                            .attended((int) attended)
+                            .absent((int) absent)
+                            .excused((int) excused)
+                            .rate(rate)
+                            .build();
+                    
+                    return CurrentClassDTO.builder()
+                            .classId(clazz.getId())
+                            .classCode(clazz.getCode())
+                            .className(clazz.getName())
+                            .enrollmentStatus(enrollment.getStatus().name())
+                            .enrolledAt(enrollment.getEnrolledAt() != null ? enrollment.getEnrolledAt().toLocalDateTime() : null)
+                            .attendanceSummary(summary)
+                            .build();
+                })
+                .collect(Collectors.toList());
+        
+        return StudentProfileDTO.builder()
+                .id(student.getId())
+                .userId(userAccount.getId())
+                .studentCode(student.getStudentCode())
+                .fullName(userAccount.getFullName())
+                .email(userAccount.getEmail())
+                .phone(userAccount.getPhone())
+                .dateOfBirth(null) // Student entity doesn't have dateOfBirth field
+                .guardianName(null) // Student entity doesn't have guardianName field
+                .guardianPhone(null) // Student entity doesn't have guardianPhone field
+                .branchId(student.getBranch().getId())
+                .branchName(student.getBranch().getName())
+                .currentClasses(currentClasses)
+                .createdAt(student.getCreatedAt() != null ? student.getCreatedAt().toLocalDateTime() : null)
+                .build();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<EnrollmentDTO> getStudentEnrollments(Long id) {
-        log.info("Getting enrollments for student ID: {}", id);
+    public StudentScheduleDTO getStudentSchedule(Long id, LocalDate dateFrom, LocalDate dateTo, Long classId) {
+        log.info("Getting schedule for student ID: {} from {} to {}, classId: {}", id, dateFrom, dateTo, classId);
         
         // Verify student exists
-        if (!studentRepository.existsById(id)) {
-            throw new CustomException(ErrorCode.STUDENT_NOT_FOUND);
+        Student student = studentRepository.findById(id)
+                .orElseThrow(() -> new CustomException(ErrorCode.STUDENT_NOT_FOUND));
+        
+        // Query StudentSession with filters
+        List<StudentSession> studentSessions = studentSessionRepository.findAll(
+                (root, query, cb) -> {
+                    List<jakarta.persistence.criteria.Predicate> predicates = new ArrayList<>();
+                    
+                    // Student filter
+                    predicates.add(cb.equal(root.get("id").get("studentId"), id));
+                    
+                    // Date range filter
+                    if (dateFrom != null) {
+                        predicates.add(cb.greaterThanOrEqualTo(root.get("session").get("date"), dateFrom));
+                    }
+                    if (dateTo != null) {
+                        predicates.add(cb.lessThanOrEqualTo(root.get("session").get("date"), dateTo));
+                    }
+                    
+                    // Class filter
+                    if (classId != null) {
+                        predicates.add(cb.equal(root.get("session").get("clazz").get("id"), classId));
+                    }
+                    
+                    return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
+                }
+        );
+        
+        // Map to DTOs with full details
+        List<StudentScheduleSessionDTO> sessionDTOs = studentSessions.stream()
+                .map(ss -> {
+                    SessionEntity session = ss.getSession();
+                    ClassEntity clazz = session.getClazz();
+                    
+                    // Get teacher info and resources for this session
+                    List<TeachingSlot> teachingSlots = teachingSlotRepository.findByIdSessionId(session.getId());
+                    List<SessionResource> sessionResources = sessionResourceRepository.findByIdSessionId(session.getId());
+                    
+                    // Get teacher (primary role)
+                    String teacherName = teachingSlots.stream()
+                            .filter(ts -> ts.getRole().name().equals("PRIMARY"))
+                            .findFirst()
+                            .map(ts -> ts.getTeacher().getUserAccount().getFullName())
+                            .orElse(null);
+                    
+                    // Get resource
+                    String resourceType = sessionResources.stream()
+                            .findFirst()
+                            .map(sr -> sr.getResource().getResourceType().name())
+                            .orElse(null);
+                    
+                    String resourceName = sessionResources.stream()
+                            .findFirst()
+                            .map(sr -> sr.getResource().getName())
+                            .orElse(null);
+                    
+                    return StudentScheduleSessionDTO.builder()
+                            .attendanceStatus(ss.getAttendanceStatus().name())
+                            .isMakeup(ss.getIsMakeup())
+                            .note(ss.getNote())
+                            .sessionId(session.getId())
+                            .date(session.getDate())
+                            .startTime(session.getStartTime())
+                            .endTime(session.getEndTime())
+                            .classId(clazz.getId())
+                            .classCode(clazz.getCode())
+                            .className(clazz.getName())
+                            .sequenceNo(session.getCourseSession() != null ? session.getCourseSession().getSequenceNumber() : null)
+                            .topic(session.getCourseSession() != null ? session.getCourseSession().getTopic() : null)
+                            .teacherName(teacherName)
+                            .resourceType(resourceType)
+                            .resourceName(resourceName)
+                            .build();
+                })
+                .sorted(Comparator.comparing(StudentScheduleSessionDTO::getDate)
+                        .thenComparing(StudentScheduleSessionDTO::getStartTime))
+                .collect(Collectors.toList());
+        
+        // Build summary
+        Map<String, Integer> statusCounts = new HashMap<>();
+        for (StudentScheduleSessionDTO dto : sessionDTOs) {
+            String status = dto.getAttendanceStatus();
+            statusCounts.put(status, statusCounts.getOrDefault(status, 0) + 1);
         }
         
-        // TODO: Implement enrollment query
-        return new ArrayList<>();
-    }
-
-    @Override
-    public EnrollmentDTO enrollStudent(Long id, CreateEnrollmentRequestDTO request) {
-        // TODO: Create Enrollment and auto-generate StudentSession records for all future sessions
-        log.info("Enrolling student ID: {} in class ID: {}", id, request.getClassId());
-        return null;
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Object getStudentSchedule(Long id) {
-        log.info("Getting schedule for student ID: {}", id);
+        StudentScheduleSummaryDTO summary = StudentScheduleSummaryDTO.builder()
+                .totalSessions(sessionDTOs.size())
+                .byStatus(statusCounts)
+                .build();
         
-        // Verify student exists
-        if (!studentRepository.existsById(id)) {
-            throw new CustomException(ErrorCode.STUDENT_NOT_FOUND);
-        }
-        
-        // TODO: Implement schedule query
-        return null;
+        return StudentScheduleDTO.builder()
+                .studentId(id)
+                .studentName(student.getUserAccount().getFullName())
+                .dateFrom(dateFrom)
+                .dateTo(dateTo)
+                .sessions(sessionDTOs)
+                .summary(summary)
+                .build();
     }
 
     // Helper methods
@@ -325,5 +504,18 @@ public class StudentServiceImpl implements StudentService {
         dto.setBranchName(student.getBranch().getName());
         dto.setCreatedAt(student.getCreatedAt());
         return dto;
+    }
+
+    private StudentListDTO mapToStudentListDTO(Student student) {
+        return StudentListDTO.builder()
+                .id(student.getId())
+                .studentCode(student.getStudentCode())
+                .fullName(student.getUserAccount().getFullName())
+                .email(student.getUserAccount().getEmail())
+                .phone(student.getUserAccount().getPhone())
+                .branchId(student.getBranch().getId())
+                .branchName(student.getBranch().getName())
+                .createdAt(student.getCreatedAt() != null ? student.getCreatedAt().toLocalDateTime() : null)
+                .build();
     }
 }
