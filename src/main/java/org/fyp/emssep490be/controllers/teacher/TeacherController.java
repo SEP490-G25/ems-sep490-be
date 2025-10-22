@@ -3,8 +3,9 @@ package org.fyp.emssep490be.controllers.teacher;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.fyp.emssep490be.dtos.ResponseObject;
-import org.fyp.emssep490be.dtos.teacher.CreateTeacherRequest;
+import org.fyp.emssep490be.dtos.teacher.CreateTeacherRequestDTO;
 import org.fyp.emssep490be.dtos.teacher.TeacherProfileDTO;
+import org.fyp.emssep490be.dtos.teacher.UpdateTeacherRequestDTO;
 import org.fyp.emssep490be.services.teacher.TeacherService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,10 +29,22 @@ public class TeacherController {
     }
 
     @PostMapping
-    public ResponseEntity<ResponseObject<TeacherProfileDTO>> createTeacher(@Valid @RequestBody CreateTeacherRequest request) {
+    public ResponseEntity<ResponseObject<TeacherProfileDTO>> createTeacher(@Valid @RequestBody CreateTeacherRequestDTO request) {
         TeacherProfileDTO profile = teacherService.createTeacher(request);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new ResponseObject<>(HttpStatus.CREATED.value(), "Teacher created successfully", profile));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ResponseObject<TeacherProfileDTO>> updateTeacher(@PathVariable Long id, @Valid @RequestBody UpdateTeacherRequestDTO request) {
+        TeacherProfileDTO profile = teacherService.updateTeacher(id, request);
+        return ResponseEntity.ok(new ResponseObject<>(HttpStatus.OK.value(), "Teacher updated successfully", profile));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ResponseObject<Void>> deleteTeacher(@PathVariable Long id) {
+        teacherService.deleteTeacher(id);
+        return ResponseEntity.ok(new ResponseObject<>(HttpStatus.OK.value(), "Teacher deleted successfully", null));
     }
 
     // TODO: Implement teacher schedule endpoint

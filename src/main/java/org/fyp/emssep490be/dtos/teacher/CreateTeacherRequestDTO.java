@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreateTeacherRequest {
+public class CreateTeacherRequestDTO {
     
     @NotBlank(message = "Employee code is required")
     @Pattern(regexp = "^[A-Z]{2,3}\\d{4,6}$", message = "Employee code must be in format: 2-3 letters followed by 4-6 digits")

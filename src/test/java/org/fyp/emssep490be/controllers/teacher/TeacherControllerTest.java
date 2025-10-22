@@ -1,8 +1,11 @@
 package org.fyp.emssep490be.controllers.teacher;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.fyp.emssep490be.dtos.teacher.CreateTeacherRequest;
+import org.fyp.emssep490be.dtos.teacher.CreateTeacherRequestDTO;
 import org.fyp.emssep490be.dtos.teacher.TeacherProfileDTO;
+import org.fyp.emssep490be.exceptions.CustomException;
+import org.fyp.emssep490be.exceptions.ErrorCode;
+import org.fyp.emssep490be.exceptions.GlobalExceptionHandler;
 import org.fyp.emssep490be.services.teacher.TeacherService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,9 +20,9 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import java.util.Collections;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -36,7 +39,9 @@ class TeacherControllerTest {
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(teacherController).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(teacherController)
+                .setControllerAdvice(new GlobalExceptionHandler())
+                .build();
         objectMapper = new ObjectMapper();
     }
 
@@ -78,10 +83,10 @@ class TeacherControllerTest {
     @Test
     void createTeacher_ValidRequest_ReturnsCreatedTeacher() throws Exception {
         // Given
-        CreateTeacherRequest request = createCreateTeacherRequest();
+        CreateTeacherRequestDTO request = createCreateTeacherRequest();
         TeacherProfileDTO teacherProfile = createTeacherProfileDTO();
         
-        when(teacherService.createTeacher(any(CreateTeacherRequest.class)))
+        when(teacherService.createTeacher(any(CreateTeacherRequestDTO.class)))
                 .thenReturn(teacherProfile);
 
         // When & Then
@@ -103,7 +108,7 @@ class TeacherControllerTest {
     @Test
     void createTeacher_InvalidRequest_ReturnsBadRequest() throws Exception {
         // Given
-        CreateTeacherRequest request = new CreateTeacherRequest();
+        CreateTeacherRequestDTO request = new CreateTeacherRequestDTO();
         // Empty request - should trigger validation errors
 
         // When & Then
@@ -116,9 +121,9 @@ class TeacherControllerTest {
     @Test
     void createTeacher_DuplicateEmployeeCode_ReturnsBadRequest() throws Exception {
         // Given
-        CreateTeacherRequest request = createCreateTeacherRequest();
+        CreateTeacherRequestDTO request = createCreateTeacherRequest();
         
-        when(teacherService.createTeacher(any(CreateTeacherRequest.class)))
+        when(teacherService.createTeacher(any(CreateTeacherRequestDTO.class)))
                 .thenThrow(new org.fyp.emssep490be.exceptions.CustomException(org.fyp.emssep490be.exceptions.ErrorCode.TEACHER_EMPLOYEE_CODE_ALREADY_EXISTS));
 
         // When & Then
@@ -142,8 +147,8 @@ class TeacherControllerTest {
         );
     }
 
-    private CreateTeacherRequest createCreateTeacherRequest() {
-        CreateTeacherRequest request = new CreateTeacherRequest();
+    private CreateTeacherRequestDTO createCreateTeacherRequest() {
+        CreateTeacherRequestDTO request = new CreateTeacherRequestDTO();
         request.setEmployeeCode("EMP1234"); // 3 letters + 4 digits
         request.setFullName("John Doe");
         request.setEmail("john.doe@example.com");
@@ -152,5 +157,56 @@ class TeacherControllerTest {
         request.setStatus("ACTIVE");
         request.setNote("Test teacher");
         return request;
+    }
+
+    // DELETE TEACHER TESTS
+
+    @Test
+    void deleteTeacher_ValidId_ReturnsOk() throws Exception {
+        // Given
+        Long teacherId = 1L;
+
+        doNothing().when(teacherService).deleteTeacher(teacherId);
+
+        // When & Then
+        mockMvc.perform(delete("/api/v1/teachers/{id}", teacherId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.message").value("Teacher deleted successfully"))
+                .andExpect(jsonPath("$.data").doesNotExist());
+
+        verify(teacherService).deleteTeacher(teacherId);
+    }
+
+    @Test
+    void deleteTeacher_InvalidId_ReturnsBadRequest() throws Exception {
+        // Given
+        Long teacherId = 0L;
+
+        doThrow(new CustomException(ErrorCode.INVALID_INPUT))
+                .when(teacherService).deleteTeacher(teacherId);
+
+        // When & Then
+        mockMvc.perform(delete("/api/v1/teachers/{id}", teacherId))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(ErrorCode.INVALID_INPUT.getCode()));
+
+        verify(teacherService).deleteTeacher(teacherId);
+    }
+
+    @Test
+    void deleteTeacher_TeacherNotFound_ReturnsBadRequest() throws Exception {
+        // Given
+        Long teacherId = 999L;
+
+        doThrow(new CustomException(ErrorCode.TEACHER_NOT_FOUND))
+                .when(teacherService).deleteTeacher(teacherId);
+
+        // When & Then
+        mockMvc.perform(delete("/api/v1/teachers/{id}", teacherId))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(ErrorCode.TEACHER_NOT_FOUND.getCode()));
+
+        verify(teacherService).deleteTeacher(teacherId);
     }
 }
