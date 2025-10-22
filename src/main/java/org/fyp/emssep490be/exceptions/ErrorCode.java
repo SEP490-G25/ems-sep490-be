@@ -40,13 +40,22 @@ public enum ErrorCode {
     USER_NOT_FOUND(1000, "User not found"),
     USER_EMAIL_ALREADY_EXISTS(1001, "Email already exists"),
     USER_PHONE_ALREADY_EXISTS(1002, "Phone number already exists"),
-    ROLE_NOT_FOUND(1003, "Role not found"),
-    INVALID_PASSWORD(1004, "Invalid password"),
-    PASSWORD_MISMATCH(1005, "Old password does not match"),
+    USER_ALREADY_EXISTS(1003, "User already exists"),
+    ROLE_NOT_FOUND(1004, "Role not found"),
+    INVALID_PASSWORD(1005, "Invalid password"),
+    PASSWORD_MISMATCH(1006, "Old password does not match"),
+
+    // Student errors (1100-1199)
+    STUDENT_NOT_FOUND(1100, "Student not found"),
+    STUDENT_CODE_ALREADY_EXISTS(1101, "Student code already exists"),
+
+    // Teacher errors (3000-3099)
+    TEACHER_NOT_FOUND(3000, "Teacher not found"),
 
     // Common errors (9000-9999)
     INVALID_INPUT(9000, "Invalid input provided"),
-    INVALID_STATUS(9001, "Invalid status value"),
+    INVALID_REQUEST(9001, "Invalid request"),
+    INVALID_STATUS(9002, "Invalid status value"),
     UNAUTHORIZED(9401, "Unauthorized access"),
     FORBIDDEN(9403, "Access forbidden"),
     INTERNAL_SERVER_ERROR(9500, "Internal server error");
