@@ -180,19 +180,26 @@
 
 **Tasks**:
 1. **Subject Management**
-   - [ ] Implement SubjectService:
+   - [x] Implement SubjectService:
      - `getAllSubjects()` với pagination, filter (status)
      - `getSubjectById()`
      - `createSubject()` với validation unique(code)
      - `updateSubject()`, `deleteSubject()`
-   - [ ] Implement SubjectController
+   - [x] Implement SubjectController
 
 2. **Level Management**
-   - [ ] Implement LevelService:
+   - [x] Implement LevelService:
      - `getLevelsBySubject()`
      - `createLevel()` với validation unique(subject_id, code)
      - `updateLevel()`, `deleteLevel()`
-   - [ ] Implement LevelController
+   - [x] Implement LevelController
+
+3. **Testing**
+   - [x] Unit tests cho SubjectServiceImpl (13 tests - ALL PASSED)
+   - [x] Unit tests cho LevelServiceImpl (14 tests - ALL PASSED)
+   - [x] Full test suite verification (85 tests - ALL PASSED)
+
+**Status**: ✅ **COMPLETED** (2025-10-22)
 
 #### Phase 2: Course Management với Approval Workflow (Week 2-4)
 

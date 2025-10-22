@@ -22,6 +22,20 @@ public enum ErrorCode {
     RESOURCE_CONFLICT(2202, "Resource is already booked for the specified time"),
     RESOURCE_INVALID_TYPE(2203, "Invalid resource type"),
 
+    // Subject errors (1200-1219)
+    SUBJECT_NOT_FOUND(1201, "Subject not found"),
+    SUBJECT_CODE_DUPLICATE(1202, "Subject code already exists"),
+    SUBJECT_CODE_INVALID(1203, "Subject code format invalid (must be uppercase alphanumeric with hyphens)"),
+    SUBJECT_HAS_LEVELS(1204, "Cannot delete subject with existing levels"),
+    SUBJECT_HAS_COURSES(1205, "Cannot delete subject with existing courses"),
+
+    // Level errors (1220-1239)
+    LEVEL_NOT_FOUND(1221, "Level not found"),
+    LEVEL_CODE_DUPLICATE(1222, "Level code already exists for this subject"),
+    LEVEL_HAS_COURSES(1223, "Cannot delete level with existing courses"),
+    LEVEL_INVALID_SUBJECT(1224, "Invalid subject ID"),
+    LEVEL_SORT_ORDER_DUPLICATE(1225, "Sort order already exists for this subject"),
+
     // User errors (1000-1099)
     USER_NOT_FOUND(1000, "User not found"),
     USER_EMAIL_ALREADY_EXISTS(1001, "Email already exists"),

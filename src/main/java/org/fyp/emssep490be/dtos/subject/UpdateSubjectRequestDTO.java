@@ -1,10 +1,16 @@
 package org.fyp.emssep490be.dtos.subject;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * Request DTO for updating an existing subject
+ * Note: Subject code cannot be updated (immutable)
+ */
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class UpdateSubjectRequestDTO {
