@@ -19,7 +19,7 @@
        postgres:
          image: postgres:16-alpine
          env:
-           POSTGRES_DB: ems
+           POSTGRES_DB: ems_test
            POSTGRES_USER: postgres
            POSTGRES_PASSWORD: 979712
          ports:
