@@ -36,6 +36,31 @@ public enum ErrorCode {
     LEVEL_INVALID_SUBJECT(1224, "Invalid subject ID"),
     LEVEL_SORT_ORDER_DUPLICATE(1225, "Sort order already exists for this subject"),
 
+    // Course errors (1240-1269)
+    COURSE_NOT_FOUND(1240, "Course not found"),
+    COURSE_ALREADY_EXISTS(1241, "Course already exists with this subject, level, and version"),
+    COURSE_CODE_DUPLICATE(1242, "Course code already exists"),
+    COURSE_CANNOT_BE_UPDATED(1243, "Course cannot be updated (must be in draft or rejected status)"),
+    COURSE_CANNOT_BE_MODIFIED(1244, "Course cannot be modified (not in draft status)"),
+    COURSE_IN_USE(1245, "Cannot delete course that is being used by classes"),
+    COURSE_ALREADY_SUBMITTED(1246, "Course has already been submitted for approval"),
+    COURSE_NOT_SUBMITTED(1247, "Course has not been submitted for approval"),
+    COURSE_NO_PHASES(1248, "Course must have at least one phase before submission"),
+    INVALID_ACTION(1249, "Invalid approval action (must be 'approve' or 'reject')"),
+    REJECTION_REASON_REQUIRED(1250, "Rejection reason is required when rejecting a course"),
+    INVALID_TOTAL_HOURS(1251, "Total hours calculation is inconsistent with duration, sessions per week, and hours per session"),
+
+    // CoursePhase errors (1270-1289)
+    PHASE_NOT_FOUND(1270, "Course phase not found"),
+    PHASE_NUMBER_DUPLICATE(1271, "Phase number already exists for this course"),
+    PHASE_HAS_SESSIONS(1272, "Cannot delete phase that has course sessions"),
+
+    // CourseSession errors (1290-1309)
+    SESSION_NOT_FOUND(1290, "Course session not found"),
+    SESSION_SEQUENCE_DUPLICATE(1291, "Session sequence number already exists for this phase"),
+    SESSION_IN_USE(1292, "Cannot delete course session that is being used in actual sessions"),
+    INVALID_SKILL_SET(1293, "Invalid skill set value(s)"),
+
     // User errors (1000-1099)
     USER_NOT_FOUND(1000, "User not found"),
     USER_EMAIL_ALREADY_EXISTS(1001, "Email already exists"),
