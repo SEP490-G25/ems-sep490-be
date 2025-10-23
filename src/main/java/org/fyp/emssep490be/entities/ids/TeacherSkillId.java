@@ -24,6 +24,6 @@ public class TeacherSkillId implements Serializable {
     private Long teacherId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "skill")
+    @Column(name = "skill", columnDefinition = "skill_enum")
     private Skill skill;
 }
