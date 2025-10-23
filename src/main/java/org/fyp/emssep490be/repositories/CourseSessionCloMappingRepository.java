@@ -49,6 +49,15 @@ public interface CourseSessionCloMappingRepository extends JpaRepository<CourseS
     boolean existsByCourseSessionId(@Param("courseSessionId") Long courseSessionId);
 
     /**
+     * Check if any mappings exist for a CLO
+     *
+     * @param cloId CLO ID
+     * @return true if mappings exist
+     */
+    @Query("SELECT CASE WHEN COUNT(m) > 0 THEN true ELSE false END FROM CourseSessionCloMapping m WHERE m.id.cloId = :cloId")
+    boolean existsByCloId(@Param("cloId") Long cloId);
+
+    /**
      * Count mappings for a specific CourseSession
      *
      * @param courseSessionId CourseSession ID

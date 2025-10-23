@@ -21,21 +21,37 @@ public class CourseMaterialController {
 
     private final CourseMaterialService courseMaterialService;
 
+    /**
+     * Upload course material
+     * POST /api/v1/courses/{courseId}/materials
+     * Material can be associated with course, phase, or session level
+     *
+     * @param courseId Course ID
+     * @param request Upload material request with file and metadata
+     * @return Created material DTO
+     */
     @PostMapping
     public ResponseEntity<ResponseObject<CourseMaterialDTO>> uploadMaterial(
             @PathVariable Long courseId,
             @Valid @ModelAttribute UploadMaterialRequestDTO request) {
-        // TODO: Implement file upload logic
-        // - Handle multipart file upload
-        // - Store file in storage (S3, local, etc.)
-        // - Create course material record
+        CourseMaterialDTO uploadedMaterial = courseMaterialService.uploadMaterial(courseId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(
-                new ResponseObject<>(HttpStatus.CREATED.value(), "Material uploaded successfully", null));
+                new ResponseObject<>(HttpStatus.CREATED.value(), "Material uploaded successfully", uploadedMaterial));
     }
 
+    /**
+     * Delete course material
+     * DELETE /api/v1/courses/{courseId}/materials/{id}
+     * Deletes material record and associated file from storage
+     *
+     * @param courseId Course ID
+     * @param id Material ID
+     * @return Success response
+     */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteMaterial(@PathVariable Long courseId, @PathVariable Long id) {
-        // TODO: Implement delete material logic
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<ResponseObject<Void>> deleteMaterial(@PathVariable Long courseId, @PathVariable Long id) {
+        courseMaterialService.deleteMaterial(courseId, id);
+        return ResponseEntity.ok(
+                new ResponseObject<>(HttpStatus.OK.value(), "Material deleted successfully", null));
     }
 }

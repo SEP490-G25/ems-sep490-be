@@ -9,6 +9,9 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+/**
+ * Repository for PLO-CLO mapping entity
+ */
 @Repository
 public interface PloCloMappingRepository extends JpaRepository<PloCloMapping, PloCloMappingId> {
 
@@ -47,6 +50,15 @@ public interface PloCloMappingRepository extends JpaRepository<PloCloMapping, Pl
      */
     @Query("SELECT CASE WHEN COUNT(m) > 0 THEN true ELSE false END FROM PloCloMapping m WHERE m.id.ploId = :ploId")
     boolean existsByPloId(@Param("ploId") Long ploId);
+
+    /**
+     * Check if any mappings exist for a CLO
+     *
+     * @param cloId CLO ID
+     * @return true if mappings exist
+     */
+    @Query("SELECT CASE WHEN COUNT(m) > 0 THEN true ELSE false END FROM PloCloMapping m WHERE m.id.cloId = :cloId")
+    boolean existsByCloId(@Param("cloId") Long cloId);
 
     /**
      * Count mappings for a specific PLO
