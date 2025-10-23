@@ -94,6 +94,21 @@ public enum ErrorCode {
     TEACHER_NOT_ASSIGNED_TO_BRANCH(3006, "Teacher is not assigned to this branch"),
     TEACHER_SCHEDULE_NOT_FOUND(3007, "Teacher schedule not found"),
     TEACHER_WORKLOAD_EXCEEDED(3008, "Teacher workload exceeds maximum capacity"),
+
+    // Student Request errors (4100-4199)
+    STUDENT_REQUEST_NOT_FOUND(4100, "Student request not found"),
+    STUDENT_NOT_ENROLLED_IN_CLASS(4101, "Student is not enrolled in this class"),
+    SESSION_NOT_PLANNED(4102, "Session is not in planned status"),
+    SESSION_ALREADY_OCCURRED(4103, "Cannot request absence for past session"),
+    ABSENCE_REQUEST_LEAD_TIME_NOT_MET(4104, "Absence request must be submitted at least {0} days before session"),
+    DUPLICATE_ABSENCE_REQUEST(4105, "You already have a pending absence request for this session"),
+    STUDENT_SESSION_NOT_FOUND(4106, "Student session record not found"),
+    REQUEST_NOT_PENDING(4107, "Request is not in pending status"),
+    REQUEST_TYPE_MISMATCH(4108, "Request type mismatch"),
+    STUDENT_ABSENCE_QUOTA_EXCEEDED(4109, "Student has reached the maximum absence quota for this class"),
+    CANNOT_MODIFY_APPROVED_REQUEST(4110, "Cannot modify an approved request"),
+    CANNOT_CANCEL_APPROVED_REQUEST(4111, "Cannot cancel an approved request"),
+
     // Common errors (9000-9999)
     INVALID_INPUT(9000, "Invalid input provided"),
     INVALID_REQUEST(9001, "Invalid request"),

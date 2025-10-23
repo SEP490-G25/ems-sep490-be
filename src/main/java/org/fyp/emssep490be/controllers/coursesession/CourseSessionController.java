@@ -20,7 +20,7 @@ import java.util.List;
 /**
  * Controller for Course Session (Template) management operations
  * Handles CRUD operations for course sessions
- * Base path: /api/v1/phases/{phaseId}/sessions and /api/v1/sessions/{id}
+ * Base path: /api/v1/phases/{phaseId}/sessions and /api/v1/course-sessions/{id}
  */
 @RestController
 @RequiredArgsConstructor
@@ -81,13 +81,13 @@ public class CourseSessionController {
 
     /**
      * Update an existing session
-     * PUT /api/v1/sessions/{id}
+     * PUT /api/v1/course-sessions/{id}
      *
      * @param id      Session ID
      * @param request Session update request
      * @return Updated session information
      */
-    @PutMapping("/api/v1/sessions/{id}")
+    @PutMapping("/api/v1/course-sessions/{id}")
     @PreAuthorize("hasAnyRole('SUBJECT_LEADER', 'ADMIN')")
     @Operation(summary = "Update a session", description = "Update an existing session (only allowed for draft courses)")
     public ResponseEntity<ResponseObject<CourseSessionDTO>> updateSession(
@@ -107,12 +107,12 @@ public class CourseSessionController {
 
     /**
      * Delete a session
-     * DELETE /api/v1/sessions/{id}
+     * DELETE /api/v1/course-sessions/{id}
      *
      * @param id Session ID
      * @return No content
      */
-    @DeleteMapping("/api/v1/sessions/{id}")
+    @DeleteMapping("/api/v1/course-sessions/{id}")
     @PreAuthorize("hasAnyRole('SUBJECT_LEADER', 'ADMIN')")
     @Operation(summary = "Delete a session", description = "Delete a session (only allowed if not used in actual sessions)")
     public ResponseEntity<ResponseObject<Void>> deleteSession(@PathVariable Long id) {

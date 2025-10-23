@@ -14,7 +14,6 @@ import org.springframework.boot.test.context.SpringBootTest;
  * To run locally: Ensure PostgreSQL is running with 'ems' database and schema.sql executed.
  */
 @SpringBootTest
-@Disabled("Requires full PostgreSQL setup with enums - use @DataJpaTest for repository tests")
 class EmsSep490BeApplicationTests {
 
     @Test
