@@ -30,4 +30,14 @@ public interface TeacherSkillRepository extends JpaRepository<TeacherSkill, Teac
     
     @Query(value = "SELECT teacher_id, skill, level FROM teacher_skill WHERE teacher_id = :teacherId", nativeQuery = true)
     List<Object[]> findSkillsByTeacherIdNative(@Param("teacherId") Long teacherId);
+    
+    @Modifying
+    @Transactional
+    @Query(value = "DELETE FROM teacher_skill WHERE teacher_id = :teacherId AND skill::text = :skill", nativeQuery = true)
+    void deleteByTeacherIdAndSkill(@Param("teacherId") Long teacherId, @Param("skill") String skill);
+    
+    @Modifying
+    @Transactional
+    @Query(value = "UPDATE teacher_skill SET level = :level WHERE teacher_id = :teacherId AND skill::text = :skill", nativeQuery = true)
+    void updateTeacherSkillLevel(@Param("teacherId") Long teacherId, @Param("skill") String skill, @Param("level") Short level);
 }

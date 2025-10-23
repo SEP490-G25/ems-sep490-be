@@ -3,10 +3,9 @@ package org.fyp.emssep490be.services.teacher.impl;
 import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import jakarta.persistence.EntityManager;
-import org.springframework.beans.factory.annotation.Autowired;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.fyp.emssep490be.dtos.teacher.CreateTeacherRequestDTO;
 import org.fyp.emssep490be.dtos.teacher.TeacherAvailabilityDTO;
@@ -19,8 +18,6 @@ import org.fyp.emssep490be.entities.Teacher;
 import org.fyp.emssep490be.entities.TeacherAvailability;
 import org.fyp.emssep490be.entities.TeacherSkill;
 import org.fyp.emssep490be.entities.UserAccount;
-import org.fyp.emssep490be.entities.enums.Skill;
-import org.fyp.emssep490be.entities.ids.TeacherSkillId;
 import org.fyp.emssep490be.exceptions.CustomException;
 import org.fyp.emssep490be.exceptions.ErrorCode;
 import org.fyp.emssep490be.repositories.TeacherAvailabilityRepository;
@@ -337,14 +334,64 @@ public class TeacherServiceImpl implements TeacherService {
             skillDTO.setSkill(skillInput.toUpperCase());
         }
 
-        // Delete existing skills
-        teacherSkillRepository.deleteByTeacherId(id);
-        entityManager.flush(); // Force flush DELETE to database before INSERT
-
-        // Insert with native SQL casting to skill_enum (no entity/DB changes)
+        // Get current skills for comparison
+        List<Object[]> currentSkills = teacherSkillRepository.findSkillsByTeacherIdNative(id);
+        Set<String> currentSkillNames = currentSkills.stream()
+                .map(row -> (String) row[1])
+                .collect(Collectors.toSet());
+        
+        // Get new skills from request
+        Set<String> newSkillNames = request.getSkills().stream()
+                .map(skillDTO -> skillDTO.getSkill().trim().toLowerCase())
+                .collect(Collectors.toSet());
+        
+        // Find skills to DELETE (exist in current but not in new)
+        Set<String> skillsToDelete = currentSkillNames.stream()
+                .filter(skill -> !newSkillNames.contains(skill))
+                .collect(Collectors.toSet());
+        
+        // Find skills to INSERT (exist in new but not in current)
+        Set<String> skillsToInsert = newSkillNames.stream()
+                .filter(skill -> !currentSkillNames.contains(skill))
+                .collect(Collectors.toSet());
+        
+        // Find skills to UPDATE (exist in both but level might be different)
+        Set<String> skillsToUpdate = newSkillNames.stream()
+                .filter(skill -> currentSkillNames.contains(skill))
+                .collect(Collectors.toSet());
+        
+        // DELETE skills that are no longer needed
+        for (String skillToDelete : skillsToDelete) {
+            teacherSkillRepository.deleteByTeacherIdAndSkill(id, skillToDelete);
+        }
+        
+        // INSERT new skills
         for (UpdateTeacherSkillsRequestDTO.TeacherSkillDTO skillDTO : request.getSkills()) {
             String skillLower = skillDTO.getSkill().trim().toLowerCase();
-            teacherSkillRepository.insertTeacherSkill(id, skillLower, skillDTO.getLevel().shortValue());
+            if (skillsToInsert.contains(skillLower)) {
+                teacherSkillRepository.insertTeacherSkill(id, skillLower, skillDTO.getLevel().shortValue());
+            }
+        }
+        
+        // UPDATE existing skills (only if level actually changes)
+        for (UpdateTeacherSkillsRequestDTO.TeacherSkillDTO skillDTO : request.getSkills()) {
+            String skillLower = skillDTO.getSkill().trim().toLowerCase();
+            if (skillsToUpdate.contains(skillLower)) {
+                // Find current level for this skill
+                Short currentLevel = currentSkills.stream()
+                        .filter(row -> skillLower.equals((String) row[1]))
+                        .map(row -> ((Number) row[2]).shortValue())
+                        .findFirst()
+                        .orElse(null);
+                
+                // Only UPDATE if level actually changed
+                if (currentLevel == null || !currentLevel.equals(skillDTO.getLevel().shortValue())) {
+                    teacherSkillRepository.updateTeacherSkillLevel(id, skillLower, skillDTO.getLevel().shortValue());
+                    log.info("Updated skill {} level from {} to {}", skillLower, currentLevel, skillDTO.getLevel());
+                } else {
+                    log.info("Skipped UPDATE for skill {} - level unchanged ({})", skillLower, currentLevel);
+                }
+            }
         }
 
         // Update teacher timestamp

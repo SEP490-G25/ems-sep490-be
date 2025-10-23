@@ -523,17 +523,21 @@ class TeacherServiceImplTest {
         UpdateTeacherSkillsRequestDTO request = createUpdateTeacherSkillsRequest();
 
         when(teacherRepository.findByIdWithUserAccount(teacherId)).thenReturn(Optional.of(teacher));
-        doNothing().when(teacherSkillRepository).deleteByTeacherId(teacherId);
+        
+        // Mock current skills (empty - no existing skills)
+        List<Object[]> currentSkills = List.of();
+        when(teacherSkillRepository.findSkillsByTeacherIdNative(teacherId)).thenReturn(currentSkills);
+        
+        // Mock new methods for TRUE UPDATE logic
         doNothing().when(teacherSkillRepository).insertTeacherSkill(anyLong(), anyString(), anyShort());
-        doNothing().when(entityManager).flush();
         when(teacherRepository.save(any(Teacher.class))).thenAnswer(invocation -> invocation.getArgument(0));
         
-        // Mock native query result
-        List<Object[]> skillRows = List.of(
+        // Mock final result for response
+        List<Object[]> finalSkills = List.of(
             new Object[]{teacherId, "speaking", 5},
             new Object[]{teacherId, "listening", 4}
         );
-        when(teacherSkillRepository.findSkillsByTeacherIdNative(teacherId)).thenReturn(skillRows);
+        when(teacherSkillRepository.findSkillsByTeacherIdNative(teacherId)).thenReturn(currentSkills, finalSkills);
 
         // When
         TeacherSkillsResponseDTO result = teacherService.updateTeacherSkills(teacherId, request);
@@ -548,11 +552,9 @@ class TeacherServiceImplTest {
         assertEquals(4, result.getSkills().get(1).getLevel());
 
         verify(teacherRepository).findByIdWithUserAccount(teacherId);
-        verify(teacherSkillRepository).deleteByTeacherId(teacherId);
-        verify(entityManager).flush();
-        verify(teacherSkillRepository, times(2)).insertTeacherSkill(anyLong(), anyString(), anyShort());
+        verify(teacherSkillRepository, times(2)).findSkillsByTeacherIdNative(teacherId); // Called twice: current + final
+        verify(teacherSkillRepository, times(2)).insertTeacherSkill(anyLong(), anyString(), anyShort()); // Insert 2 new skills
         verify(teacherRepository).save(any(Teacher.class));
-        verify(teacherSkillRepository).findSkillsByTeacherIdNative(teacherId);
     }
 
     @Test
