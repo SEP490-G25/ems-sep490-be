@@ -18,7 +18,13 @@
       "Bash(python3:*)",
       "Bash(chmod:*)",
       "Bash(/tmp/test_subject_level.sh)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(xargs cat:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(file=\"/Users/tatanh/Documents/Code/SEP490-Capstone/ems-sep490-be/src/test/java/org/fyp/emssep490be/repositories/LevelRepositoryIntegrationTest.java\")",
+      "Bash(rm:*)",
+      "Bash(mkdir:*)"
     ],
     "deny": [],
     "ask": []

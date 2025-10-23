@@ -36,6 +36,55 @@ public enum ErrorCode {
     LEVEL_INVALID_SUBJECT(1224, "Invalid subject ID"),
     LEVEL_SORT_ORDER_DUPLICATE(1225, "Sort order already exists for this subject"),
 
+    // Course errors (1240-1269)
+    COURSE_NOT_FOUND(1240, "Course not found"),
+    COURSE_ALREADY_EXISTS(1241, "Course already exists with this subject, level, and version"),
+    COURSE_CODE_DUPLICATE(1242, "Course code already exists"),
+    COURSE_CANNOT_BE_UPDATED(1243, "Course cannot be updated (must be in draft or rejected status)"),
+    COURSE_CANNOT_BE_MODIFIED(1244, "Course cannot be modified (not in draft status)"),
+    COURSE_IN_USE(1245, "Cannot delete course that is being used by classes"),
+    COURSE_ALREADY_SUBMITTED(1246, "Course has already been submitted for approval"),
+    COURSE_NOT_SUBMITTED(1247, "Course has not been submitted for approval"),
+    COURSE_NO_PHASES(1248, "Course must have at least one phase before submission"),
+    INVALID_ACTION(1249, "Invalid approval action (must be 'approve' or 'reject')"),
+    REJECTION_REASON_REQUIRED(1250, "Rejection reason is required when rejecting a course"),
+    INVALID_TOTAL_HOURS(1251, "Total hours calculation is inconsistent with duration, sessions per week, and hours per session"),
+
+    // CoursePhase errors (1270-1289)
+    PHASE_NOT_FOUND(1270, "Course phase not found"),
+    PHASE_NUMBER_DUPLICATE(1271, "Phase number already exists for this course"),
+    PHASE_HAS_SESSIONS(1272, "Cannot delete phase that has course sessions"),
+
+    // CourseSession errors (1290-1309)
+    SESSION_NOT_FOUND(1290, "Course session not found"),
+    SESSION_SEQUENCE_DUPLICATE(1291, "Session sequence number already exists for this phase"),
+    SESSION_IN_USE(1292, "Cannot delete course session that is being used in actual sessions"),
+    INVALID_SKILL_SET(1293, "Invalid skill set value(s)"),
+    COURSE_SESSION_NOT_FOUND(1294, "Course session not found"),
+
+    // PLO errors (1310-1329)
+    PLO_NOT_FOUND(1310, "PLO not found"),
+    PLO_CODE_DUPLICATE(1311, "PLO code already exists for this subject"),
+    PLO_HAS_MAPPINGS(1312, "Cannot delete PLO with existing CLO mappings"),
+
+    // CLO errors (1330-1349)
+    CLO_NOT_FOUND(1330, "CLO not found"),
+    CLO_CODE_DUPLICATE(1331, "CLO code already exists for this course"),
+    CLO_HAS_MAPPINGS(1332, "Cannot delete CLO with existing mappings"),
+
+    // Mapping errors (1350-1369)
+    PLO_CLO_SUBJECT_MISMATCH(1350, "PLO and CLO must belong to the same subject"),
+    PLO_CLO_MAPPING_ALREADY_EXISTS(1351, "This PLO-CLO mapping already exists"),
+    CLO_SESSION_COURSE_MISMATCH(1352, "CLO and CourseSession must belong to the same course"),
+    CLO_SESSION_MAPPING_ALREADY_EXISTS(1353, "This CLO-Session mapping already exists"),
+
+    // Course Material errors (1370-1389)
+    COURSE_MATERIAL_NOT_FOUND(1370, "Course material not found"),
+    MATERIAL_MUST_HAVE_CONTEXT(1371, "Material must be associated with course, phase, or session"),
+    INVALID_FILE_TYPE(1372, "File type not allowed"),
+    FILE_TOO_LARGE(1373, "File size exceeds maximum limit"),
+    FILE_UPLOAD_FAILED(1374, "Failed to upload file"),
+
     // User errors (1000-1099)
     USER_NOT_FOUND(1000, "User not found"),
     USER_EMAIL_ALREADY_EXISTS(1001, "Email already exists"),
@@ -69,6 +118,31 @@ public enum ErrorCode {
     TEACHER_NOT_ASSIGNED_TO_BRANCH(3006, "Teacher is not assigned to this branch"),
     TEACHER_SCHEDULE_NOT_FOUND(3007, "Teacher schedule not found"),
     TEACHER_WORKLOAD_EXCEEDED(3008, "Teacher workload exceeds maximum capacity"),
+
+    // Student Request errors (4100-4199)
+    STUDENT_REQUEST_NOT_FOUND(4100, "Student request not found"),
+    STUDENT_NOT_ENROLLED_IN_CLASS(4101, "Student is not enrolled in this class"),
+    SESSION_NOT_PLANNED(4102, "Session is not in planned status"),
+    SESSION_ALREADY_OCCURRED(4103, "Cannot request absence for past session"),
+    ABSENCE_REQUEST_LEAD_TIME_NOT_MET(4104, "Absence request must be submitted at least {0} days before session"),
+    DUPLICATE_ABSENCE_REQUEST(4105, "You already have a pending absence request for this session"),
+    STUDENT_SESSION_NOT_FOUND(4106, "Student session record not found"),
+    REQUEST_NOT_PENDING(4107, "Request is not in pending status"),
+    REQUEST_TYPE_MISMATCH(4108, "Request type mismatch"),
+    STUDENT_ABSENCE_QUOTA_EXCEEDED(4109, "Student has reached the maximum absence quota for this class"),
+    CANNOT_MODIFY_APPROVED_REQUEST(4110, "Cannot modify an approved request"),
+    CANNOT_CANCEL_APPROVED_REQUEST(4111, "Cannot cancel an approved request"),
+
+    // Make-up Request specific errors (4112-4119)
+    MAKEUP_COURSE_SESSION_MISMATCH(4112, "Target session and makeup session must have the same course content"),
+    MAKEUP_SESSION_CAPACITY_FULL(4113, "The makeup session has reached maximum capacity"),
+    SCHEDULE_CONFLICT(4114, "Student has another session scheduled at the same time"),
+    MAKEUP_QUOTA_EXCEEDED(4115, "Student has exceeded the maximum number of makeup sessions allowed"),
+    STUDENT_ALREADY_ENROLLED_IN_MAKEUP(4116, "Student is already enrolled in the makeup session"),
+    MAKEUP_SESSION_NOW_FULL(4117, "Makeup session capacity filled between submission and approval"),
+    NO_AVAILABLE_MAKEUP_SESSIONS(4118, "No available makeup sessions found for this content"),
+    INVALID_ATTENDANCE_STATUS_FOR_MAKEUP(4119, "Student must be absent or have planned status to request makeup"),
+
     // Common errors (9000-9999)
     INVALID_INPUT(9000, "Invalid input provided"),
     INVALID_REQUEST(9001, "Invalid request"),
