@@ -86,7 +86,14 @@ public enum ErrorCode {
 
     // Teacher errors (3000-3099)
     TEACHER_NOT_FOUND(3000, "Teacher not found"),
-
+    TEACHER_EMPLOYEE_CODE_ALREADY_EXISTS(3001, "Teacher employee code already exists"),
+    TEACHER_SKILL_NOT_FOUND(3002, "Teacher skill not found"),
+    TEACHER_AVAILABILITY_NOT_FOUND(3003, "Teacher availability not found"),
+    TEACHER_AVAILABILITY_CONFLICT(3004, "Teacher availability conflicts with existing schedule"),
+    TEACHER_ALREADY_ASSIGNED_TO_BRANCH(3005, "Teacher is already assigned to this branch"),
+    TEACHER_NOT_ASSIGNED_TO_BRANCH(3006, "Teacher is not assigned to this branch"),
+    TEACHER_SCHEDULE_NOT_FOUND(3007, "Teacher schedule not found"),
+    TEACHER_WORKLOAD_EXCEEDED(3008, "Teacher workload exceeds maximum capacity"),
     // Common errors (9000-9999)
     INVALID_INPUT(9000, "Invalid input provided"),
     INVALID_REQUEST(9001, "Invalid request"),
