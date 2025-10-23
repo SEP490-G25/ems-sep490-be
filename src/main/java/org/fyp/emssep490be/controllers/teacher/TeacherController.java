@@ -3,6 +3,7 @@ package org.fyp.emssep490be.controllers.teacher;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.fyp.emssep490be.dtos.ResponseObject;
+import org.fyp.emssep490be.dtos.teacher.AddTeacherSkillsRequestDTO;
 import org.fyp.emssep490be.dtos.teacher.CreateTeacherRequestDTO;
 import org.fyp.emssep490be.dtos.teacher.TeacherProfileDTO;
 import org.fyp.emssep490be.dtos.teacher.TeacherSkillsResponseDTO;
@@ -55,6 +56,29 @@ public class TeacherController {
             @Valid @RequestBody UpdateTeacherSkillsRequestDTO request) {
         TeacherSkillsResponseDTO response = teacherService.updateTeacherSkills(id, request);
         return ResponseEntity.ok(new ResponseObject<>(HttpStatus.OK.value(), "Teacher skills updated successfully", response));
+    }
+
+    @GetMapping("/{teacherId}/skills")
+    public ResponseEntity<ResponseObject<TeacherSkillsResponseDTO>> getTeacherSkills(@PathVariable Long teacherId) {
+        TeacherSkillsResponseDTO response = teacherService.getTeacherSkills(teacherId);
+        return ResponseEntity.ok(new ResponseObject<>(HttpStatus.OK.value(), "Teacher skills retrieved", response));
+    }
+
+    @PostMapping("/{teacherId}/skills")
+    public ResponseEntity<ResponseObject<TeacherSkillsResponseDTO>> addTeacherSkills(
+            @PathVariable Long teacherId,
+            @Valid @RequestBody AddTeacherSkillsRequestDTO request) {
+        TeacherSkillsResponseDTO response = teacherService.addTeacherSkills(teacherId, request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(new ResponseObject<>(HttpStatus.CREATED.value(), "Teacher skills added successfully", response));
+    }
+
+    @DeleteMapping("/{teacherId}/skills/{skill}")
+    public ResponseEntity<ResponseObject<Void>> removeTeacherSkill(
+            @PathVariable Long teacherId,
+            @PathVariable String skill) {
+        teacherService.removeTeacherSkill(teacherId, skill);
+        return ResponseEntity.ok(new ResponseObject<>(HttpStatus.OK.value(), "Teacher skill removed successfully", null));
     }
 
     // TODO: Implement teacher schedule endpoint
