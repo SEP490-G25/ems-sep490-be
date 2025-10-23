@@ -72,11 +72,7 @@ public enum ErrorCode {
     CLO_CODE_DUPLICATE(1331, "CLO code already exists for this course"),
     CLO_HAS_MAPPINGS(1332, "Cannot delete CLO with existing mappings"),
 
-<<<<<<< HEAD
     // PLO-CLO Mapping errors (1350-1369)
-=======
-    // Mapping errors (1350-1369)
->>>>>>> 760c99eca11e1a162483449d8339ef5765642161
     PLO_CLO_SUBJECT_MISMATCH(1350, "PLO and CLO must belong to the same subject"),
     PLO_CLO_MAPPING_ALREADY_EXISTS(1351, "This PLO-CLO mapping already exists"),
     CLO_SESSION_COURSE_MISMATCH(1352, "CLO and CourseSession must belong to the same course"),

@@ -170,12 +170,11 @@ public class CloServiceImpl implements CloService {
         mapping.setPlo(plo);
         mapping.setClo(clo);
 
-        if (request.getNote() != null && !request.getNote().trim().isEmpty()) {
-            mapping.setNote(request.getNote());
+        if (request.getStatus() != null && !request.getStatus().trim().isEmpty()) {
+            mapping.setStatus(request.getStatus());
+        } else {
+            mapping.setStatus("active");
         }
-
-        OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
-        mapping.setCreatedAt(now);
 
         ploCloMappingRepository.save(mapping);
         log.info("PLO-CLO mapping created successfully: PLO ID: {}, CLO ID: {}", ploId, cloId);
@@ -186,8 +185,7 @@ public class CloServiceImpl implements CloService {
         response.put("ploCode", plo.getCode());
         response.put("cloId", cloId);
         response.put("cloCode", clo.getCode());
-        response.put("note", mapping.getNote());
-        response.put("createdAt", mapping.getCreatedAt());
+        response.put("status", mapping.getStatus());
 
         return response;
     }
@@ -242,12 +240,11 @@ public class CloServiceImpl implements CloService {
         mapping.setCourseSession(courseSession);
         mapping.setClo(clo);
 
-        if (request.getNote() != null && !request.getNote().trim().isEmpty()) {
-            mapping.setNote(request.getNote());
+        if (request.getStatus() != null && !request.getStatus().trim().isEmpty()) {
+            mapping.setStatus(request.getStatus());
+        } else {
+            mapping.setStatus("active");
         }
-
-        OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
-        mapping.setCreatedAt(now);
 
         courseSessionCloMappingRepository.save(mapping);
         log.info("CLO-Session mapping created successfully: Session ID: {}, CLO ID: {}", sessionId, cloId);
@@ -255,11 +252,10 @@ public class CloServiceImpl implements CloService {
         // Build response
         Map<String, Object> response = new HashMap<>();
         response.put("courseSessionId", sessionId);
-        response.put("sessionSequence", courseSession.getSequenceNo());
+        response.put("sessionSequence", courseSession.getSequenceNumber());
         response.put("cloId", cloId);
         response.put("cloCode", clo.getCode());
-        response.put("note", mapping.getNote());
-        response.put("createdAt", mapping.getCreatedAt());
+        response.put("status", mapping.getStatus());
 
         return response;
     }
@@ -315,18 +311,24 @@ public class CloServiceImpl implements CloService {
         // Get mapped PLOs
         List<PloCloMapping> mappings = ploCloMappingRepository.findByCloId(clo.getId());
 
-        List<CloDTO.MappedPloDTO> mappedPlos = mappings.stream()
+        List<org.fyp.emssep490be.dtos.plo.PloDTO> mappedPlos = mappings.stream()
                 .map(mapping -> {
-                    CloDTO.MappedPloDTO ploDTO = new CloDTO.MappedPloDTO();
-                    ploDTO.setPloId(mapping.getPlo().getId());
-                    ploDTO.setPloCode(mapping.getPlo().getCode());
+                    org.fyp.emssep490be.dtos.plo.PloDTO ploDTO = new org.fyp.emssep490be.dtos.plo.PloDTO();
+                    ploDTO.setId(mapping.getPlo().getId());
+                    ploDTO.setSubjectId(mapping.getPlo().getSubject().getId());
+                    ploDTO.setCode(mapping.getPlo().getCode());
                     ploDTO.setDescription(mapping.getPlo().getDescription());
-                    ploDTO.setNote(mapping.getNote());
+                    // Note: mappedClosCount will be 0 for mapped PLOs in CLO context
+                    ploDTO.setMappedClosCount(0);
                     return ploDTO;
                 })
                 .collect(Collectors.toList());
 
         dto.setMappedPlos(mappedPlos);
+
+        // Get mapped sessions count
+        long mappedSessionsCount = courseSessionCloMappingRepository.countByCloId(clo.getId());
+        dto.setMappedSessionsCount((int) mappedSessionsCount);
 
         return dto;
     }

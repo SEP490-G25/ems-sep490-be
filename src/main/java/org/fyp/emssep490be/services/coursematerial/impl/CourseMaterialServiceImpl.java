@@ -15,8 +15,6 @@ import org.fyp.emssep490be.repositories.CoursePhaseRepository;
 import org.fyp.emssep490be.repositories.CourseRepository;
 import org.fyp.emssep490be.repositories.CourseSessionRepository;
 import org.fyp.emssep490be.services.coursematerial.CourseMaterialService;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,14 +54,13 @@ public class CourseMaterialServiceImpl implements CourseMaterialService {
                     return new CustomException(ErrorCode.COURSE_NOT_FOUND);
                 });
 
-        // Validate material has at least one context (course, phase, or session)
+        // Validate material has at least one context (course, phase, or courseSession)
         Long phaseId = request.getPhaseId();
-        Long sessionId = request.getSessionId();
+        Long sessionId = request.getCourseSessionId();
 
-        if (phaseId == null && sessionId == null) {
-            log.error("Material must be associated with course, phase, or session");
-            throw new CustomException(ErrorCode.MATERIAL_MUST_HAVE_CONTEXT);
-        }
+        // Material can be at course level (phaseId and sessionId both null)
+        // Or at phase level (phaseId not null, sessionId null)
+        // Or at session level (both not null recommended, but sessionId alone acceptable)
 
         // Validate phase if provided
         CoursePhase phase = null;
@@ -81,18 +78,18 @@ public class CourseMaterialServiceImpl implements CourseMaterialService {
             }
         }
 
-        // Validate session if provided
-        CourseSession session = null;
+        // Validate courseSession if provided
+        CourseSession courseSession = null;
         if (sessionId != null) {
-            session = courseSessionRepository.findById(sessionId)
+            courseSession = courseSessionRepository.findById(sessionId)
                     .orElseThrow(() -> {
                         log.error("CourseSession not found with ID: {}", sessionId);
                         return new CustomException(ErrorCode.COURSE_SESSION_NOT_FOUND);
                     });
 
-            // Validate session belongs to course
-            if (!session.getPhase().getCourse().getId().equals(courseId)) {
-                log.error("Session ID: {} does not belong to course ID: {}", sessionId, courseId);
+            // Validate courseSession belongs to course
+            if (!courseSession.getPhase().getCourse().getId().equals(courseId)) {
+                log.error("CourseSession ID: {} does not belong to course ID: {}", sessionId, courseId);
                 throw new CustomException(ErrorCode.INVALID_INPUT);
             }
         }
@@ -103,28 +100,31 @@ public class CourseMaterialServiceImpl implements CourseMaterialService {
             throw new CustomException(ErrorCode.INVALID_INPUT);
         }
 
-        // Validate file URL not empty
-        if (request.getFileUrl() == null || request.getFileUrl().trim().isEmpty()) {
-            log.error("Material file URL cannot be empty");
+        // Validate file provided
+        if (request.getFile() == null || request.getFile().isEmpty()) {
+            log.error("Material file is required");
             throw new CustomException(ErrorCode.INVALID_INPUT);
         }
 
+        // TODO: Handle actual file upload to storage (S3 or local)
+        // For MVP, we'll just store the original filename as URL
+        String fileUrl = "/uploads/" + request.getFile().getOriginalFilename();
+
         // Get current user from security context
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String uploadedBy = authentication != null ? authentication.getName() : "system";
+        // TODO: Get actual UserAccount entity from database
+        // For now, we'll leave uploadedBy as null
 
         // Create material entity
         OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
         CourseMaterial material = new CourseMaterial();
         material.setCourse(course);
         material.setPhase(phase);
-        material.setSession(session);
+        material.setCourseSession(courseSession);
         material.setTitle(request.getTitle());
-        material.setDescription(request.getDescription());
-        material.setFileUrl(request.getFileUrl());
-        material.setFileType(request.getFileType());
-        material.setUploadedBy(uploadedBy);
-        material.setUploadedAt(now);
+        material.setUrl(fileUrl);
+        // material.setUploadedBy(uploadedByUser); // TODO: Set when user management is ready
+        material.setCreatedAt(now);
+        material.setUpdatedAt(now);
 
         // Save and return
         CourseMaterial savedMaterial = courseMaterialRepository.save(material);
@@ -169,20 +169,22 @@ public class CourseMaterialServiceImpl implements CourseMaterialService {
 
         if (material.getPhase() != null) {
             dto.setPhaseId(material.getPhase().getId());
-            dto.setPhaseNumber(material.getPhase().getPhaseNumber());
         }
 
-        if (material.getSession() != null) {
-            dto.setSessionId(material.getSession().getId());
-            dto.setSessionSequence(material.getSession().getSequenceNo());
+        if (material.getCourseSession() != null) {
+            dto.setCourseSessionId(material.getCourseSession().getId());
         }
 
         dto.setTitle(material.getTitle());
-        dto.setDescription(material.getDescription());
-        dto.setFileUrl(material.getFileUrl());
-        dto.setFileType(material.getFileType());
-        dto.setUploadedBy(material.getUploadedBy());
-        dto.setUploadedAt(material.getUploadedAt());
+        dto.setUrl(material.getUrl());
+
+        if (material.getUploadedBy() != null) {
+            dto.setUploadedBy(material.getUploadedBy().getId());
+        }
+
+        if (material.getCreatedAt() != null) {
+            dto.setCreatedAt(material.getCreatedAt().toLocalDateTime());
+        }
 
         return dto;
     }
