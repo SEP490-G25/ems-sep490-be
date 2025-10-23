@@ -11,9 +11,9 @@ spring:
 
   sql:
     init:
-      mode: always
-      schema-locations: classpath:schema.sql
-      continue-on-error: true
+      mode: never  # Don't run schema.sql in tests - Hibernate creates schema
+      # schema-locations: classpath:schema.sql  # Not needed with create-drop
+      # continue-on-error: true
 
   jpa:
     defer-datasource-initialization: false

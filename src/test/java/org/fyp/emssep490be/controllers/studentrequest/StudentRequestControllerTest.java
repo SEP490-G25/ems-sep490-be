@@ -22,6 +22,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.fyp.emssep490be.configs.CustomUserDetails;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -69,6 +74,9 @@ class StudentRequestControllerTest {
 
         objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
+
+        // Setup mock authentication context
+        setupMockAuthentication();
 
         // Setup test session DTO
         testSessionDTO = SessionBasicDTO.builder()
@@ -384,6 +392,9 @@ class StudentRequestControllerTest {
             testRequestDTO.setDecidedBy(200L);
             testRequestDTO.setDecidedByName("Test Staff");
 
+            // Mock getRequestById (called by controller to determine request type)
+            when(studentRequestService.getRequestById(requestId)).thenReturn(testRequestDTO);
+            
             when(studentRequestService.approveAbsenceRequest(eq(requestId), anyLong(), any(ApproveRequestDTO.class)))
                     .thenReturn(testRequestDTO);
 
@@ -409,7 +420,8 @@ class StudentRequestControllerTest {
             Long requestId = 999L;
             ApproveRequestDTO approveDTO = new ApproveRequestDTO();
 
-            when(studentRequestService.approveAbsenceRequest(eq(requestId), anyLong(), any(ApproveRequestDTO.class)))
+            // Mock getRequestById to throw exception (request not found)
+            when(studentRequestService.getRequestById(requestId))
                     .thenThrow(new CustomException(ErrorCode.STUDENT_REQUEST_NOT_FOUND));
 
             // When & Then
@@ -419,7 +431,8 @@ class StudentRequestControllerTest {
                     .andDo(print())
                     .andExpect(status().isBadRequest());
 
-            verify(studentRequestService, times(1)).approveAbsenceRequest(eq(requestId), anyLong(), any(ApproveRequestDTO.class));
+            verify(studentRequestService, times(1)).getRequestById(requestId);
+            verify(studentRequestService, never()).approveAbsenceRequest(anyLong(), anyLong(), any());
         }
 
         @Test
@@ -429,6 +442,17 @@ class StudentRequestControllerTest {
             Long requestId = 1L;
             ApproveRequestDTO approveDTO = new ApproveRequestDTO();
 
+            // Setup request as already approved (not pending)
+            StudentRequestDTO alreadyApprovedRequest = StudentRequestDTO.builder()
+                    .id(requestId)
+                    .requestType(StudentRequestType.ABSENCE)
+                    .status(RequestStatus.APPROVED) // Already approved
+                    .studentId(1L)
+                    .build();
+
+            // Mock getRequestById to return approved request
+            when(studentRequestService.getRequestById(requestId)).thenReturn(alreadyApprovedRequest);
+            
             when(studentRequestService.approveAbsenceRequest(eq(requestId), anyLong(), any(ApproveRequestDTO.class)))
                     .thenThrow(new CustomException(ErrorCode.REQUEST_NOT_PENDING));
 
@@ -439,6 +463,7 @@ class StudentRequestControllerTest {
                     .andDo(print())
                     .andExpect(status().isBadRequest());
 
+            verify(studentRequestService, times(1)).getRequestById(requestId);
             verify(studentRequestService, times(1)).approveAbsenceRequest(eq(requestId), anyLong(), any(ApproveRequestDTO.class));
         }
 
@@ -551,5 +576,33 @@ class StudentRequestControllerTest {
 
             verify(studentRequestService, times(1)).getRequestById(requestId);
         }
+    }
+
+    /**
+     * Helper method to setup mock authentication context for controller tests
+     */
+    private void setupMockAuthentication() {
+        // Create CustomUserDetails with all required parameters
+        CustomUserDetails userDetails = new CustomUserDetails(
+                200L,                           // userId (Staff ID used in tests)
+                "staff@test.com",               // username (email)
+                "password",                     // password
+                "Test Staff",                   // fullName
+                List.of("ACADEMIC_STAFF"),      // roles
+                List.of(1L),                    // branchIds
+                true                            // enabled
+        );
+
+        // Create authentication
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+                userDetails,
+                null,
+                userDetails.getAuthorities()
+        );
+
+        // Setup SecurityContext
+        SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
+        securityContext.setAuthentication(authentication);
+        SecurityContextHolder.setContext(securityContext);
     }
 }

@@ -53,7 +53,8 @@ public class CourseSession {
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.ARRAY)
-    @Column(name = "skill_set", columnDefinition = "skill_enum[]")
+    @Column(name = "skill_set") // Removed columnDefinition to support H2 in tests
+    // @Column(name = "skill_set", columnDefinition = "skill_enum[]") // For PostgreSQL production
     private List<Skill> skillSet;
 
     @Column(name = "created_at", nullable = false, updatable = false)

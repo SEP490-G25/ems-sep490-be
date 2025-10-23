@@ -133,6 +133,16 @@ public enum ErrorCode {
     CANNOT_MODIFY_APPROVED_REQUEST(4110, "Cannot modify an approved request"),
     CANNOT_CANCEL_APPROVED_REQUEST(4111, "Cannot cancel an approved request"),
 
+    // Make-up Request specific errors (4112-4119)
+    MAKEUP_COURSE_SESSION_MISMATCH(4112, "Target session and makeup session must have the same course content"),
+    MAKEUP_SESSION_CAPACITY_FULL(4113, "The makeup session has reached maximum capacity"),
+    SCHEDULE_CONFLICT(4114, "Student has another session scheduled at the same time"),
+    MAKEUP_QUOTA_EXCEEDED(4115, "Student has exceeded the maximum number of makeup sessions allowed"),
+    STUDENT_ALREADY_ENROLLED_IN_MAKEUP(4116, "Student is already enrolled in the makeup session"),
+    MAKEUP_SESSION_NOW_FULL(4117, "Makeup session capacity filled between submission and approval"),
+    NO_AVAILABLE_MAKEUP_SESSIONS(4118, "No available makeup sessions found for this content"),
+    INVALID_ATTENDANCE_STATUS_FOR_MAKEUP(4119, "Student must be absent or have planned status to request makeup"),
+
     // Common errors (9000-9999)
     INVALID_INPUT(9000, "Invalid input provided"),
     INVALID_REQUEST(9001, "Invalid request"),

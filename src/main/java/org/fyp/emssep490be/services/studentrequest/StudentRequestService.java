@@ -1,14 +1,13 @@
 package org.fyp.emssep490be.services.studentrequest;
 
-import org.fyp.emssep490be.dtos.studentrequest.ApproveRequestDTO;
-import org.fyp.emssep490be.dtos.studentrequest.CreateAbsenceRequestDTO;
-import org.fyp.emssep490be.dtos.studentrequest.RejectRequestDTO;
-import org.fyp.emssep490be.dtos.studentrequest.StudentRequestDTO;
+import org.fyp.emssep490be.dtos.studentrequest.*;
+import org.fyp.emssep490be.entities.enums.Modality;
 import org.fyp.emssep490be.entities.enums.RequestStatus;
 import org.fyp.emssep490be.entities.enums.StudentRequestType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -105,11 +104,52 @@ public interface StudentRequestService {
      */
     StudentRequestDTO cancelRequest(Long requestId, Long studentId);
 
-    // ==================== MAKEUP REQUEST OPERATIONS (Future) ====================
-    // TODO: Implement in Phase 3
-    // StudentRequestDTO createMakeupRequest(Long studentId, CreateMakeupRequestDTO request);
-    // List<AvailableMakeupSessionDTO> findAvailableMakeupSessions(Long studentId, Long sessionId);
-    // StudentRequestDTO approveMakeupRequest(Long requestId, Long staffId, ApproveRequestDTO dto);
+    // ==================== MAKEUP REQUEST OPERATIONS ====================
+
+    /**
+     * Find available makeup sessions for a missed session
+     * Returns sessions with the same course content that have available capacity
+     *
+     * @param studentId The ID of the student
+     * @param missedSessionId The ID of the missed session
+     * @param dateFrom Optional filter for earliest date
+     * @param dateTo Optional filter for latest date
+     * @param branchId Optional filter for specific branch
+     * @param modality Optional filter for modality (OFFLINE, ONLINE, HYBRID)
+     * @return MakeupSessionSearchResultDTO containing available sessions
+     * @throws org.fyp.emssep490be.exceptions.CustomException if student or session not found
+     */
+    MakeupSessionSearchResultDTO findAvailableMakeupSessions(
+            Long studentId,
+            Long missedSessionId,
+            LocalDate dateFrom,
+            LocalDate dateTo,
+            Long branchId,
+            Modality modality
+    );
+
+    /**
+     * Create a makeup request
+     * Student requests to attend a different session to make up for a missed one
+     *
+     * @param studentId The ID of the student
+     * @param request The makeup request details
+     * @return The created StudentRequestDTO
+     * @throws org.fyp.emssep490be.exceptions.CustomException if validation fails
+     */
+    StudentRequestDTO createMakeupRequest(Long studentId, CreateMakeupRequestDTO request);
+
+    /**
+     * Approve a makeup request
+     * Marks original session as excused and creates new student_session for makeup with is_makeup=true
+     *
+     * @param requestId The ID of the request to approve
+     * @param staffId The ID of the staff member approving the request
+     * @param dto The approval details (optional notes)
+     * @return The updated StudentRequestDTO
+     * @throws org.fyp.emssep490be.exceptions.CustomException if validation fails or capacity full
+     */
+    StudentRequestDTO approveMakeupRequest(Long requestId, Long staffId, ApproveRequestDTO dto);
 
     // ==================== TRANSFER REQUEST OPERATIONS (Future) ====================
     // TODO: Implement in Phase 4
