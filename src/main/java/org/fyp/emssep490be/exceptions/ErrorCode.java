@@ -60,6 +60,30 @@ public enum ErrorCode {
     SESSION_SEQUENCE_DUPLICATE(1291, "Session sequence number already exists for this phase"),
     SESSION_IN_USE(1292, "Cannot delete course session that is being used in actual sessions"),
     INVALID_SKILL_SET(1293, "Invalid skill set value(s)"),
+    COURSE_SESSION_NOT_FOUND(1294, "Course session not found"),
+
+    // PLO errors (1310-1329)
+    PLO_NOT_FOUND(1310, "PLO not found"),
+    PLO_CODE_DUPLICATE(1311, "PLO code already exists for this subject"),
+    PLO_HAS_MAPPINGS(1312, "Cannot delete PLO with existing CLO mappings"),
+
+    // CLO errors (1330-1349)
+    CLO_NOT_FOUND(1330, "CLO not found"),
+    CLO_CODE_DUPLICATE(1331, "CLO code already exists for this course"),
+    CLO_HAS_MAPPINGS(1332, "Cannot delete CLO with existing mappings"),
+
+    // Mapping errors (1350-1369)
+    PLO_CLO_SUBJECT_MISMATCH(1350, "PLO and CLO must belong to the same subject"),
+    PLO_CLO_MAPPING_ALREADY_EXISTS(1351, "This PLO-CLO mapping already exists"),
+    CLO_SESSION_COURSE_MISMATCH(1352, "CLO and CourseSession must belong to the same course"),
+    CLO_SESSION_MAPPING_ALREADY_EXISTS(1353, "This CLO-Session mapping already exists"),
+
+    // Course Material errors (1370-1389)
+    COURSE_MATERIAL_NOT_FOUND(1370, "Course material not found"),
+    MATERIAL_MUST_HAVE_CONTEXT(1371, "Material must be associated with course, phase, or session"),
+    INVALID_FILE_TYPE(1372, "File type not allowed"),
+    FILE_TOO_LARGE(1373, "File size exceeds maximum limit"),
+    FILE_UPLOAD_FAILED(1374, "Failed to upload file"),
 
     // User errors (1000-1099)
     USER_NOT_FOUND(1000, "User not found"),
