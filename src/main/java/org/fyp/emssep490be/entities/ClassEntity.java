@@ -68,7 +68,8 @@ public class ClassEntity {
     private LocalDate actualEndDate;
 
     @JdbcTypeCode(SqlTypes.ARRAY)
-    @Column(name = "schedule_days", columnDefinition = "smallint[]")
+    @Column(name = "schedule_days") // Removed columnDefinition to support H2 in tests
+    //@Column(name = "schedule_days", columnDefinition = "smallint[]") // For PostgreSQL production
     private List<Short> scheduleDays;
 
     @Column(name = "max_capacity")

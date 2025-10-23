@@ -3,13 +3,17 @@ package org.fyp.emssep490be.controllers.studentrequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.fyp.emssep490be.configs.CustomUserDetails;
 import org.fyp.emssep490be.dtos.ResponseObject;
-import org.fyp.emssep490be.dtos.studentrequest.ApproveRequestDTO;
-import org.fyp.emssep490be.dtos.studentrequest.CreateAbsenceRequestDTO;
-import org.fyp.emssep490be.dtos.studentrequest.RejectRequestDTO;
-import org.fyp.emssep490be.dtos.studentrequest.StudentRequestDTO;
+import org.fyp.emssep490be.dtos.studentrequest.*;
+import org.fyp.emssep490be.entities.enums.Modality;
 import org.fyp.emssep490be.entities.enums.RequestStatus;
 import org.fyp.emssep490be.entities.enums.StudentRequestType;
+
+import java.time.LocalDate;
+
+import org.fyp.emssep490be.exceptions.CustomException;
+import org.fyp.emssep490be.exceptions.ErrorCode;
 import org.fyp.emssep490be.services.studentrequest.StudentRequestService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -18,6 +22,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -34,6 +40,33 @@ import java.util.List;
 public class StudentRequestController {
 
     private final StudentRequestService studentRequestService;
+
+    /**
+     * Extract authenticated user ID from SecurityContext
+     * 
+     * @return User ID from JWT token
+     * @throws CustomException if authentication is missing or invalid
+     */
+    private Long getAuthenticatedUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        
+        if (authentication == null || !authentication.isAuthenticated()) {
+            log.error("No authentication found in SecurityContext");
+            throw new CustomException(ErrorCode.UNAUTHORIZED);
+        }
+        
+        Object principal = authentication.getPrincipal();
+        if (!(principal instanceof CustomUserDetails)) {
+            log.error("Invalid principal type: {}", principal.getClass().getName());
+            throw new CustomException(ErrorCode.UNAUTHORIZED);
+        }
+        
+        CustomUserDetails userDetails = (CustomUserDetails) principal;
+        Long userId = userDetails.getUserId();
+        
+        log.debug("Extracted user ID from SecurityContext: {}", userId);
+        return userId;
+    }
 
     // ==================== STUDENT OPERATIONS ====================
 
@@ -209,7 +242,7 @@ public class StudentRequestController {
     }
 
     /**
-     * Approve an absence request
+     * Approve a student request (handles ABSENCE and MAKEUP types)
      * POST /api/v1/student-requests/{requestId}/approve
      *
      * @param requestId The ID of the request to approve
@@ -224,12 +257,26 @@ public class StudentRequestController {
 
         log.info("Approving request {}", requestId);
 
-        // TODO: Extract actual staff ID from SecurityContext/JWT
-        // For now using placeholder - should be extracted from authenticated user
-        Long staffId = 1L;
+        // Extract authenticated staff ID from SecurityContext
+        Long staffId = getAuthenticatedUserId();
 
         ApproveRequestDTO approveDto = dto != null ? dto : new ApproveRequestDTO();
-        StudentRequestDTO result = studentRequestService.approveAbsenceRequest(requestId, staffId, approveDto);
+
+        // Get request to determine type
+        StudentRequestDTO request = studentRequestService.getRequestById(requestId);
+        StudentRequestDTO result;
+
+        // Route to appropriate service method based on request type
+        switch (request.getRequestType()) {
+            case ABSENCE:
+                result = studentRequestService.approveAbsenceRequest(requestId, staffId, approveDto);
+                break;
+            case MAKEUP:
+                result = studentRequestService.approveMakeupRequest(requestId, staffId, approveDto);
+                break;
+            default:
+                throw new IllegalStateException("Unsupported request type: " + request.getRequestType());
+        }
 
         return ResponseEntity.ok(
                 new ResponseObject<>(
@@ -256,9 +303,8 @@ public class StudentRequestController {
 
         log.info("Rejecting request {}", requestId);
 
-        // TODO: Extract actual staff ID from SecurityContext/JWT
-        // For now using placeholder - should be extracted from authenticated user
-        Long staffId = 1L;
+        // Extract authenticated staff ID from SecurityContext
+        Long staffId = getAuthenticatedUserId();
 
         StudentRequestDTO result = studentRequestService.rejectAbsenceRequest(requestId, staffId, dto);
 
@@ -271,10 +317,75 @@ public class StudentRequestController {
         );
     }
 
+    // ==================== MAKEUP REQUEST ENDPOINTS ====================
+
+    /**
+     * Find available makeup sessions for a missed session
+     * GET /api/v1/students/{studentId}/sessions/{sessionId}/available-makeups
+     *
+     * @param studentId The ID of the student
+     * @param sessionId The ID of the missed session
+     * @param dateFrom Optional filter for earliest date
+     * @param dateTo Optional filter for latest date
+     * @param branchId Optional filter for specific branch
+     * @param modality Optional filter for modality (OFFLINE, ONLINE, HYBRID)
+     * @return MakeupSessionSearchResultDTO with available sessions
+     */
+    @GetMapping("/students/{studentId}/sessions/{sessionId}/available-makeups")
+    @PreAuthorize("hasAnyRole('STUDENT', 'ACADEMIC_STAFF', 'CENTER_HEAD', 'MANAGER')")
+    public ResponseEntity<ResponseObject<MakeupSessionSearchResultDTO>> findAvailableMakeupSessions(
+            @PathVariable Long studentId,
+            @PathVariable Long sessionId,
+            @RequestParam(required = false) LocalDate dateFrom,
+            @RequestParam(required = false) LocalDate dateTo,
+            @RequestParam(required = false) Long branchId,
+            @RequestParam(required = false) Modality modality) {
+
+        log.info("Finding available makeup sessions for student {} and session {} (filters: dateFrom={}, dateTo={}, branchId={}, modality={})",
+                studentId, sessionId, dateFrom, dateTo, branchId, modality);
+
+        MakeupSessionSearchResultDTO result = studentRequestService.findAvailableMakeupSessions(
+                studentId, sessionId, dateFrom, dateTo, branchId, modality
+        );
+
+        return ResponseEntity.ok(
+                new ResponseObject<>(
+                        HttpStatus.OK.value(),
+                        "Available makeup sessions retrieved successfully",
+                        result
+                )
+        );
+    }
+
+    /**
+     * Create makeup request
+     * POST /api/v1/students/{studentId}/requests/makeup
+     *
+     * @param studentId The ID of the student making the request
+     * @param request The makeup request details (targetSessionId, makeupSessionId, reason)
+     * @return Created StudentRequestDTO
+     */
+    @PostMapping("/students/{studentId}/requests/makeup")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<ResponseObject<StudentRequestDTO>> createMakeupRequest(
+            @PathVariable Long studentId,
+            @Valid @RequestBody CreateMakeupRequestDTO request) {
+
+        log.info("Received makeup request from student {} - target: {}, makeup: {}",
+                studentId, request.getTargetSessionId(), request.getMakeupSessionId());
+
+        StudentRequestDTO result = studentRequestService.createMakeupRequest(studentId, request);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                new ResponseObject<>(
+                        HttpStatus.CREATED.value(),
+                        "Makeup request created successfully",
+                        result
+                )
+        );
+    }
+
     // ==================== FUTURE ENDPOINTS ====================
-    // TODO: Phase 3 - Makeup Request
-    // POST /api/v1/students/{studentId}/requests/makeup
-    // GET /api/v1/students/{studentId}/sessions/{sessionId}/available-makeups
 
     // TODO: Phase 4 - Transfer Request
     // POST /api/v1/students/{studentId}/requests/transfer
