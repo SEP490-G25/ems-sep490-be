@@ -4,17 +4,23 @@ import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import jakarta.persistence.EntityManager;
+import org.springframework.beans.factory.annotation.Autowired;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.fyp.emssep490be.dtos.teacher.CreateTeacherRequestDTO;
 import org.fyp.emssep490be.dtos.teacher.TeacherAvailabilityDTO;
 import org.fyp.emssep490be.dtos.teacher.TeacherProfileDTO;
 import org.fyp.emssep490be.dtos.teacher.TeacherSkillDTO;
+import org.fyp.emssep490be.dtos.teacher.TeacherSkillsResponseDTO;
 import org.fyp.emssep490be.dtos.teacher.UpdateTeacherRequestDTO;
+import org.fyp.emssep490be.dtos.teacher.UpdateTeacherSkillsRequestDTO;
 import org.fyp.emssep490be.entities.Teacher;
 import org.fyp.emssep490be.entities.TeacherAvailability;
 import org.fyp.emssep490be.entities.TeacherSkill;
 import org.fyp.emssep490be.entities.UserAccount;
+import org.fyp.emssep490be.entities.enums.Skill;
+import org.fyp.emssep490be.entities.ids.TeacherSkillId;
 import org.fyp.emssep490be.exceptions.CustomException;
 import org.fyp.emssep490be.exceptions.ErrorCode;
 import org.fyp.emssep490be.repositories.TeacherAvailabilityRepository;
@@ -27,16 +33,30 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 @Transactional
 public class TeacherServiceImpl implements TeacherService {
 
+    private final EntityManager entityManager;
     private final TeacherRepository teacherRepository;
     private final TeacherSkillRepository teacherSkillRepository;
     private final TeacherAvailabilityRepository teacherAvailabilityRepository;
     private final UserAccountRepository userAccountRepository;
     private final PasswordEncoder passwordEncoder;
+
+    public TeacherServiceImpl(EntityManager entityManager,
+                             TeacherRepository teacherRepository,
+                             TeacherSkillRepository teacherSkillRepository,
+                             TeacherAvailabilityRepository teacherAvailabilityRepository,
+                             UserAccountRepository userAccountRepository,
+                             PasswordEncoder passwordEncoder) {
+        this.entityManager = entityManager;
+        this.teacherRepository = teacherRepository;
+        this.teacherSkillRepository = teacherSkillRepository;
+        this.teacherAvailabilityRepository = teacherAvailabilityRepository;
+        this.userAccountRepository = userAccountRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     @Override
     @Transactional(readOnly = true)
@@ -278,5 +298,72 @@ public class TeacherServiceImpl implements TeacherService {
         teacherRepository.save(teacher);
 
         log.info("Teacher with ID {} has been deactivated", id);
+    }
+
+    @Override
+    @Transactional
+    public TeacherSkillsResponseDTO updateTeacherSkills(Long id, UpdateTeacherSkillsRequestDTO request) {
+        log.info("Updating teacher skills for ID: {}", id);
+
+        // Validate input
+        if (id == null || id <= 0) {
+            throw new CustomException(ErrorCode.INVALID_INPUT);
+        }
+
+        if (request == null || request.getSkills() == null || request.getSkills().isEmpty()) {
+            throw new CustomException(ErrorCode.INVALID_INPUT);
+        }
+
+        // Find teacher
+        Teacher teacher = teacherRepository.findByIdWithUserAccount(id)
+                .orElseThrow(() -> new CustomException(ErrorCode.TEACHER_NOT_FOUND));
+
+        // Validate skills data
+        for (UpdateTeacherSkillsRequestDTO.TeacherSkillDTO skillDTO : request.getSkills()) {
+            if (skillDTO.getSkill() == null || skillDTO.getSkill().trim().isEmpty()) {
+                throw new CustomException(ErrorCode.INVALID_INPUT);
+            }
+            if (skillDTO.getLevel() == null || skillDTO.getLevel() < 1 || skillDTO.getLevel() > 5) {
+                throw new CustomException(ErrorCode.INVALID_INPUT);
+            }
+            
+            // Validate skill enum (case-insensitive)
+            String skillInput = skillDTO.getSkill().trim().toLowerCase();
+            if (!skillInput.matches("general|reading|writing|speaking|listening")) {
+                throw new CustomException(ErrorCode.INVALID_INPUT);
+            }
+            
+            // Convert to uppercase for enum
+            skillDTO.setSkill(skillInput.toUpperCase());
+        }
+
+        // Delete existing skills
+        teacherSkillRepository.deleteByTeacherId(id);
+        entityManager.flush(); // Force flush DELETE to database before INSERT
+
+        // Insert with native SQL casting to skill_enum (no entity/DB changes)
+        for (UpdateTeacherSkillsRequestDTO.TeacherSkillDTO skillDTO : request.getSkills()) {
+            String skillLower = skillDTO.getSkill().trim().toLowerCase();
+            teacherSkillRepository.insertTeacherSkill(id, skillLower, skillDTO.getLevel().shortValue());
+        }
+
+        // Update teacher timestamp
+        teacher.setUpdatedAt(OffsetDateTime.now());
+        teacherRepository.save(teacher);
+
+        // Read back for response using native query to avoid enum issues
+        List<Object[]> skillRows = teacherSkillRepository.findSkillsByTeacherIdNative(id);
+        
+        // Build response from native query results
+        List<TeacherSkillsResponseDTO.TeacherSkillDTO> responseSkills = skillRows.stream()
+                .map(row -> {
+                    String skillName = (String) row[1]; // skill column
+                    Integer level = ((Number) row[2]).intValue(); // level column
+                    return new TeacherSkillsResponseDTO.TeacherSkillDTO(skillName, level);
+                })
+                .collect(Collectors.toList());
+
+        log.info("Teacher skills updated successfully for ID: {}", id);
+        return new TeacherSkillsResponseDTO(id, responseSkills, teacher.getUpdatedAt());
     }
 }

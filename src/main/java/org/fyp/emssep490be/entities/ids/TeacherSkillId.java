@@ -2,6 +2,8 @@ package org.fyp.emssep490be.entities.ids;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import java.io.Serializable;
@@ -24,6 +26,6 @@ public class TeacherSkillId implements Serializable {
     private Long teacherId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "skill")
+    @Column(name = "skill", columnDefinition = "skill_enum")
     private Skill skill;
 }

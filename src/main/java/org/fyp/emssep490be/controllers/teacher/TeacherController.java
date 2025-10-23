@@ -5,7 +5,9 @@ import lombok.RequiredArgsConstructor;
 import org.fyp.emssep490be.dtos.ResponseObject;
 import org.fyp.emssep490be.dtos.teacher.CreateTeacherRequestDTO;
 import org.fyp.emssep490be.dtos.teacher.TeacherProfileDTO;
+import org.fyp.emssep490be.dtos.teacher.TeacherSkillsResponseDTO;
 import org.fyp.emssep490be.dtos.teacher.UpdateTeacherRequestDTO;
+import org.fyp.emssep490be.dtos.teacher.UpdateTeacherSkillsRequestDTO;
 import org.fyp.emssep490be.services.teacher.TeacherService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -45,6 +47,14 @@ public class TeacherController {
     public ResponseEntity<ResponseObject<Void>> deleteTeacher(@PathVariable Long id) {
         teacherService.deleteTeacher(id);
         return ResponseEntity.ok(new ResponseObject<>(HttpStatus.OK.value(), "Teacher deleted successfully", null));
+    }
+
+    @PutMapping("/{id}/skills")
+    public ResponseEntity<ResponseObject<TeacherSkillsResponseDTO>> updateTeacherSkills(
+            @PathVariable Long id, 
+            @Valid @RequestBody UpdateTeacherSkillsRequestDTO request) {
+        TeacherSkillsResponseDTO response = teacherService.updateTeacherSkills(id, request);
+        return ResponseEntity.ok(new ResponseObject<>(HttpStatus.OK.value(), "Teacher skills updated successfully", response));
     }
 
     // TODO: Implement teacher schedule endpoint
