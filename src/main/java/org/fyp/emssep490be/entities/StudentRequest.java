@@ -71,7 +71,7 @@ public class StudentRequest {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "submitted_by")
-    private UserAccount submittedBy;
+    private UserAccount submittedBy; // đã nộp
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "decided_by")
@@ -83,7 +83,7 @@ public class StudentRequest {
     private String note;
 
     @Column(name = "created_at", nullable = false, updatable = false)
-    private OffsetDateTime createdAt;
+    private OffsetDateTime createdAt; // tạo nhưng chưa nộp
 
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
