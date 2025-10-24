@@ -62,10 +62,9 @@
 - PostgreSQL schema với 16 enum types
 
 ❌ **CHƯA CÓ**:
-- Business logic trong services
+- Business logic trong services (một số modules)
 - Complex algorithms (session generation, conflict detection, request processing)
-- Service implementations thực sự
-- Integration tests
+- Service implementations for remaining modules
 - Request/Workflow module (chưa có service)
 
 ---
@@ -167,6 +166,8 @@
 
 **Status**: ✅ **COMPLETED** (2025-10-18)
 
+**Note**: Integration tests (@DataJpaTest for repository layer) were initially implemented but later removed from the codebase. Testing strategy now focuses on Unit Tests + API-level Integration Tests.
+
 ---
 
 ## 📚 DEV 2: ACADEMIC CURRICULUM LEAD
@@ -197,7 +198,7 @@
 3. **Testing**
    - [x] Unit tests cho SubjectServiceImpl (13 tests - ALL PASSED)
    - [x] Unit tests cho LevelServiceImpl (14 tests - ALL PASSED)
-   - [x] Full test suite verification (85 tests - ALL PASSED)
+   - [x] API integration tests (9 automated scenarios - ALL PASSED)
 
 **Status**: ✅ **COMPLETED** (2025-10-22)
 
@@ -678,8 +679,9 @@
   - [x] CourseMaterialController: 2 REST endpoints
   - [x] Multi-level context support (course/phase/session)
   - [x] 15 unit tests - ALL PASSED
-- [x] Unit tests + Integration tests (coverage > 80%)
-  - [x] Total: 133 tests (27 Phase 1 + 50 Phase 2 + 56 Phase 3) - 100% pass rate
+- [x] Unit tests coverage > 80%
+  - [x] Total: 133 unit tests (27 Phase 1 + 50 Phase 2 + 56 Phase 3) - 100% pass rate
+  - [x] API integration tests: 9 automated scenarios - ALL PASSED
   - [x] Comprehensive documentation (3 guides for Phase 2)
   - [x] 19 New error codes (1310-1389)
 
@@ -813,14 +815,16 @@ main (protected branch)
 | Test Type | Owner | When | Coverage Target |
 |-----------|-------|------|-----------------|
 | **Unit Test** | Mỗi dev | Sau mỗi method implement | > 80% |
-| **Integration Test** | Mỗi dev | Sau hoàn thành module | > 70% |
+| **API Integration Test** | Mỗi dev | Sau hoàn thành module | Critical endpoints |
 | **E2E Test** | DEV 4 (lead) | Sprint 6 | Critical flows |
 | **Performance Test** | DEV 1 | Sprint 7 | Response time < 500ms |
 
 **Test Data Strategy**:
-- Dùng `@DataJpaTest` với H2 in-memory cho repository tests
-- Dùng `@SpringBootTest` với test containers (PostgreSQL) cho integration tests
-- Tạo test fixtures trong `src/test/resources/data.sql`
+- Dùng `@SpringBootTest` với mock dependencies cho unit tests
+- Dùng API-level integration tests (REST calls) cho end-to-end validation
+- Tạo test fixtures trong `src/test/resources/data.sql` nếu cần
+
+**Note**: Repository Integration Tests (@DataJpaTest) đã được loại bỏ khỏi testing strategy. Focus on Unit Tests + API Tests.
 
 ---
 
