@@ -2,9 +2,15 @@ package org.fyp.emssep490be.services.teacher.impl;
 
 import org.fyp.emssep490be.dtos.teacher.CreateTeacherRequestDTO;
 import org.fyp.emssep490be.dtos.teacher.TeacherProfileDTO;
+import org.fyp.emssep490be.dtos.teacher.TeacherSkillsResponseDTO;
 import org.fyp.emssep490be.dtos.teacher.UpdateTeacherRequestDTO;
+import org.fyp.emssep490be.dtos.teacher.UpdateTeacherSkillsRequestDTO;
+import org.fyp.emssep490be.dtos.teacher.AddTeacherSkillsRequestDTO;
 import org.fyp.emssep490be.entities.Teacher;
+import org.fyp.emssep490be.entities.TeacherSkill;
 import org.fyp.emssep490be.entities.UserAccount;
+import org.fyp.emssep490be.entities.enums.Skill;
+import org.fyp.emssep490be.entities.ids.TeacherSkillId;
 import org.fyp.emssep490be.exceptions.CustomException;
 import org.fyp.emssep490be.exceptions.ErrorCode;
 import org.fyp.emssep490be.repositories.TeacherAvailabilityRepository;
@@ -18,9 +24,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import jakarta.persistence.EntityManager;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -47,6 +57,9 @@ class TeacherServiceImplTest {
     @Mock
     private PasswordEncoder passwordEncoder;
 
+    @Mock
+    private EntityManager entityManager;
+
     @InjectMocks
     private TeacherServiceImpl teacherService;
 
@@ -72,7 +85,7 @@ class TeacherServiceImplTest {
     void getTeacherProfile_ValidId_ReturnsTeacherProfile() {
         // Given
         when(teacherRepository.findByIdWithUserAccount(1L)).thenReturn(Optional.of(teacher));
-        when(teacherSkillRepository.findByTeacherId(1L)).thenReturn(Collections.emptyList());
+        when(teacherSkillRepository.findSkillsByTeacherIdNative(1L)).thenReturn(Collections.emptyList());
         when(teacherAvailabilityRepository.findByTeacherId(1L)).thenReturn(Collections.emptyList());
 
         // When
@@ -91,7 +104,7 @@ class TeacherServiceImplTest {
         assertTrue(result.getAvailability().isEmpty());
 
         verify(teacherRepository).findByIdWithUserAccount(1L);
-        verify(teacherSkillRepository).findByTeacherId(1L);
+        verify(teacherSkillRepository).findSkillsByTeacherIdNative(1L);
         verify(teacherAvailabilityRepository).findByTeacherId(1L);
     }
 
@@ -106,7 +119,7 @@ class TeacherServiceImplTest {
         
         assertEquals(ErrorCode.TEACHER_NOT_FOUND, exception.getErrorCode());
         verify(teacherRepository).findByIdWithUserAccount(999L);
-        verify(teacherSkillRepository, never()).findByTeacherId(anyLong());
+        verify(teacherSkillRepository, never()).findSkillsByTeacherIdNative(anyLong());
         verify(teacherAvailabilityRepository, never()).findByTeacherId(anyLong());
     }
 
@@ -500,6 +513,495 @@ class TeacherServiceImplTest {
 
         // When & Then
         CustomException exception = assertThrows(CustomException.class, () -> teacherService.deleteTeacher(teacherId));
+        assertEquals(ErrorCode.TEACHER_NOT_FOUND, exception.getErrorCode());
+    }
+
+    // UPDATE TEACHER SKILLS TESTS
+
+    @Test
+    void updateTeacherSkills_ValidRequest_ReturnsUpdatedSkills() {
+        // Given
+        Long teacherId = 1L;
+        Teacher teacher = createTeacher();
+        UpdateTeacherSkillsRequestDTO request = createUpdateTeacherSkillsRequest();
+
+        when(teacherRepository.findByIdWithUserAccount(teacherId)).thenReturn(Optional.of(teacher));
+        
+        // Mock current skills (empty - no existing skills)
+        List<Object[]> currentSkills = Arrays.asList();
+        when(teacherSkillRepository.findSkillsByTeacherIdNative(teacherId)).thenReturn(currentSkills);
+        
+        // Mock new methods for TRUE UPDATE logic
+        doNothing().when(teacherSkillRepository).insertTeacherSkill(anyLong(), anyString(), anyShort());
+        when(teacherRepository.save(any(Teacher.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        
+        // Mock final result for response
+        List<Object[]> finalSkills = Arrays.asList(
+            new Object[]{teacherId, "speaking", 5},
+            new Object[]{teacherId, "listening", 4}
+        );
+        when(teacherSkillRepository.findSkillsByTeacherIdNative(teacherId)).thenReturn(currentSkills, finalSkills);
+
+        // When
+        TeacherSkillsResponseDTO result = teacherService.updateTeacherSkills(teacherId, request);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(teacherId, result.getTeacherId());
+        assertEquals(2, result.getSkills().size());
+        assertEquals("speaking", result.getSkills().get(0).getSkill());
+        assertEquals(5, result.getSkills().get(0).getLevel());
+        assertEquals("listening", result.getSkills().get(1).getSkill());
+        assertEquals(4, result.getSkills().get(1).getLevel());
+
+        verify(teacherRepository).findByIdWithUserAccount(teacherId);
+        verify(teacherSkillRepository, times(2)).findSkillsByTeacherIdNative(teacherId); // Called twice: current + final
+        verify(teacherSkillRepository, times(2)).insertTeacherSkill(anyLong(), anyString(), anyShort()); // Insert 2 new skills
+        verify(teacherRepository).save(any(Teacher.class));
+    }
+
+    @Test
+    void updateTeacherSkills_NullId_ThrowsException() {
+        // Given
+        UpdateTeacherSkillsRequestDTO request = createUpdateTeacherSkillsRequest();
+
+        // When & Then
+        CustomException exception = assertThrows(CustomException.class, 
+            () -> teacherService.updateTeacherSkills(null, request));
+        assertEquals(ErrorCode.INVALID_INPUT, exception.getErrorCode());
+    }
+
+    @Test
+    void updateTeacherSkills_InvalidId_ThrowsException() {
+        // Given
+        UpdateTeacherSkillsRequestDTO request = createUpdateTeacherSkillsRequest();
+
+        // When & Then
+        CustomException exception = assertThrows(CustomException.class, 
+            () -> teacherService.updateTeacherSkills(0L, request));
+        assertEquals(ErrorCode.INVALID_INPUT, exception.getErrorCode());
+    }
+
+    @Test
+    void updateTeacherSkills_NullRequest_ThrowsException() {
+        // Given
+        Long teacherId = 1L;
+
+        // When & Then
+        CustomException exception = assertThrows(CustomException.class, 
+            () -> teacherService.updateTeacherSkills(teacherId, null));
+        assertEquals(ErrorCode.INVALID_INPUT, exception.getErrorCode());
+    }
+
+    @Test
+    void updateTeacherSkills_EmptySkills_ThrowsException() {
+        // Given
+        Long teacherId = 1L;
+        UpdateTeacherSkillsRequestDTO request = new UpdateTeacherSkillsRequestDTO();
+        request.setSkills(Collections.emptyList());
+
+        // When & Then
+        CustomException exception = assertThrows(CustomException.class, 
+            () -> teacherService.updateTeacherSkills(teacherId, request));
+        assertEquals(ErrorCode.INVALID_INPUT, exception.getErrorCode());
+    }
+
+    @Test
+    void updateTeacherSkills_TeacherNotFound_ThrowsException() {
+        // Given
+        Long teacherId = 999L;
+        UpdateTeacherSkillsRequestDTO request = createUpdateTeacherSkillsRequest();
+
+        when(teacherRepository.findByIdWithUserAccount(teacherId)).thenReturn(Optional.empty());
+
+        // When & Then
+        CustomException exception = assertThrows(CustomException.class, 
+            () -> teacherService.updateTeacherSkills(teacherId, request));
+        assertEquals(ErrorCode.TEACHER_NOT_FOUND, exception.getErrorCode());
+    }
+
+    @Test
+    void updateTeacherSkills_InvalidSkillName_ThrowsException() {
+        // Given
+        Long teacherId = 1L;
+        Teacher teacher = createTeacher();
+        UpdateTeacherSkillsRequestDTO request = createUpdateTeacherSkillsRequest();
+        request.getSkills().get(0).setSkill("INVALID_SKILL");
+
+        when(teacherRepository.findByIdWithUserAccount(teacherId)).thenReturn(Optional.of(teacher));
+
+        // When & Then
+        CustomException exception = assertThrows(CustomException.class, 
+            () -> teacherService.updateTeacherSkills(teacherId, request));
+        assertEquals(ErrorCode.INVALID_INPUT, exception.getErrorCode());
+    }
+
+    @Test
+    void updateTeacherSkills_InvalidLevel_ThrowsException() {
+        // Given
+        Long teacherId = 1L;
+        Teacher teacher = createTeacher();
+        UpdateTeacherSkillsRequestDTO request = createUpdateTeacherSkillsRequest();
+        request.getSkills().get(0).setLevel(6); // Invalid level
+
+        when(teacherRepository.findByIdWithUserAccount(teacherId)).thenReturn(Optional.of(teacher));
+
+        // When & Then
+        CustomException exception = assertThrows(CustomException.class, 
+            () -> teacherService.updateTeacherSkills(teacherId, request));
+        assertEquals(ErrorCode.INVALID_INPUT, exception.getErrorCode());
+    }
+
+    private UpdateTeacherSkillsRequestDTO createUpdateTeacherSkillsRequest() {
+        UpdateTeacherSkillsRequestDTO request = new UpdateTeacherSkillsRequestDTO();
+        
+        UpdateTeacherSkillsRequestDTO.TeacherSkillDTO skill1 = new UpdateTeacherSkillsRequestDTO.TeacherSkillDTO();
+        skill1.setSkill("speaking");
+        skill1.setLevel(5);
+        
+        UpdateTeacherSkillsRequestDTO.TeacherSkillDTO skill2 = new UpdateTeacherSkillsRequestDTO.TeacherSkillDTO();
+        skill2.setSkill("listening");
+        skill2.setLevel(4);
+        
+        request.setSkills(List.of(skill1, skill2));
+        return request;
+    }
+
+    // ADD TEACHER SKILLS TESTS
+
+    @Test
+    void addTeacherSkills_ValidRequest_ReturnsUpdatedSkills() {
+        // Given
+        Long teacherId = 1L;
+        Teacher teacher = createTeacher();
+        AddTeacherSkillsRequestDTO request = createAddTeacherSkillsRequest();
+
+        when(teacherRepository.findByIdWithUserAccount(teacherId)).thenReturn(Optional.of(teacher));
+        
+        // Mock current skills (empty - no existing skills)
+        List<Object[]> currentSkills = Arrays.asList();
+        when(teacherSkillRepository.findSkillsByTeacherIdNative(teacherId)).thenReturn(currentSkills);
+        
+        // Mock insert method
+        doNothing().when(teacherSkillRepository).insertTeacherSkill(anyLong(), anyString(), anyShort());
+        when(teacherRepository.save(any(Teacher.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        
+        // Mock final result for response
+        List<Object[]> finalSkills = Arrays.asList(
+            new Object[]{teacherId, "speaking", 5},
+            new Object[]{teacherId, "listening", 4}
+        );
+        when(teacherSkillRepository.findSkillsByTeacherIdNative(teacherId)).thenReturn(currentSkills, finalSkills);
+
+        // When
+        TeacherSkillsResponseDTO result = teacherService.addTeacherSkills(teacherId, request);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(teacherId, result.getTeacherId());
+        assertEquals(2, result.getSkills().size());
+        assertEquals("speaking", result.getSkills().get(0).getSkill());
+        assertEquals(5, result.getSkills().get(0).getLevel());
+        assertEquals("listening", result.getSkills().get(1).getSkill());
+        assertEquals(4, result.getSkills().get(1).getLevel());
+
+        verify(teacherRepository).findByIdWithUserAccount(teacherId);
+        verify(teacherSkillRepository, times(2)).findSkillsByTeacherIdNative(teacherId); // Called twice: current + final
+        verify(teacherSkillRepository, times(2)).insertTeacherSkill(anyLong(), anyString(), anyShort()); // Insert 2 new skills
+        verify(teacherRepository).save(any(Teacher.class));
+    }
+
+    @Test
+    void addTeacherSkills_DuplicateSkill_ThrowsException() {
+        // Given
+        Long teacherId = 1L;
+        Teacher teacher = createTeacher();
+        AddTeacherSkillsRequestDTO request = createAddTeacherSkillsRequest();
+
+        when(teacherRepository.findByIdWithUserAccount(teacherId)).thenReturn(Optional.of(teacher));
+        
+        // Mock current skills (teacher already has speaking skill)
+        List<Object[]> currentSkills = new ArrayList<>();
+        currentSkills.add(new Object[]{teacherId, "speaking", 3});
+        when(teacherSkillRepository.findSkillsByTeacherIdNative(teacherId)).thenReturn(currentSkills);
+
+        // When & Then
+        CustomException exception = assertThrows(CustomException.class, 
+            () -> teacherService.addTeacherSkills(teacherId, request));
+        assertEquals(ErrorCode.INVALID_INPUT, exception.getErrorCode());
+
+        verify(teacherRepository).findByIdWithUserAccount(teacherId);
+        verify(teacherSkillRepository).findSkillsByTeacherIdNative(teacherId);
+        verify(teacherSkillRepository, never()).insertTeacherSkill(anyLong(), anyString(), anyShort());
+    }
+
+    @Test
+    void addTeacherSkills_NullId_ThrowsException() {
+        // Given
+        AddTeacherSkillsRequestDTO request = createAddTeacherSkillsRequest();
+
+        // When & Then
+        CustomException exception = assertThrows(CustomException.class, 
+            () -> teacherService.addTeacherSkills(null, request));
+        assertEquals(ErrorCode.INVALID_INPUT, exception.getErrorCode());
+    }
+
+    @Test
+    void addTeacherSkills_NullRequest_ThrowsException() {
+        // Given
+        Long teacherId = 1L;
+
+        // When & Then
+        CustomException exception = assertThrows(CustomException.class, 
+            () -> teacherService.addTeacherSkills(teacherId, null));
+        assertEquals(ErrorCode.INVALID_INPUT, exception.getErrorCode());
+    }
+
+    @Test
+    void addTeacherSkills_EmptySkills_ThrowsException() {
+        // Given
+        Long teacherId = 1L;
+        AddTeacherSkillsRequestDTO request = new AddTeacherSkillsRequestDTO();
+        request.setSkills(Collections.emptyList());
+
+        // When & Then
+        CustomException exception = assertThrows(CustomException.class, 
+            () -> teacherService.addTeacherSkills(teacherId, request));
+        assertEquals(ErrorCode.INVALID_INPUT, exception.getErrorCode());
+    }
+
+    @Test
+    void addTeacherSkills_TeacherNotFound_ThrowsException() {
+        // Given
+        Long teacherId = 999L;
+        AddTeacherSkillsRequestDTO request = createAddTeacherSkillsRequest();
+
+        when(teacherRepository.findByIdWithUserAccount(teacherId)).thenReturn(Optional.empty());
+
+        // When & Then
+        CustomException exception = assertThrows(CustomException.class, 
+            () -> teacherService.addTeacherSkills(teacherId, request));
+        assertEquals(ErrorCode.TEACHER_NOT_FOUND, exception.getErrorCode());
+    }
+
+    @Test
+    void addTeacherSkills_InvalidSkillName_ThrowsException() {
+        // Given
+        Long teacherId = 1L;
+        Teacher teacher = createTeacher();
+        AddTeacherSkillsRequestDTO request = createAddTeacherSkillsRequest();
+        request.getSkills().get(0).setSkill("INVALID_SKILL");
+
+        when(teacherRepository.findByIdWithUserAccount(teacherId)).thenReturn(Optional.of(teacher));
+        when(teacherSkillRepository.findSkillsByTeacherIdNative(teacherId)).thenReturn(Collections.emptyList());
+
+        // When & Then
+        CustomException exception = assertThrows(CustomException.class, 
+            () -> teacherService.addTeacherSkills(teacherId, request));
+        assertEquals(ErrorCode.INVALID_INPUT, exception.getErrorCode());
+    }
+
+    @Test
+    void addTeacherSkills_InvalidLevel_ThrowsException() {
+        // Given
+        Long teacherId = 1L;
+        Teacher teacher = createTeacher();
+        AddTeacherSkillsRequestDTO request = createAddTeacherSkillsRequest();
+        request.getSkills().get(0).setLevel(6); // Invalid level
+
+        when(teacherRepository.findByIdWithUserAccount(teacherId)).thenReturn(Optional.of(teacher));
+        when(teacherSkillRepository.findSkillsByTeacherIdNative(teacherId)).thenReturn(Collections.emptyList());
+
+        // When & Then
+        CustomException exception = assertThrows(CustomException.class, 
+            () -> teacherService.addTeacherSkills(teacherId, request));
+        assertEquals(ErrorCode.INVALID_INPUT, exception.getErrorCode());
+    }
+
+    private AddTeacherSkillsRequestDTO createAddTeacherSkillsRequest() {
+        AddTeacherSkillsRequestDTO request = new AddTeacherSkillsRequestDTO();
+        
+        AddTeacherSkillsRequestDTO.TeacherSkillDTO skill1 = new AddTeacherSkillsRequestDTO.TeacherSkillDTO();
+        skill1.setSkill("speaking");
+        skill1.setLevel(5);
+        
+        AddTeacherSkillsRequestDTO.TeacherSkillDTO skill2 = new AddTeacherSkillsRequestDTO.TeacherSkillDTO();
+        skill2.setSkill("listening");
+        skill2.setLevel(4);
+        
+        request.setSkills(List.of(skill1, skill2));
+        return request;
+    }
+
+    // GET TEACHER SKILLS TESTS
+
+    @Test
+    void getTeacherSkills_ValidId_ReturnsTeacherSkills() {
+        // Given
+        Long teacherId = 1L;
+        Teacher teacher = createTeacher();
+        
+        List<Object[]> skillRows = List.of(
+            new Object[]{teacherId, "speaking", 5},
+            new Object[]{teacherId, "listening", 4},
+            new Object[]{teacherId, "writing", 3}
+        );
+
+        when(teacherRepository.findByIdWithUserAccount(teacherId)).thenReturn(Optional.of(teacher));
+        when(teacherSkillRepository.findSkillsByTeacherIdNative(teacherId)).thenReturn(skillRows);
+
+        // When
+        TeacherSkillsResponseDTO result = teacherService.getTeacherSkills(teacherId);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(teacherId, result.getTeacherId());
+        assertEquals(3, result.getSkills().size());
+        assertEquals("speaking", result.getSkills().get(0).getSkill());
+        assertEquals(5, result.getSkills().get(0).getLevel());
+        assertEquals("listening", result.getSkills().get(1).getSkill());
+        assertEquals(4, result.getSkills().get(1).getLevel());
+        assertEquals("writing", result.getSkills().get(2).getSkill());
+        assertEquals(3, result.getSkills().get(2).getLevel());
+
+        verify(teacherRepository).findByIdWithUserAccount(teacherId);
+        verify(teacherSkillRepository).findSkillsByTeacherIdNative(teacherId);
+    }
+
+    @Test
+    void getTeacherSkills_EmptySkills_ReturnsEmptyList() {
+        // Given
+        Long teacherId = 1L;
+        Teacher teacher = createTeacher();
+        
+        List<Object[]> skillRows = Collections.emptyList();
+
+        when(teacherRepository.findByIdWithUserAccount(teacherId)).thenReturn(Optional.of(teacher));
+        when(teacherSkillRepository.findSkillsByTeacherIdNative(teacherId)).thenReturn(skillRows);
+
+        // When
+        TeacherSkillsResponseDTO result = teacherService.getTeacherSkills(teacherId);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(teacherId, result.getTeacherId());
+        assertTrue(result.getSkills().isEmpty());
+
+        verify(teacherRepository).findByIdWithUserAccount(teacherId);
+        verify(teacherSkillRepository).findSkillsByTeacherIdNative(teacherId);
+    }
+
+    @Test
+    void getTeacherSkills_NullId_ThrowsException() {
+        // When & Then
+        CustomException exception = assertThrows(CustomException.class, 
+            () -> teacherService.getTeacherSkills(null));
+        assertEquals(ErrorCode.INVALID_INPUT, exception.getErrorCode());
+    }
+
+    @Test
+    void getTeacherSkills_InvalidId_ThrowsException() {
+        // When & Then
+        CustomException exception = assertThrows(CustomException.class, 
+            () -> teacherService.getTeacherSkills(0L));
+        assertEquals(ErrorCode.INVALID_INPUT, exception.getErrorCode());
+    }
+
+    @Test
+    void getTeacherSkills_TeacherNotFound_ThrowsException() {
+        // Given
+        Long teacherId = 999L;
+        when(teacherRepository.findByIdWithUserAccount(teacherId)).thenReturn(Optional.empty());
+
+        // When & Then
+        CustomException exception = assertThrows(CustomException.class, 
+            () -> teacherService.getTeacherSkills(teacherId));
+        assertEquals(ErrorCode.TEACHER_NOT_FOUND, exception.getErrorCode());
+    }
+
+    // REMOVE TEACHER SKILL TESTS
+
+    @Test
+    void removeTeacherSkill_ValidRequest_RemovesSuccessfully() {
+        // Given
+        Long teacherId = 1L;
+        String skill = "speaking";
+        Teacher teacher = createTeacher();
+
+        when(teacherRepository.findByIdWithUserAccount(teacherId)).thenReturn(Optional.of(teacher));
+        
+        // Mock current skills to include the skill we want to remove
+        List<Object[]> currentSkills = new ArrayList<>();
+        currentSkills.add(new Object[]{teacherId, "speaking", 5});
+        when(teacherSkillRepository.findSkillsByTeacherIdNative(teacherId)).thenReturn(currentSkills);
+        
+        doNothing().when(teacherSkillRepository).deleteByTeacherIdAndSkill(anyLong(), anyString());
+        when(teacherRepository.save(any(Teacher.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        // When
+        assertDoesNotThrow(() -> teacherService.removeTeacherSkill(teacherId, skill));
+
+        // Then
+        verify(teacherRepository).findByIdWithUserAccount(teacherId);
+        verify(teacherSkillRepository).deleteByTeacherIdAndSkill(teacherId, skill);
+        verify(teacherRepository).save(any(Teacher.class));
+    }
+
+    @Test
+    void removeTeacherSkill_NullTeacherId_ThrowsException() {
+        // Given
+        String skill = "speaking";
+
+        // When & Then
+        CustomException exception = assertThrows(CustomException.class, 
+            () -> teacherService.removeTeacherSkill(null, skill));
+        assertEquals(ErrorCode.INVALID_INPUT, exception.getErrorCode());
+    }
+
+    @Test
+    void removeTeacherSkill_InvalidTeacherId_ThrowsException() {
+        // Given
+        String skill = "speaking";
+
+        // When & Then
+        CustomException exception = assertThrows(CustomException.class, 
+            () -> teacherService.removeTeacherSkill(0L, skill));
+        assertEquals(ErrorCode.INVALID_INPUT, exception.getErrorCode());
+    }
+
+    @Test
+    void removeTeacherSkill_NullSkill_ThrowsException() {
+        // Given
+        Long teacherId = 1L;
+
+        // When & Then
+        CustomException exception = assertThrows(CustomException.class, 
+            () -> teacherService.removeTeacherSkill(teacherId, null));
+        assertEquals(ErrorCode.INVALID_INPUT, exception.getErrorCode());
+    }
+
+    @Test
+    void removeTeacherSkill_EmptySkill_ThrowsException() {
+        // Given
+        Long teacherId = 1L;
+        String skill = "";
+
+        // When & Then
+        CustomException exception = assertThrows(CustomException.class, 
+            () -> teacherService.removeTeacherSkill(teacherId, skill));
+        assertEquals(ErrorCode.INVALID_INPUT, exception.getErrorCode());
+    }
+
+    @Test
+    void removeTeacherSkill_TeacherNotFound_ThrowsException() {
+        // Given
+        Long teacherId = 999L;
+        String skill = "speaking";
+        when(teacherRepository.findByIdWithUserAccount(teacherId)).thenReturn(Optional.empty());
+
+        // When & Then
+        CustomException exception = assertThrows(CustomException.class, 
+            () -> teacherService.removeTeacherSkill(teacherId, skill));
         assertEquals(ErrorCode.TEACHER_NOT_FOUND, exception.getErrorCode());
     }
 }

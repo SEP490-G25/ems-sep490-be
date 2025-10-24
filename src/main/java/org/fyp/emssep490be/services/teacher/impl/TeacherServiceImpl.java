@@ -1,16 +1,21 @@
 package org.fyp.emssep490be.services.teacher.impl;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
-import lombok.RequiredArgsConstructor;
+import jakarta.persistence.EntityManager;
 import lombok.extern.slf4j.Slf4j;
+import org.fyp.emssep490be.dtos.teacher.AddTeacherSkillsRequestDTO;
 import org.fyp.emssep490be.dtos.teacher.CreateTeacherRequestDTO;
 import org.fyp.emssep490be.dtos.teacher.TeacherAvailabilityDTO;
 import org.fyp.emssep490be.dtos.teacher.TeacherProfileDTO;
 import org.fyp.emssep490be.dtos.teacher.TeacherSkillDTO;
+import org.fyp.emssep490be.dtos.teacher.TeacherSkillsResponseDTO;
 import org.fyp.emssep490be.dtos.teacher.UpdateTeacherRequestDTO;
+import org.fyp.emssep490be.dtos.teacher.UpdateTeacherSkillsRequestDTO;
 import org.fyp.emssep490be.entities.Teacher;
 import org.fyp.emssep490be.entities.TeacherAvailability;
 import org.fyp.emssep490be.entities.TeacherSkill;
@@ -27,16 +32,30 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 @Transactional
 public class TeacherServiceImpl implements TeacherService {
 
+    private final EntityManager entityManager;
     private final TeacherRepository teacherRepository;
     private final TeacherSkillRepository teacherSkillRepository;
     private final TeacherAvailabilityRepository teacherAvailabilityRepository;
     private final UserAccountRepository userAccountRepository;
     private final PasswordEncoder passwordEncoder;
+
+    public TeacherServiceImpl(EntityManager entityManager,
+                             TeacherRepository teacherRepository,
+                             TeacherSkillRepository teacherSkillRepository,
+                             TeacherAvailabilityRepository teacherAvailabilityRepository,
+                             UserAccountRepository userAccountRepository,
+                             PasswordEncoder passwordEncoder) {
+        this.entityManager = entityManager;
+        this.teacherRepository = teacherRepository;
+        this.teacherSkillRepository = teacherSkillRepository;
+        this.teacherAvailabilityRepository = teacherAvailabilityRepository;
+        this.userAccountRepository = userAccountRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     @Override
     @Transactional(readOnly = true)
@@ -55,13 +74,13 @@ public class TeacherServiceImpl implements TeacherService {
         // User info (already fetched with JOIN FETCH)
         var user = teacher.getUserAccount();
 
-        // Skills - handle edge case where teacher has no skills
-        List<TeacherSkill> skills = teacherSkillRepository.findByTeacherId(id);
-        List<TeacherSkillDTO> skillDTOs = skills.stream().map(ts -> {
+        // Skills - use native SQL to avoid enum conversion issues
+        List<Object[]> skillRows = teacherSkillRepository.findSkillsByTeacherIdNative(id);
+        List<TeacherSkillDTO> skillDTOs = skillRows.stream().map(row -> {
             TeacherSkillDTO dto = new TeacherSkillDTO();
             dto.setTeacherId(id);
-            dto.setSkill(ts.getId().getSkill().name());
-            dto.setProficiencyLevel(ts.getLevel() == null ? null : ts.getLevel().intValue());
+            dto.setSkill((String) row[1]); // skill name from native query
+            dto.setProficiencyLevel(((Number) row[2]).intValue()); // level from native query
             return dto;
         }).collect(Collectors.toList());
 
@@ -278,5 +297,254 @@ public class TeacherServiceImpl implements TeacherService {
         teacherRepository.save(teacher);
 
         log.info("Teacher with ID {} has been deactivated", id);
+    }
+
+    @Override
+    @Transactional
+    public TeacherSkillsResponseDTO updateTeacherSkills(Long id, UpdateTeacherSkillsRequestDTO request) {
+        log.info("Updating teacher skills for ID: {}", id);
+
+        // Validate input
+        if (id == null || id <= 0) {
+            throw new CustomException(ErrorCode.INVALID_INPUT);
+        }
+
+        if (request == null || request.getSkills() == null || request.getSkills().isEmpty()) {
+            throw new CustomException(ErrorCode.INVALID_INPUT);
+        }
+
+        // Find teacher
+        Teacher teacher = teacherRepository.findByIdWithUserAccount(id)
+                .orElseThrow(() -> new CustomException(ErrorCode.TEACHER_NOT_FOUND));
+
+        // Validate skills data
+        for (UpdateTeacherSkillsRequestDTO.TeacherSkillDTO skillDTO : request.getSkills()) {
+            if (skillDTO.getSkill() == null || skillDTO.getSkill().trim().isEmpty()) {
+                throw new CustomException(ErrorCode.INVALID_INPUT);
+            }
+            if (skillDTO.getLevel() == null || skillDTO.getLevel() < 1 || skillDTO.getLevel() > 5) {
+                throw new CustomException(ErrorCode.INVALID_INPUT);
+            }
+            
+            // Validate skill enum (case-insensitive)
+            String skillInput = skillDTO.getSkill().trim().toLowerCase();
+            if (!skillInput.matches("general|reading|writing|speaking|listening")) {
+                throw new CustomException(ErrorCode.INVALID_INPUT);
+            }
+            
+            // Convert to uppercase for enum
+            skillDTO.setSkill(skillInput.toUpperCase());
+        }
+
+        // Get current skills for comparison
+        List<Object[]> currentSkills = teacherSkillRepository.findSkillsByTeacherIdNative(id);
+        Set<String> currentSkillNames = currentSkills.stream()
+                .map(row -> (String) row[1])
+                .collect(Collectors.toSet());
+        
+        // Get new skills from request
+        Set<String> newSkillNames = request.getSkills().stream()
+                .map(skillDTO -> skillDTO.getSkill().trim().toLowerCase())
+                .collect(Collectors.toSet());
+        
+        // Find skills to DELETE (exist in current but not in new)
+        Set<String> skillsToDelete = currentSkillNames.stream()
+                .filter(skill -> !newSkillNames.contains(skill))
+                .collect(Collectors.toSet());
+        
+        // Find skills to INSERT (exist in new but not in current)
+        Set<String> skillsToInsert = newSkillNames.stream()
+                .filter(skill -> !currentSkillNames.contains(skill))
+                .collect(Collectors.toSet());
+        
+        // Find skills to UPDATE (exist in both but level might be different)
+        Set<String> skillsToUpdate = newSkillNames.stream()
+                .filter(skill -> currentSkillNames.contains(skill))
+                .collect(Collectors.toSet());
+        
+        // DELETE skills that are no longer needed
+        for (String skillToDelete : skillsToDelete) {
+            teacherSkillRepository.deleteByTeacherIdAndSkill(id, skillToDelete);
+        }
+        
+        // INSERT new skills
+        for (UpdateTeacherSkillsRequestDTO.TeacherSkillDTO skillDTO : request.getSkills()) {
+            String skillLower = skillDTO.getSkill().trim().toLowerCase();
+            if (skillsToInsert.contains(skillLower)) {
+                teacherSkillRepository.insertTeacherSkill(id, skillLower, skillDTO.getLevel().shortValue());
+            }
+        }
+        
+        // UPDATE existing skills (only if level actually changes)
+        for (UpdateTeacherSkillsRequestDTO.TeacherSkillDTO skillDTO : request.getSkills()) {
+            String skillLower = skillDTO.getSkill().trim().toLowerCase();
+            if (skillsToUpdate.contains(skillLower)) {
+                // Find current level for this skill
+                Short currentLevel = currentSkills.stream()
+                        .filter(row -> skillLower.equals((String) row[1]))
+                        .map(row -> ((Number) row[2]).shortValue())
+                        .findFirst()
+                        .orElse(null);
+                
+                // Only UPDATE if level actually changed
+                if (currentLevel == null || !currentLevel.equals(skillDTO.getLevel().shortValue())) {
+                    teacherSkillRepository.updateTeacherSkillLevel(id, skillLower, skillDTO.getLevel().shortValue());
+                    log.info("Updated skill {} level from {} to {}", skillLower, currentLevel, skillDTO.getLevel());
+                } else {
+                    log.info("Skipped UPDATE for skill {} - level unchanged ({})", skillLower, currentLevel);
+                }
+            }
+        }
+
+        // Update teacher timestamp
+        teacher.setUpdatedAt(OffsetDateTime.now());
+        teacherRepository.save(teacher);
+
+        // Read back for response using native query to avoid enum issues
+        List<Object[]> skillRows = teacherSkillRepository.findSkillsByTeacherIdNative(id);
+        
+        // Build response from native query results
+        List<TeacherSkillsResponseDTO.TeacherSkillDTO> responseSkills = skillRows.stream()
+                .map(row -> {
+                    String skillName = (String) row[1]; // skill column
+                    Integer level = ((Number) row[2]).intValue(); // level column
+                    return new TeacherSkillsResponseDTO.TeacherSkillDTO(skillName, level);
+                })
+                .collect(Collectors.toList());
+
+        log.info("Teacher skills updated successfully for ID: {}", id);
+        return new TeacherSkillsResponseDTO(id, responseSkills, teacher.getUpdatedAt());
+    }
+
+    @Override
+    @Transactional
+    public TeacherSkillsResponseDTO addTeacherSkills(Long teacherId, AddTeacherSkillsRequestDTO request) {
+        // Validate input
+        if (teacherId == null || teacherId <= 0) {
+            throw new CustomException(ErrorCode.INVALID_INPUT);
+        }
+
+        if (request == null || request.getSkills() == null || request.getSkills().isEmpty()) {
+            throw new CustomException(ErrorCode.INVALID_INPUT);
+        }
+
+        log.info("Adding teacher skills for ID: {}, skills count: {}", teacherId, request.getSkills().size());
+
+        // Find teacher
+        Teacher teacher = teacherRepository.findByIdWithUserAccount(teacherId)
+                .orElseThrow(() -> new CustomException(ErrorCode.TEACHER_NOT_FOUND));
+
+        // Get current skills to check for duplicates
+        List<Object[]> currentSkills = teacherSkillRepository.findSkillsByTeacherIdNative(teacherId);
+        Set<String> existingSkills = currentSkills.stream()
+                .map(row -> (String) row[1])
+                .collect(Collectors.toSet());
+
+        // Validate and collect new skills
+        List<AddTeacherSkillsRequestDTO.TeacherSkillDTO> validSkills = new ArrayList<>();
+        for (AddTeacherSkillsRequestDTO.TeacherSkillDTO skillDTO : request.getSkills()) {
+            if (skillDTO.getSkill() == null || skillDTO.getSkill().trim().isEmpty()) {
+                throw new CustomException(ErrorCode.INVALID_INPUT);
+            }
+            if (skillDTO.getLevel() == null || skillDTO.getLevel() < 1 || skillDTO.getLevel() > 5) {
+                throw new CustomException(ErrorCode.INVALID_INPUT);
+            }
+
+            String skillInput = skillDTO.getSkill().trim().toLowerCase();
+            if (!skillInput.matches("general|reading|writing|speaking|listening")) {
+                throw new CustomException(ErrorCode.INVALID_INPUT);
+            }
+
+            if (existingSkills.contains(skillInput)) {
+                throw new CustomException(ErrorCode.INVALID_INPUT);
+            }
+
+            validSkills.add(skillDTO);
+        }
+
+        // Insert all valid skills
+        for (AddTeacherSkillsRequestDTO.TeacherSkillDTO skillDTO : validSkills) {
+            String skillInput = skillDTO.getSkill().trim().toLowerCase();
+            teacherSkillRepository.insertTeacherSkill(teacherId, skillInput, skillDTO.getLevel().shortValue());
+        }
+
+        // Update teacher timestamp
+        teacher.setUpdatedAt(OffsetDateTime.now());
+        teacherRepository.save(teacher);
+
+        // Read back for response
+        List<Object[]> updatedSkillRows = teacherSkillRepository.findSkillsByTeacherIdNative(teacherId);
+        List<TeacherSkillsResponseDTO.TeacherSkillDTO> responseSkills = updatedSkillRows.stream()
+                .map(row -> new TeacherSkillsResponseDTO.TeacherSkillDTO((String) row[1], ((Number) row[2]).intValue()))
+                .collect(Collectors.toList());
+
+        log.info("Teacher skills added successfully for ID: {}, count: {}", teacherId, validSkills.size());
+        return new TeacherSkillsResponseDTO(teacherId, responseSkills, teacher.getUpdatedAt());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public TeacherSkillsResponseDTO getTeacherSkills(Long teacherId) {
+        log.info("Getting teacher skills for ID: {}", teacherId);
+
+        // Validate input
+        if (teacherId == null || teacherId <= 0) {
+            throw new CustomException(ErrorCode.INVALID_INPUT);
+        }
+
+        // Find teacher
+        Teacher teacher = teacherRepository.findByIdWithUserAccount(teacherId)
+                .orElseThrow(() -> new CustomException(ErrorCode.TEACHER_NOT_FOUND));
+
+        // Get skills using native query to avoid enum conversion issues
+        List<Object[]> skillRows = teacherSkillRepository.findSkillsByTeacherIdNative(teacherId);
+        List<TeacherSkillsResponseDTO.TeacherSkillDTO> responseSkills = skillRows.stream()
+                .map(row -> new TeacherSkillsResponseDTO.TeacherSkillDTO((String) row[1], ((Number) row[2]).intValue()))
+                .collect(Collectors.toList());
+
+        log.info("Retrieved {} skills for teacher ID: {}", responseSkills.size(), teacherId);
+        return new TeacherSkillsResponseDTO(teacherId, responseSkills, teacher.getUpdatedAt());
+    }
+
+    @Override
+    @Transactional
+    public void removeTeacherSkill(Long teacherId, String skill) {
+        log.info("Removing teacher skill for ID: {}, skill: {}", teacherId, skill);
+
+        // Validate input
+        if (teacherId == null || teacherId <= 0) {
+            throw new CustomException(ErrorCode.INVALID_INPUT);
+        }
+
+        if (skill == null || skill.trim().isEmpty()) {
+            throw new CustomException(ErrorCode.INVALID_INPUT);
+        }
+
+        String skillInput = skill.trim().toLowerCase();
+        if (!skillInput.matches("general|reading|writing|speaking|listening")) {
+            throw new CustomException(ErrorCode.INVALID_INPUT);
+        }
+
+        // Find teacher
+        Teacher teacher = teacherRepository.findByIdWithUserAccount(teacherId)
+                .orElseThrow(() -> new CustomException(ErrorCode.TEACHER_NOT_FOUND));
+
+        // Check if skill exists
+        List<Object[]> currentSkills = teacherSkillRepository.findSkillsByTeacherIdNative(teacherId);
+        boolean skillExists = currentSkills.stream()
+                .anyMatch(row -> skillInput.equals((String) row[1]));
+
+        if (!skillExists) {
+            throw new CustomException(ErrorCode.INVALID_INPUT);
+        }
+
+        // Delete skill
+        teacherSkillRepository.deleteByTeacherIdAndSkill(teacherId, skillInput);
+
+        // Update teacher timestamp
+        teacher.setUpdatedAt(OffsetDateTime.now());
+        teacherRepository.save(teacher);
+
+        log.info("Teacher skill {} removed successfully for ID: {}", skill, teacherId);
     }
 }

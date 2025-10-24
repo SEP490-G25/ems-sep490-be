@@ -3,6 +3,8 @@ package org.fyp.emssep490be.controllers.teacher;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.fyp.emssep490be.dtos.teacher.CreateTeacherRequestDTO;
 import org.fyp.emssep490be.dtos.teacher.TeacherProfileDTO;
+import org.fyp.emssep490be.dtos.teacher.TeacherSkillsResponseDTO;
+import org.fyp.emssep490be.dtos.teacher.UpdateTeacherSkillsRequestDTO;
 import org.fyp.emssep490be.exceptions.CustomException;
 import org.fyp.emssep490be.exceptions.ErrorCode;
 import org.fyp.emssep490be.exceptions.GlobalExceptionHandler;
@@ -208,5 +210,119 @@ class TeacherControllerTest {
                 .andExpect(jsonPath("$.status").value(ErrorCode.TEACHER_NOT_FOUND.getCode()));
 
         verify(teacherService).deleteTeacher(teacherId);
+    }
+
+    // UPDATE TEACHER SKILLS TESTS
+
+    @Test
+    void updateTeacherSkills_ValidRequest_ReturnsOk() throws Exception {
+        // Given
+        Long teacherId = 1L;
+        UpdateTeacherSkillsRequestDTO request = createUpdateTeacherSkillsRequest();
+        TeacherSkillsResponseDTO response = createTeacherSkillsResponse();
+
+        when(teacherService.updateTeacherSkills(teacherId, request)).thenReturn(response);
+
+        // When & Then
+        mockMvc.perform(put("/api/v1/teachers/{id}/skills", teacherId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.message").value("Teacher skills updated successfully"))
+                .andExpect(jsonPath("$.data.teacherId").value(1))
+                .andExpect(jsonPath("$.data.skills").isArray())
+                .andExpect(jsonPath("$.data.skills[0].skill").value("speaking"))
+                .andExpect(jsonPath("$.data.skills[0].level").value(5))
+                .andExpect(jsonPath("$.data.skills[1].skill").value("listening"))
+                .andExpect(jsonPath("$.data.skills[1].level").value(4));
+
+        verify(teacherService).updateTeacherSkills(teacherId, request);
+    }
+
+    @Test
+    void updateTeacherSkills_InvalidId_ReturnsBadRequest() throws Exception {
+        // Given
+        Long teacherId = 0L;
+        UpdateTeacherSkillsRequestDTO request = createUpdateTeacherSkillsRequest();
+
+        doThrow(new CustomException(ErrorCode.INVALID_INPUT))
+                .when(teacherService).updateTeacherSkills(teacherId, request);
+
+        // When & Then
+        mockMvc.perform(put("/api/v1/teachers/{id}/skills", teacherId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(ErrorCode.INVALID_INPUT.getCode()));
+
+        verify(teacherService).updateTeacherSkills(teacherId, request);
+    }
+
+    @Test
+    void updateTeacherSkills_TeacherNotFound_ReturnsBadRequest() throws Exception {
+        // Given
+        Long teacherId = 999L;
+        UpdateTeacherSkillsRequestDTO request = createUpdateTeacherSkillsRequest();
+
+        doThrow(new CustomException(ErrorCode.TEACHER_NOT_FOUND))
+                .when(teacherService).updateTeacherSkills(teacherId, request);
+
+        // When & Then
+        mockMvc.perform(put("/api/v1/teachers/{id}/skills", teacherId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(ErrorCode.TEACHER_NOT_FOUND.getCode()));
+
+        verify(teacherService).updateTeacherSkills(teacherId, request);
+    }
+
+    @Test
+    void updateTeacherSkills_InvalidRequest_ReturnsBadRequest() throws Exception {
+        // Given
+        Long teacherId = 1L;
+        UpdateTeacherSkillsRequestDTO request = new UpdateTeacherSkillsRequestDTO();
+        request.setSkills(Collections.emptyList()); // Invalid: empty skills
+
+        // When & Then
+        mockMvc.perform(put("/api/v1/teachers/{id}/skills", teacherId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+
+        // Service should not be called due to validation failure
+        verify(teacherService, never()).updateTeacherSkills(any(), any());
+    }
+
+    private UpdateTeacherSkillsRequestDTO createUpdateTeacherSkillsRequest() {
+        UpdateTeacherSkillsRequestDTO request = new UpdateTeacherSkillsRequestDTO();
+        
+        UpdateTeacherSkillsRequestDTO.TeacherSkillDTO skill1 = new UpdateTeacherSkillsRequestDTO.TeacherSkillDTO();
+        skill1.setSkill("speaking");
+        skill1.setLevel(5);
+        
+        UpdateTeacherSkillsRequestDTO.TeacherSkillDTO skill2 = new UpdateTeacherSkillsRequestDTO.TeacherSkillDTO();
+        skill2.setSkill("listening");
+        skill2.setLevel(4);
+        
+        request.setSkills(java.util.List.of(skill1, skill2));
+        return request;
+    }
+
+    private TeacherSkillsResponseDTO createTeacherSkillsResponse() {
+        TeacherSkillsResponseDTO response = new TeacherSkillsResponseDTO();
+        response.setTeacherId(1L);
+        
+        TeacherSkillsResponseDTO.TeacherSkillDTO skill1 = new TeacherSkillsResponseDTO.TeacherSkillDTO();
+        skill1.setSkill("speaking");
+        skill1.setLevel(5);
+        
+        TeacherSkillsResponseDTO.TeacherSkillDTO skill2 = new TeacherSkillsResponseDTO.TeacherSkillDTO();
+        skill2.setSkill("listening");
+        skill2.setLevel(4);
+        
+        response.setSkills(java.util.List.of(skill1, skill2));
+        return response;
     }
 }
