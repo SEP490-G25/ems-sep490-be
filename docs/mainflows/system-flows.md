@@ -610,6 +610,137 @@ File này mô tả các luồng tự động mà hệ thống EMS thực hiện 
 
 ---
 
+## FLOW 11: Auto-Generate Student Feedback (Phase Completion)
+
+**Trigger:** Session cuối cùng của phase được mark status='done'
+**Description:** Hệ thống tự động tạo student_feedback records cho TẤT CẢ students của lớp khi phase kết thúc. Students chỉ cần điền rating và comment vào records đã được tạo sẵn.
+
+**Database Tables Involved:**
+- `session` → `course_session` → `course_phase`
+- `enrollment` (để lấy danh sách students)
+- `student_feedback` (tạo records mới)
+
+**Flow Steps:**
+
+1. **Trigger: Teacher mark session.status = 'done'**
+   - Khi teacher hoàn thành session report và mark session as done
+
+2. **System check: Đây có phải session cuối của phase không?**
+   - System thực hiện query:
+   ```
+   SELECT
+     cs.phase_id,
+     cp.phase_number,
+     cp.name AS phase_name,
+     -- Check xem session này có phải cuối phase không
+     cs.sequence_no = (
+       SELECT MAX(cs2.sequence_no)
+       FROM course_session cs2
+       WHERE cs2.phase_id = cs.phase_id
+     ) AS is_last_session_of_phase
+   FROM session s
+   JOIN course_session cs ON s.course_session_id = cs.id
+   JOIN course_phase cp ON cs.phase_id = cp.id
+   WHERE s.id = :session_id
+   ```
+
+3. **Nếu is_last_session_of_phase = TRUE:**
+   - System trigger auto-generate feedback flow
+
+4. **System lấy danh sách students của class:**
+   ```
+   SELECT
+     e.student_id,
+     s.student_code,
+     u.full_name,
+     u.email
+   FROM enrollment e
+   JOIN student s ON e.student_id = s.id
+   JOIN user_account u ON s.user_account_id = u.id
+   WHERE e.class_id = :class_id
+     AND e.status IN ('enrolled', 'completed')
+   ```
+
+5. **System tạo student_feedback records hàng loạt:**
+   ```
+   INSERT INTO student_feedback (
+     student_id,
+     session_id,
+     phase_id,
+     is_feedback,
+     rating,
+     comment,
+     created_at
+   )
+   SELECT
+     e.student_id,
+     :session_id,  -- Session cuối của phase
+     :phase_id,
+     FALSE,  -- Chưa feedback
+     NULL,   -- Chưa có rating
+     NULL,   -- Chưa có comment
+     NOW()
+   FROM enrollment e
+   WHERE e.class_id = :class_id
+     AND e.status IN ('enrolled', 'completed')
+   ON CONFLICT (student_id, session_id, phase_id) DO NOTHING  -- Tránh duplicate
+   ```
+
+6. **System gửi notification hàng loạt tới students:**
+   - Email template:
+     ```
+     Subject: Đánh giá Phase [Phase Number] - [Phase Name]
+
+     Chào [Student Name],
+
+     Bạn đã hoàn thành Phase [Phase Number]: [Phase Name] của lớp [Class Name].
+     Vui lòng dành vài phút để đánh giá chất lượng giảng dạy và nội dung phase này.
+
+     Đánh giá của bạn sẽ giúp chúng tôi cải thiện chất lượng đào tạo.
+
+     [Link to Feedback Form]
+
+     Trân trọng,
+     EMS Team
+     ```
+   - In-app notification:
+     - "⚠️ Bạn cần đánh giá Phase [Number] của lớp [Class Name]"
+
+7. **System log:**
+   - "Auto-generated X student_feedback records for phase_id=[ID], class_id=[ID]"
+
+8. **System update phase completion tracking (optional):**
+   - Track xem phase nào đã complete trong class
+   - Có thể tạo bảng `class_phase_completion` để tracking
+
+**Result:**
+- Tất cả students có student_feedback records với `is_feedback = FALSE`
+- Students vào app sẽ thấy badge "⚠️ Cần feedback"
+- Students chỉ cần UPDATE rating và comment vào records đã tạo sẵn
+- System track được bao nhiêu students đã/chưa feedback
+
+**Lợi ích:**
+- **Không bị miss:** Tất cả students đều có record, không bị quên feedback
+- **Easy tracking:** Frontend check `is_feedback = FALSE` để hiển thị badge
+- **Analytics:** QA team biết được feedback completion rate (bao nhiêu % students đã feedback)
+- **Consistent timing:** Feedback luôn được trigger ngay sau khi phase kết thúc
+
+**Edge Cases:**
+
+- **Student chuyển lớp giữa phase:**
+  - Chỉ tạo feedback cho students còn enrolled hoặc completed
+  - Student đã transferred không nhận feedback cho phase cũ
+
+- **Phase không có session:**
+  - Validate: Phase phải có ít nhất 1 course_session
+  - Không trigger nếu phase rỗng
+
+- **Duplicate records:**
+  - Sử dụng `ON CONFLICT ... DO NOTHING` để tránh duplicate
+  - Composite unique constraint: (student_id, session_id, phase_id)
+
+---
+
 ## Tóm Tắt Các System Flow
 
 | Flow | Trigger | Mô Tả | Bảng Chính |
@@ -624,6 +755,7 @@ File này mô tả các luồng tự động mà hệ thống EMS thực hiện 
 | 8. Data Consistency Checker | Nightly job | Kiểm tra & fix data issues | All tables |
 | 9. Capacity Warning | Real-time/scheduled | Cảnh báo sắp full | class, resource |
 | 10. Class Status Transition | Daily job | Chuyển status tự động | class, session |
+| 11. Auto-Generate Student Feedback | Phase completion | Tạo sẵn feedback records cho students | student_feedback |
 
 ---
 

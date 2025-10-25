@@ -249,25 +249,27 @@ File này mô tả các luồng nghiệp vụ chính mà Học viên (Student) t
 
 ---
 
-## FLOW 4: Gửi Yêu Cầu Chuyển Lớp (Student Transfer Request) ⭐ MOST COMPLEX
+## FLOW 4: Xác Nhận Yêu Cầu Chuyển Lớp (Student Confirm Transfer Request) ⭐ COMPLEX
 
-**Actors involved:** Student, Academic Staff, System  
-**Description:** Học viên muốn chuyển từ lớp A sang lớp B (cùng khóa học) giữa chừng.
+**Actors involved:** Academic Staff, Student, System
+**Description:** **Academic Staff tạo** yêu cầu chuyển lớp cho học viên, sau đó gửi cho student để xác nhận. Student chỉ cần confirm hoặc reject.
 
 **Database Tables Involved:**
-- `student_request` (current_class_id, target_class_id, effective_date)
+- `student_request` (submitted_by = academic_staff_id, current_class_id, target_class_id, effective_date)
 - `enrollment` (cập nhật status class A = 'transferred', tạo mới cho class B)
 - `student_session` (đánh dấu excused các buổi tương lai class A, tạo mới cho class B)
 
 **Flow Steps:**
 
-1. **Student vào "Lớp của tôi"**
-   - Click "Yêu cầu chuyển lớp"
+### Phase 1: Academic Staff Tạo Transfer Request
 
-2. **System hiển thị danh sách lớp khả dụng**
-   - System query các lớp cùng course_id:
+1. **Academic Staff vào "Student Management" → Chọn student → Click "Chuyển lớp"**
+
+2. **Academic Staff điền form:**
+   - Chọn current_class_id (lớp hiện tại của student)
+   - **System hiển thị danh sách lớp khả dụng:**
    ```
-   SELECT 
+   SELECT
      c.id AS class_id,
      c.name,
      c.modality,
@@ -278,8 +280,8 @@ File này mô tả các luồng nghiệp vụ chính mà Học viên (Student) t
    JOIN branch b ON c.branch_id = b.id
    LEFT JOIN enrollment e ON (e.class_id = c.id AND e.status = 'enrolled')
    WHERE c.course_id = (
-     SELECT course_id 
-     FROM class 
+     SELECT course_id
+     FROM class
      WHERE id = :current_class_id
    )
    AND c.id != :current_class_id
@@ -288,13 +290,11 @@ File này mô tả các luồng nghiệp vụ chính mà Học viên (Student) t
    HAVING COUNT(e.id) < c.max_capacity
    ORDER BY c.start_date
    ```
-
-3. **Student chọn lớp mới và ngày bắt đầu chuyển**
    - Chọn target_class_id
    - Chọn effective_date (ngày bắt đầu học lớp mới)
-   - Điền lý do: "Đổi ca học tối thành sáng", "Chuyển sang học online"
+   - Nhập lý do: "Student yêu cầu đổi ca học tối thành sáng"
 
-4. **System kiểm tra content gap** (kiểm tra xem có buổi nào bị thiếu không)
+3. **System kiểm tra content gap** (có buổi nào bị thiếu không)
    - Query các buổi còn lại của class A:
      ```
      SELECT DISTINCT course_session_id
@@ -313,100 +313,127 @@ File này mô tả các luồng nghiệp vụ chính mà Học viên (Student) t
      ```
    - So sánh: nếu class A có course_session_id mà class B không có → GAP
 
-5. **System cảnh báo nếu có gap**
-   - "Lưu ý: Lớp mới đã học qua Buổi 15 và 17. Bạn cần tự học nội dung này."
-   - Student xác nhận "Tôi đã hiểu"
+4. **System cảnh báo nếu có gap:**
+   - "Lưu ý: Lớp mới đã học qua Buổi 15 và 17. Student cần tự học nội dung này."
+   - Academic Staff xác nhận "Đã thông báo student"
 
-6. **Student click "Gửi yêu cầu"**
+5. **Academic Staff click "Tạo yêu cầu chuyển lớp"**
    - System INSERT:
    ```
-   INSERT INTO student_request 
-   (student_id, current_class_id, target_class_id, effective_date, request_type, reason, status, submitted_at)
-   VALUES 
-   (:student_id, :current_class_id, :target_class_id, :effective_date, 'transfer', :reason, 'pending', NOW())
+   INSERT INTO student_request
+   (student_id, current_class_id, target_class_id, effective_date, request_type, reason, status, submitted_at, submitted_by)
+   VALUES
+   (:student_id, :current_class_id, :target_class_id, :effective_date, 'transfer', :reason, 'pending', NOW(), :academic_staff_id)
    ```
 
-7. **Academic Staff duyệt request**
-   - Xác nhận:
-     - Capacity còn chỗ
-     - Không có gap nghiêm trọng
-     - Effective_date hợp lý
-   - Duyệt:
-     ```
-     -- Bắt đầu transaction
-     BEGIN;
-     
-     -- 1. Cập nhật request
-     UPDATE student_request
-     SET status = 'approved', decided_by = :staff_id, decided_at = NOW()
-     WHERE id = :request_id;
-     
-     -- 2. Xác định mốc cutoff
-     -- left_session_id: buổi cuối cùng ở class A (trước effective_date)
-     -- join_session_id: buổi đầu tiên ở class B (từ effective_date trở đi)
-     
-     -- 3. Cập nhật enrollment class A
-     UPDATE enrollment
-     SET 
-       status = 'transferred',
-       left_at = NOW(),
-       left_session_id = (
-         SELECT id FROM session 
-         WHERE class_id = :current_class_id 
-           AND date < :effective_date 
-         ORDER BY date DESC LIMIT 1
-       )
-     WHERE student_id = :student_id AND class_id = :current_class_id;
-     
-     -- 4. Tạo enrollment class B
-     INSERT INTO enrollment 
-     (student_id, class_id, status, enrolled_at, join_session_id)
-     VALUES (
-       :student_id, 
-       :target_class_id, 
-       'enrolled', 
-       NOW(),
-       (
-         SELECT id FROM session 
-         WHERE class_id = :target_class_id 
-           AND date >= :effective_date 
-         ORDER BY date ASC LIMIT 1
-       )
+6. **System gửi notification tới Student:**
+   - Email/In-app: "Giáo vụ đã tạo yêu cầu chuyển bạn từ lớp [A] sang lớp [B] từ ngày [Date]. Vui lòng xác nhận."
+
+### Phase 2: Student Xác Nhận (Confirm)
+
+7. **Student vào "Requests" → Xem request chuyển lớp**
+
+8. **System hiển thị thông tin request:**
+   - Lớp hiện tại: [Class A Name]
+   - Lớp mới: [Class B Name]
+   - Ngày bắt đầu: [Effective Date]
+   - Lý do: [Reason from Academic Staff]
+   - **Warning (nếu có gap):** "Lớp mới đã học qua Buổi 15, 17. Bạn cần tự học nội dung này."
+
+9. **Student click "Chấp nhận" hoặc "Từ chối"**
+
+   **9a. Nếu Student chấp nhận:**
+   ```
+   BEGIN;
+
+   -- 1. Cập nhật request
+   UPDATE student_request
+   SET status = 'approved', decided_by = :student_user_id, decided_at = NOW()
+   WHERE id = :request_id;
+
+   -- 2. Xác định mốc cutoff
+   -- left_session_id: buổi cuối cùng ở class A (trước effective_date)
+   -- join_session_id: buổi đầu tiên ở class B (từ effective_date trở đi)
+
+   -- 3. Cập nhật enrollment class A
+   UPDATE enrollment
+   SET
+     status = 'transferred',
+     left_at = NOW(),
+     left_session_id = (
+       SELECT id FROM session
+       WHERE class_id = :current_class_id
+         AND date < :effective_date
+       ORDER BY date DESC LIMIT 1
+     )
+   WHERE student_id = :student_id AND class_id = :current_class_id;
+
+   -- 4. Tạo enrollment class B
+   INSERT INTO enrollment
+   (student_id, class_id, status, enrolled_at, join_session_id, created_by)
+   VALUES (
+     :student_id,
+     :target_class_id,
+     'enrolled',
+     NOW(),
+     (
+       SELECT id FROM session
+       WHERE class_id = :target_class_id
+         AND date >= :effective_date
+       ORDER BY date ASC LIMIT 1
+     ),
+     :academic_staff_id
+   );
+
+   -- 5. Đánh dấu excused các buổi tương lai của class A
+   UPDATE student_session
+   SET
+     attendance_status = 'excused',
+     note = 'Chuyển sang lớp ' || :target_class_name
+   WHERE student_id = :student_id
+     AND session_id IN (
+       SELECT id FROM session
+       WHERE class_id = :current_class_id
+         AND date >= :effective_date
      );
-     
-     -- 5. Đánh dấu excused các buổi tương lai của class A
-     UPDATE student_session
-     SET 
-       attendance_status = 'excused',
-       note = 'Chuyển sang lớp ' || :target_class_name
-     WHERE student_id = :student_id
-       AND session_id IN (
-         SELECT id FROM session 
-         WHERE class_id = :current_class_id 
-           AND date >= :effective_date
-       );
-     
-     -- 6. Sinh student_session cho class B
-     INSERT INTO student_session (student_id, session_id, is_makeup, attendance_status)
-     SELECT 
-       :student_id,
-       s.id,
-       FALSE,
-       'planned'
-     FROM session s
-     WHERE s.class_id = :target_class_id
-       AND s.date >= :effective_date
-       AND s.status = 'planned';
-     
-     COMMIT;
-     ```
 
-8. **System gửi notification**
-   - Tới Student: "Yêu cầu chuyển lớp đã được duyệt. Bạn sẽ học lớp [Tên] từ [Ngày]"
-   - Tới Teacher lớp B: "Học viên [Tên] sẽ tham gia lớp từ [Ngày]"
+   -- 6. Sinh student_session cho class B
+   INSERT INTO student_session (student_id, session_id, is_makeup, attendance_status)
+   SELECT
+     :student_id,
+     s.id,
+     FALSE,
+     'planned'
+   FROM session s
+   WHERE s.class_id = :target_class_id
+     AND s.date >= :effective_date
+     AND s.status = 'planned';
 
-**Result:** 
-- Student chuyển sang lớp mới
+   COMMIT;
+   ```
+
+   **9b. Nếu Student từ chối:**
+   ```
+   UPDATE student_request
+   SET
+     status = 'rejected',
+     decided_by = :student_user_id,
+     decided_at = NOW(),
+     rejection_reason = 'Student không đồng ý chuyển lớp'
+   WHERE id = :request_id
+   ```
+
+10. **System gửi notifications:**
+    - Tới Academic Staff: "Student [Name] đã [chấp nhận/từ chối] yêu cầu chuyển lớp."
+    - Nếu approved:
+      - Tới Student: "Bạn đã chuyển sang lớp [B]. Lịch học mới đã được cập nhật."
+      - Tới Teacher lớp B: "Học viên [Name] sẽ tham gia lớp từ [Date]."
+
+**Result:**
+- **BỎ HOÀN TOÀN:** Student tự tạo transfer request
+- **THAY ĐỔI:** Academic Staff tạo request → Student confirm
+- `student_request.submitted_by = academic_staff_id` (để phân biệt)
+- Student chuyển sang lớp mới sau khi confirm
 - Lịch sử lớp cũ được bảo toàn (audit trail)
 - Lịch học tự động được cập nhật
 
@@ -482,68 +509,128 @@ File này mô tả các luồng nghiệp vụ chính mà Học viên (Student) t
 
 ---
 
-## FLOW 6: Đánh Giá Buổi Học (Student Feedback Submission)
+## FLOW 6: Đánh Giá Phase (Student Phase Feedback Submission)
 
-**Actors involved:** Student, System  
-**Description:** Sau buổi học, học viên đánh giá chất lượng giảng dạy của giáo viên.
+**Actors involved:** Student, System
+**Description:** Sau khi kết thúc phase, hệ thống **TỰ ĐỘNG TẠO** student_feedback records. Student chỉ cần điền rating và comment vào records đã được tạo sẵn.
 
 **Database Tables Involved:**
-- `student_feedback` → `session` → `student_session`
+- `student_feedback` (phase_id, session_id, student_id, is_feedback, rating, comment)
+- `course_phase` → `course_session` → `session`
+- `student_session` (để xác định student có tham gia phase không)
 
 **Flow Steps:**
 
-1. **Sau khi buổi học kết thúc**
-   - System gửi notification tới Student: "Đánh giá buổi học hôm nay"
+### Background: System Auto-Generate Feedback Records (Xem system-flows.md FLOW 11)
 
-2. **Student click link trong notification hoặc vào "Đánh giá"**
-   - System hiển thị danh sách buổi học chưa đánh giá:
+**Hệ thống tự động:**
+- Detect session cuối cùng của mỗi phase (course_session có sequence_no cao nhất trong phase)
+- Khi session này được mark status='done'
+- Hệ thống tạo sẵn student_feedback cho TẤT CẢ students của lớp:
+  ```
+  INSERT INTO student_feedback (student_id, session_id, phase_id, is_feedback, rating, comment, created_at)
+  SELECT
+    e.student_id,
+    :last_session_id_of_phase,
+    :phase_id,
+    FALSE,  -- Chưa feedback
+    NULL,   -- Chưa có rating
+    NULL,   -- Chưa có comment
+    NOW()
+  FROM enrollment e
+  WHERE e.class_id = :class_id
+    AND e.status IN ('enrolled', 'completed')
+  ```
+
+### Student Submit Feedback
+
+1. **System gửi notification tới Student sau khi phase kết thúc:**
+   - Email/In-app: "Đánh giá Phase [Phase Number] - [Phase Name] của lớp [Class Name]"
+
+2. **Student click link trong notification hoặc vào sidebar "Feedback"**
+
+3. **System load danh sách phases cần feedback:**
    ```
-   SELECT 
-     ss.session_id,
-     s.date,
+   SELECT
+     sf.id AS feedback_id,
+     cp.phase_number,
+     cp.name AS phase_name,
      c.name AS class_name,
-     cs.topic
-   FROM student_session ss
-   JOIN session s ON ss.session_id = s.id
+     s.date AS session_date,
+     cs.topic,
+     sf.is_feedback,
+     sf.rating,
+     sf.comment
+   FROM student_feedback sf
+   JOIN course_phase cp ON sf.phase_id = cp.id
+   JOIN session s ON sf.session_id = s.id
    JOIN class c ON s.class_id = c.id
    LEFT JOIN course_session cs ON s.course_session_id = cs.id
-   LEFT JOIN student_feedback sf ON (
-     sf.student_id = :student_id 
-     AND sf.session_id = s.id
-   )
-   WHERE ss.student_id = :student_id
+   WHERE sf.student_id = :student_id
+     AND sf.is_feedback = FALSE  -- Chưa feedback
      AND s.status = 'done'
-     AND s.date >= CURRENT_DATE - INTERVAL '7 days'
-     AND ss.attendance_status IN ('present', 'late', 'remote')
-     AND sf.id IS NULL
    ORDER BY s.date DESC
    ```
 
-3. **Student chọn buổi học cần đánh giá**
-   - Click "Đánh giá buổi này"
+4. **System hiển thị danh sách phases chưa feedback:**
+   - Mỗi phase hiển thị:
+     - **Badge màu đỏ:** "⚠️ Cần feedback" (nếu is_feedback = FALSE)
+     - **Phase number & name:** "Phase 1: Foundation"
+     - **Class name:** "English A1 - Morning Class 01"
+     - **Session date:** Ngày buổi học cuối của phase
+     - **Topic:** Chủ đề buổi học cuối
 
-4. **System hiển thị form đánh giá**
-   - Rating: 1-5 sao (1=Rất kém, 5=Rất tốt)
-   - Comment (optional):
+5. **Student click "Đánh giá phase này"**
+
+6. **System hiển thị form đánh giá:**
+   - **Phase info:**
+     - Phase number & name
+     - Class name
+     - Session date (buổi học cuối của phase)
+   - **Rating:** 1-5 sao (1=Rất kém, 5=Rất tốt)
+   - **Comment (optional):**
      - "Giáo viên dạy rất nhiệt tình"
-     - "Bài giảng dễ hiểu"
-     - "Cần thêm thời gian thực hành"
+     - "Bài giảng dễ hiểu, cần thêm thời gian thực hành"
+     - "Phase này khó, cần thêm bài tập"
 
-5. **Student click "Gửi đánh giá"**
-   - System INSERT:
+7. **Student click "Gửi đánh giá"**
+   - System UPDATE (không phải INSERT vì record đã tồn tại):
    ```
-   INSERT INTO student_feedback 
-   (student_id, session_id, rating, comment, submitted_at)
-   VALUES (:student_id, :session_id, :rating, :comment, NOW())
+   UPDATE student_feedback
+   SET
+     rating = :rating,
+     comment = :comment,
+     is_feedback = TRUE,  -- Đánh dấu đã feedback
+     submitted_at = NOW()
+   WHERE id = :feedback_id
+     AND student_id = :student_id
    ```
 
-6. **System gửi thank you message**
-   - "Cảm ơn bạn đã đánh giá. Ý kiến của bạn giúp chúng tôi cải thiện chất lượng."
+8. **System validation:**
+   - Rating phải từ 1-5
+   - is_feedback = FALSE → TRUE (chỉ cho phép feedback 1 lần)
 
-**Result:** 
-- Feedback được lưu vào database
-- QA team và Manager có dữ liệu để đánh giá Teacher
-- Teacher xem được feedback để cải thiện
+9. **System gửi thank you message:**
+   - "Cảm ơn bạn đã đánh giá Phase [Number]. Ý kiến của bạn giúp chúng tôi cải thiện chất lượng."
+
+10. **Frontend check is_feedback flag:**
+    - Nếu `is_feedback = FALSE`: Hiển thị badge "⚠️ Cần feedback" và bắt buộc student phải feedback
+    - Nếu `is_feedback = TRUE`: Hiển thị "✅ Đã feedback" và không cho edit (hoặc cho edit trong X ngày)
+
+**Result:**
+- Feedback được lưu vào database với `is_feedback = TRUE`
+- QA team và Manager có dữ liệu để đánh giá Teacher và Phase
+- Teacher xem được feedback để cải thiện (xem teacher-flows.md FLOW 9)
+- **Khác biệt chính:**
+  - **Cũ:** System tạo feedback record khi student submit
+  - **Mới:** System tạo sẵn feedback record → Student chỉ UPDATE rating/comment
+  - **Lợi ích:** Tracking được student nào chưa feedback (is_feedback = FALSE)
+
+**Lưu ý quan trọng:**
+- Feedback theo **PHASE** (không phải theo session riêng lẻ)
+- Mỗi student feedback 1 lần cho mỗi phase
+- Feedback được tạo sẵn khi session cuối của phase kết thúc
+- Frontend luôn check `is_feedback` flag để bắt buộc student feedback
 
 ---
 
