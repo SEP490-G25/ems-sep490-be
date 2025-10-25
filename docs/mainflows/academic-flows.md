@@ -87,10 +87,65 @@ File này mô tả các luồng nghiệp vụ chính mà Nhân viên Giáo vụ 
    - Tính toán ngày giờ dựa trên start_date, schedule_days, time_slot_template
    - Insert vào bảng `session` với status='planned'
 
-**Result:** 
+6. **System tự động clone assessments từ course**
+   - System thực hiện clone trong TRANSACTION:
+   ```
+   BEGIN;
+
+   -- Clone tất cả course_assessment từ course template
+   INSERT INTO assessment (
+     class_id,
+     course_assessment_id,
+     name,
+     kind,
+     max_score,
+     weight,
+     description,
+     created_by
+   )
+   SELECT
+     :class_id,
+     ca.id,  -- Link về course_assessment gốc
+     ca.name,
+     ca.kind,
+     ca.max_score,
+     ca.weight,
+     ca.description,
+     :academic_staff_user_id
+   FROM course_assessment ca
+   WHERE ca.course_id = :course_id
+   ORDER BY ca.created_at;
+
+   -- Clone assessment-CLO mappings
+   -- (Mapping giữa assessment và CLO để track learning outcomes)
+   INSERT INTO assessment_clo_mapping (assessment_id, clo_id)
+   SELECT
+     a.id,  -- assessment mới vừa tạo
+     cacm.clo_id
+   FROM assessment a
+   JOIN course_assessment ca ON a.course_assessment_id = ca.id
+   JOIN course_assessment_clo_mapping cacm ON cacm.course_assessment_id = ca.id
+   WHERE a.class_id = :class_id;
+
+   COMMIT;
+   ```
+
+7. **System validation**
+   - Tổng weight của assessments = 100%
+   - Mỗi assessment có ít nhất 1 CLO mapping (để track learning outcomes)
+
+**Result:**
 - Class mới được tạo với status='draft'
 - Tất cả sessions được sinh tự động
+- Tất cả assessments được clone từ course template
+- Assessment-CLO mappings được clone để track learning outcomes
 - Sẵn sàng để phân công teacher và resource
+
+**Lợi ích của việc clone assessments:**
+- **Consistency:** Tất cả classes của cùng course có cùng cấu trúc đánh giá
+- **Easy management:** Teacher không cần tạo assessments từ đầu
+- **Traceability:** Có thể track về course_assessment gốc qua `assessment.course_assessment_id`
+- **Flexibility:** Academic Staff vẫn có thể edit/add/remove assessments nếu cần
 
 ---
 
@@ -219,6 +274,159 @@ File này mô tả các luồng nghiệp vụ chính mà Nhân viên Giáo vụ 
 **Result:** 
 - Teaching_slot được tạo
 - Teacher thấy session trong lịch dạy của mình
+
+---
+
+## FLOW 2A: Quản Lý Lịch Dạy Cố Định Của Giáo Viên (Manage Teacher Availability)
+
+**Actors involved:** Academic Staff, System
+**Description:** Giáo vụ define và chỉnh sửa lịch dạy cố định (teacher_availability) cho giáo viên. Teacher KHÔNG có quyền tự chỉnh sửa, chỉ xem được.
+
+**Database Tables Involved:**
+- `teacher_availability` (lịch dạy cố định hàng tuần)
+- `time_slot_template` (khung giờ)
+- `teacher` → `user_account`
+- `teaching_slot` → `session` (để check xem teacher còn đang dạy lớp nào không)
+
+**Flow Steps:**
+
+### Scenario A: Thêm/Chỉnh Sửa Teacher Availability
+
+1. **Academic Staff vào Sidebar → "Teacher List"**
+
+2. **System load danh sách teachers:**
+   ```
+   SELECT
+     t.id AS teacher_id,
+     u.full_name,
+     u.email,
+     -- Count số lớp đang dạy
+     COUNT(DISTINCT CASE
+       WHEN s.status IN ('planned', 'ongoing') AND s.date >= CURRENT_DATE
+       THEN c.id
+     END) AS active_classes_count
+   FROM teacher t
+   JOIN user_account u ON t.user_account_id = u.id
+   LEFT JOIN teaching_slot ts ON ts.teacher_id = t.id
+   LEFT JOIN session s ON ts.session_id = s.id
+   LEFT JOIN class c ON s.class_id = c.id
+   GROUP BY t.id, u.id
+   ORDER BY u.full_name
+   ```
+
+3. **Academic Staff chọn teacher → Click "Manage Availability"**
+
+4. **System hiển thị teacher detail với current availability:**
+   ```
+   SELECT
+     ta.id,
+     ta.day_of_week,
+     ta.time_slot_template_id,
+     ta.note,
+     ta.effective_date,
+     tst.name AS time_slot_name,
+     tst.start_time,
+     tst.end_time,
+     b.name AS branch_name
+   FROM teacher_availability ta
+   JOIN time_slot_template tst ON ta.time_slot_template_id = tst.id
+   JOIN branch b ON tst.branch_id = b.id
+   WHERE ta.teacher_id = :teacher_id
+     AND (ta.effective_date IS NULL OR ta.effective_date <= CURRENT_DATE)
+   ORDER BY ta.day_of_week, tst.start_time
+   ```
+
+5. **System hiển thị calendar grid (7 ngày trong tuần):**
+   - Mỗi ngày hiển thị các time slots mà teacher available
+   - Có button "Add", "Edit", "Delete" cho từng slot
+
+6. **Academic Staff có thể:**
+
+   **6a. Thêm availability mới:**
+   - Click "Add" → Chọn day_of_week, time_slot_template, branch
+   - Optional: Chọn effective_date (ngày bắt đầu áp dụng lịch mới)
+   - System INSERT:
+   ```
+   INSERT INTO teacher_availability (
+     teacher_id,
+     day_of_week,
+     time_slot_template_id,
+     note,
+     effective_date
+   ) VALUES (
+     :teacher_id,
+     :day_of_week,
+     :time_slot_template_id,
+     :note,
+     :effective_date
+   )
+   ```
+
+   **6b. Chỉnh sửa availability:**
+   - Click "Edit" → Modify time_slot hoặc effective_date
+   - System UPDATE:
+   ```
+   UPDATE teacher_availability
+   SET
+     time_slot_template_id = :new_time_slot_id,
+     note = :note,
+     effective_date = :effective_date
+   WHERE id = :availability_id
+   ```
+
+   **6c. Xóa availability:**
+   - Click "Delete"
+   - System validation:
+     ```
+     -- Check xem teacher còn lớp nào sử dụng availability này không
+     SELECT COUNT(*) AS conflict_count
+     FROM teaching_slot ts
+     JOIN session s ON ts.session_id = s.id
+     WHERE ts.teacher_id = :teacher_id
+       AND EXTRACT(DOW FROM s.date) = :day_of_week
+       AND (s.start_time, s.end_time) OVERLAPS (:slot_start, :slot_end)
+       AND s.status IN ('planned', 'ongoing')
+       AND s.date >= CURRENT_DATE
+     ```
+   - Nếu conflict_count > 0: Cảnh báo "Teacher đang có X lớp trong khung giờ này. Không thể xóa."
+   - Nếu conflict_count = 0: DELETE availability
+
+7. **Trường hợp teacher đang dạy lớp (active_classes_count > 0):**
+   - System cảnh báo: "⚠️ Teacher đang dạy X lớp. Chỉ có thể thêm availability mới với effective_date trong tương lai."
+   - Academic Staff có thể:
+     - **Option A:** Chọn effective_date = ngày sau khi các lớp hiện tại kết thúc
+     - **Option B:** Chỉ add thêm slots, không xóa slots hiện tại
+
+8. **System gửi notification tới Teacher:**
+   - "Lịch dạy cố định của bạn đã được cập nhật bởi Giáo vụ [Name]. Vui lòng kiểm tra."
+
+### Scenario B: Teacher Mới Vào Trung Tâm (Onboarding)
+
+1. **Academic Staff tạo teacher account → Vào "Manage Availability"**
+
+2. **System hiển thị empty calendar:**
+   - "Chưa có lịch dạy cố định. Vui lòng thêm availability cho teacher này."
+
+3. **Academic Staff define lịch dạy ban đầu:**
+   - Ví dụ: Teacher có thể dạy các buổi sáng Thứ 2, 4, 6
+   - Add từng availability slot
+
+4. **System lưu và activate ngay:**
+   - effective_date = CURRENT_DATE (hoặc ngày teacher bắt đầu làm việc)
+
+**Result:**
+- Teacher availability được define/update bởi Academic Staff
+- Teacher chỉ có quyền XEM (read-only)
+- Hệ thống sử dụng availability để:
+  - Gợi ý teacher khi assign lớp mới
+  - Check conflict khi phân công
+  - Tìm replacement teacher phù hợp
+- Có effective_date để quản lý thay đổi lịch theo thời gian
+
+**Lưu ý quan trọng:**
+- Teacher_availability là **lịch dạy cố định**, không phải lịch rảnh
+- Chỉ được sửa khi teacher không còn lớp đang dạy trong khung giờ đó
+- effective_date cho phép schedule lịch mới từ trước (vd: lịch mới áp dụng từ tháng sau)
 
 ---
 
@@ -667,82 +875,148 @@ File này mô tả các luồng nghiệp vụ chính mà Nhân viên Giáo vụ 
 
 ---
 
-## FLOW 8: Xử Lý Yêu Cầu Chuyển Lớp (Academic Staff Handle Student Transfer Request) ⭐ MOST COMPLEX
+## FLOW 8: Tạo Yêu Cầu Chuyển Lớp Cho Student (Academic Staff Create Transfer Request) ⭐ MOST COMPLEX
 
-**Actors involved:** Academic Staff, System  
-**Description:** Giáo vụ duyệt yêu cầu chuyển lớp, thực hiện transaction phức tạp.
+**Actors involved:** Academic Staff, Student, System
+**Description:** **Academic Staff tạo** yêu cầu chuyển lớp cho student, sau đó gửi cho student xác nhận. Student confirm → System thực hiện transaction phức tạp.
 
 **Database Tables Involved:**
-- `student_request` (current_class_id, target_class_id, effective_date)
+- `student_request` (submitted_by = academic_staff_id, current_class_id, target_class_id, effective_date)
 - `enrollment` (cập nhật class A, tạo mới class B)
 - `student_session` (excused buổi tương lai class A, tạo mới cho class B)
 
 **Flow Steps:**
 
-1. **Academic Staff vào "Yêu cầu học viên"**
-   - Filter: request_type='transfer', status='pending'
+### Phase 1: Academic Staff Tạo Transfer Request
 
-2. **Academic Staff review request**
-   - Kiểm tra:
-     - Class A và class B cùng course_id
-     - Class B còn chỗ
-     - Effective_date hợp lý
+1. **Academic Staff vào "Student Management" → Chọn student → Click "Chuyển lớp"**
 
-3. **System phát hiện content gap** (nếu có)
-   - So sánh course_session_id còn lại của class A vs class B
+2. **Academic Staff điền form:**
+   - **Chọn current_class_id** (lớp hiện tại của student)
+   - **System hiển thị danh sách lớp khả dụng:**
+   ```
+   SELECT
+     c.id AS class_id,
+     c.name,
+     c.modality,
+     b.name AS branch_name,
+     c.max_capacity,
+     COUNT(e.id) AS enrolled_count
+   FROM class c
+   JOIN branch b ON c.branch_id = b.id
+   LEFT JOIN enrollment e ON (e.class_id = c.id AND e.status = 'enrolled')
+   WHERE c.course_id = (
+     SELECT course_id
+     FROM class
+     WHERE id = :current_class_id
+   )
+   AND c.id != :current_class_id
+   AND c.status IN ('scheduled', 'ongoing')
+   GROUP BY c.id, b.id
+   HAVING COUNT(e.id) < c.max_capacity
+   ORDER BY c.start_date
+   ```
+   - Chọn **target_class_id**
+   - Chọn **effective_date** (ngày bắt đầu học lớp mới)
+   - Nhập **lý do:** "Student yêu cầu đổi ca học", "Chuyển online"
 
-4. **Academic Staff quyết định approve**
+3. **System kiểm tra content gap** (có buổi nào bị thiếu không)
+   - Query các buổi còn lại của class A:
+   ```
+   SELECT DISTINCT course_session_id
+   FROM session
+   WHERE class_id = :current_class_id
+     AND date >= :effective_date
+     AND status = 'planned'
+   ```
+   - Query các buổi tương lai của class B:
+   ```
+   SELECT DISTINCT course_session_id
+   FROM session
+   WHERE class_id = :target_class_id
+     AND date >= :effective_date
+     AND status = 'planned'
+   ```
+   - So sánh: nếu class A có course_session_id mà class B không có → GAP
+
+4. **System cảnh báo nếu có gap:**
+   - "⚠️ Lưu ý: Lớp mới đã học qua Buổi 15 và 17. Student cần tự học nội dung này."
+   - Academic Staff xác nhận "Đã thông báo student"
+
+5. **Academic Staff click "Tạo yêu cầu chuyển lớp"**
+   - System INSERT:
+   ```
+   INSERT INTO student_request
+   (student_id, current_class_id, target_class_id, effective_date, request_type, reason, status, submitted_at, submitted_by)
+   VALUES
+   (:student_id, :current_class_id, :target_class_id, :effective_date, 'transfer', :reason, 'pending', NOW(), :academic_staff_id)
+   ```
+
+6. **System gửi notification tới Student:**
+   - Email/In-app: "Giáo vụ đã tạo yêu cầu chuyển bạn từ lớp [A] sang lớp [B] từ ngày [Date]. Vui lòng xác nhận."
+
+### Phase 2: Student Confirm (Xem student-flows.md FLOW 4)
+
+7. **Student vào "Requests" → Xem request chuyển lớp**
+   - Hiển thị thông tin: lớp cũ, lớp mới, effective_date, lý do, warning (nếu có gap)
+
+8. **Student click "Chấp nhận" hoặc "Từ chối"**
+
+### Phase 3: System Thực Hiện Transfer (Khi Student Chấp Nhận)
+
+9. **Nếu Student chấp nhận, system thực hiện transaction phức tạp:**
    ```
    BEGIN;
-   
+
    -- 1. Cập nhật request
    UPDATE student_request
-   SET status = 'approved', decided_by = :staff_user_id, decided_at = NOW()
+   SET status = 'approved', decided_by = :student_user_id, decided_at = NOW()
    WHERE id = :request_id;
-   
+
    -- 2. Xác định cutoff sessions
    WITH cutoff AS (
-     SELECT 
-       (SELECT id FROM session 
-        WHERE class_id = :current_class_id AND date < :effective_date 
+     SELECT
+       (SELECT id FROM session
+        WHERE class_id = :current_class_id AND date < :effective_date
         ORDER BY date DESC LIMIT 1) AS left_session_id,
-       (SELECT id FROM session 
-        WHERE class_id = :target_class_id AND date >= :effective_date 
+       (SELECT id FROM session
+        WHERE class_id = :target_class_id AND date >= :effective_date
         ORDER BY date ASC LIMIT 1) AS join_session_id
    )
-   
+
    -- 3. Cập nhật enrollment class A
    UPDATE enrollment
-   SET 
+   SET
      status = 'transferred',
      left_at = NOW(),
      left_session_id = (SELECT left_session_id FROM cutoff)
    WHERE student_id = :student_id AND class_id = :current_class_id;
-   
+
    -- 4. Tạo enrollment class B
-   INSERT INTO enrollment (student_id, class_id, status, enrolled_at, join_session_id)
+   INSERT INTO enrollment (student_id, class_id, status, enrolled_at, join_session_id, created_by)
    VALUES (
-     :student_id, 
-     :target_class_id, 
-     'enrolled', 
+     :student_id,
+     :target_class_id,
+     'enrolled',
      NOW(),
-     (SELECT join_session_id FROM cutoff)
+     (SELECT join_session_id FROM cutoff),
+     :academic_staff_id
    );
-   
+
    -- 5. Excused buổi tương lai class A
    UPDATE student_session
-   SET 
+   SET
      attendance_status = 'excused',
      note = 'Chuyển sang lớp mới'
    WHERE student_id = :student_id
      AND session_id IN (
-       SELECT id FROM session 
+       SELECT id FROM session
        WHERE class_id = :current_class_id AND date >= :effective_date
      );
-   
+
    -- 6. Tạo student_session cho class B
    INSERT INTO student_session (student_id, session_id, is_makeup, attendance_status)
-   SELECT 
+   SELECT
      :student_id,
      s.id,
      FALSE,
@@ -751,186 +1025,409 @@ File này mô tả các luồng nghiệp vụ chính mà Nhân viên Giáo vụ 
    WHERE s.class_id = :target_class_id
      AND s.date >= :effective_date
      AND s.status = 'planned';
-   
+
    COMMIT;
    ```
 
-5. **System gửi notification**
-   - Tới Student
-   - Tới Teacher cả 2 lớp
+10. **System gửi notifications:**
+    - Tới Academic Staff: "Student [Name] đã chấp nhận yêu cầu chuyển lớp."
+    - Tới Student: "Bạn đã chuyển sang lớp [B]. Lịch học mới đã được cập nhật."
+    - Tới Teacher lớp B: "Học viên [Name] sẽ tham gia lớp từ [Date]."
 
-**Result:** 
-- Student chuyển lớp thành công
-- Lịch sử được bảo toàn
+**Result:**
+- **THAY ĐỔI:** Academic Staff tạo request → Student confirm (thay vì student tự tạo)
+- `student_request.submitted_by = academic_staff_id` (để phân biệt)
+- Student chuyển lớp thành công sau khi confirm
+- Lịch sử được bảo toàn (audit trail đầy đủ)
+- Lịch học tự động được cập nhật
 
 ---
 
-## FLOW 9: Xử Lý Yêu Cầu Nghỉ Của Giáo Viên (Academic Staff Handle Teacher Leave Request) ⭐ CRITICAL
+## FLOW 9: Xử Lý Yêu Cầu Dạy Thay Của Giáo Viên (Academic Staff Handle Teacher Swap Request) ⭐ CRITICAL
 
-**Actors involved:** Academic Staff, System  
-**Description:** Giáo vụ phải tìm giải pháp khi giáo viên xin nghỉ (tìm substitute, reschedule, hoặc cancel).
+**Actors involved:** Academic Staff, Replacement Teacher, System
+**Description:** Giáo vụ xử lý yêu cầu dạy thay của teacher (type='swap'). Chọn replacement teacher → Gửi confirm → Replacement teacher xác nhận.
 
 **Database Tables Involved:**
-- `teacher_request` (request leave)
-- `teaching_slot` (cập nhật teacher_id nếu substitute)
-- `session` (reschedule hoặc cancel)
-- `student_session` (cập nhật nếu cancel)
+- `teacher_request` (request_type='swap', replacement_teacher_id, status)
+- `teaching_slot` (update status, insert new)
+- `teacher_skill`, `teacher_availability` (để tìm replacement teacher)
 
 **Flow Steps:**
 
-1. **Academic Staff vào "Yêu cầu giáo viên"**
-   - Filter: request_type='leave', status='pending'
+1. **Academic Staff vào "Teacher Requests"**
+   - Filter: request_type='swap', status='pending'
 
-2. **Academic Staff review request**
-   - Xem session nào bị ảnh hưởng
-   - Xem lý do nghỉ
+2. **System load danh sách teacher swap requests:**
+   ```
+   SELECT
+     tr.id AS request_id,
+     tr.teacher_id,
+     t.full_name AS teacher_name,
+     tr.session_id,
+     s.date,
+     s.start_time,
+     s.end_time,
+     c.name AS class_name,
+     tr.reason,
+     tr.submitted_at,
+     tr.replacement_teacher_id  -- Có thể NULL hoặc teacher gợi ý
+   FROM teacher_request tr
+   JOIN teacher t ON tr.teacher_id = t.id
+   JOIN user_account ua ON t.user_account_id = ua.id
+   JOIN session s ON tr.session_id = s.id
+   JOIN class c ON s.class_id = c.id
+   WHERE tr.request_type = 'swap'
+     AND tr.status = 'pending'
+   ORDER BY tr.submitted_at
+   ```
 
-3. **Academic Staff phải tìm giải pháp** (request chỉ được approve khi có giải pháp)
+3. **Academic Staff chọn request → Click "Handle"**
 
-### Option A: Tìm Giáo Viên Thay Thế
+4. **System hiển thị request detail và list ra replacement teachers phù hợp:**
+   - **Sort theo ưu tiên:**
+     - Skill match
+     - Level phù hợp
+     - Availability (teacher_availability)
+     - No conflict
+   - Query (giống như trong teacher-flows.md FLOW 6, bước 5b):
+   ```
+   SELECT
+     t.id AS teacher_id,
+     u.full_name,
+     ts.skill,
+     ts.level,
+     -- Check availability
+     EXISTS (
+       SELECT 1
+       FROM teacher_availability ta
+       WHERE ta.teacher_id = t.id
+         AND ta.day_of_week = EXTRACT(DOW FROM :session_date)
+         AND ta.time_slot_template_id IN (
+           SELECT tst.id
+           FROM time_slot_template tst
+           WHERE (tst.start_time, tst.end_time) OVERLAPS (:session_start_time, :session_end_time)
+         )
+     ) AS is_available,
+     -- Check conflict
+     (
+       SELECT COUNT(*)
+       FROM teaching_slot tslot
+       JOIN session s2 ON tslot.session_id = s2.id
+       WHERE tslot.teacher_id = t.id
+         AND s2.date = :session_date
+         AND (s2.start_time, s2.end_time) OVERLAPS (:session_start_time, :session_end_time)
+         AND s2.status IN ('planned', 'ongoing')
+     ) AS conflict_count
+   FROM teacher t
+   JOIN user_account u ON t.user_account_id = u.id
+   JOIN teacher_skill ts ON t.id = ts.teacher_id
+   WHERE ts.skill = ANY(:required_skills)
+     AND t.id != :original_teacher_id
+   HAVING is_available = TRUE AND conflict_count = 0
+   ORDER BY ts.level DESC, u.full_name
+   ```
 
-4a. **System gợi ý substitute teachers**
-   - Gọi function: `find_available_substitute_teachers(session_id)`
-   - Logic: Tương tự như phân công teacher, nhưng ưu tiên teacher đã đăng ký OT
+5. **Academic Staff chọn replacement teacher → Click "Send Confirmation"**
+   - System UPDATE:
+   ```
+   UPDATE teacher_request
+   SET
+     status = 'waiting_confirm',
+     replacement_teacher_id = :replacement_teacher_id,
+     decided_by = :academic_staff_id,
+     decided_at = NOW()
+   WHERE id = :request_id
+   ```
 
-5a. **Academic Staff chọn substitute và approve**
+6. **System gửi notification tới Replacement Teacher:**
+   - "Bạn được mời dạy thay buổi [Session] vào [Ngày]. Vui lòng xác nhận."
+
+7. **Replacement Teacher confirm (xem teacher-flows.md FLOW 6, bước 7-8):**
+   - Replacement teacher vào "Requests" → Click "Chấp nhận" hoặc "Từ chối"
+
+8. **Nếu Replacement Teacher chấp nhận:**
    ```
    BEGIN;
-   
-   -- 1. Approve leave request
+
+   -- 1. Update teacher_request status
    UPDATE teacher_request
-   SET 
-     status = 'approved',
-     decided_by = :staff_user_id,
-     decided_at = NOW(),
-     resolution = 'Teacher X sẽ dạy thay'
+   SET status = 'confirmed'
    WHERE id = :request_id;
-   
-   -- 2. Tạo OT request cho substitute (để tính lương)
-   INSERT INTO teacher_request (
-     teacher_id,
-     session_id,
-     request_type,
-     status,
-     decided_by,
-     decided_at
-   ) VALUES (
-     :substitute_teacher_id,
-     :session_id,
-     'ot',
-     'approved',
-     :staff_user_id,
-     NOW()
-   );
-   
-   -- 3. Cập nhật teaching_slot
+
+   -- 2. Update teaching_slot của teacher cũ (mark as on_leave)
    UPDATE teaching_slot
-   SET teacher_id = :substitute_teacher_id
-   WHERE session_id = :session_id 
+   SET status = 'on_leave'
+   WHERE session_id = :session_id
      AND teacher_id = :original_teacher_id;
-   
+
+   -- 3. Insert teaching_slot mới cho replacement teacher
+   INSERT INTO teaching_slot (session_id, teacher_id, skill, role, status)
+   VALUES (
+     :session_id,
+     :replacement_teacher_id,
+     :skill,
+     'primary',
+     'substituted'
+   );
+
    COMMIT;
    ```
 
-6a. **System gửi notification**
-   - Tới Teacher gốc: "Yêu cầu nghỉ đã được chấp nhận"
-   - Tới Teacher thay: "Bạn được phân công thay thế"
-   - Tới Students: "Giáo viên thay đổi cho buổi học [...]"
+9. **System gửi notifications:**
+   - Tới Teacher gốc: "Yêu cầu dạy thay đã được xác nhận. [Replacement Name] sẽ dạy thay."
+   - Tới Students: "Thông báo: Giáo viên [Replacement Name] sẽ dạy buổi học ngày [Date]."
 
-### Option B: Đổi Lịch Buổi Học (Reschedule)
-
-4b. **Academic Staff chọn "Reschedule Session"**
-
-5b. **System tìm slot mới khả dụng**
-   - Input: new_date, new_slot_id
-   - Kiểm tra:
-     - Teacher gốc rảnh
-     - Resource rảnh
-     - Students không conflict (optional)
-
-6b. **Academic Staff confirm reschedule**
+**Trường hợp Replacement Teacher từ chối:**
+   - System UPDATE:
    ```
+   UPDATE teacher_request
+   SET
+     status = 'pending',
+     replacement_teacher_id = NULL,
+     decided_by = NULL,
+     decided_at = NULL
+   WHERE id = :request_id
+   ```
+   - Notification tới Academic Staff: "Teacher [Name] đã từ chối. Vui lòng chọn teacher khác."
+   - Academic Staff quay lại bước 4
+
+**Result:**
+- Teacher_request.status = 'confirmed'
+- Teaching_slot cũ: status = 'on_leave'
+- Teaching_slot mới: status = 'substituted', teacher_id = replacement_teacher_id
+- Audit trail đầy đủ
+
+**Lưu ý:**
+- Chi tiết flow từ phía teacher xem **teacher-flows.md FLOW 6**
+- Flow này là phần xử lý từ phía Academic Staff
+
+**Result:**
+- Teacher swap request được approve
+- Replacement teacher được assign vào session
+- Hệ thống tạo OT request tự động cho replacement teacher
+
+---
+
+## FLOW 9A: Xử Lý Đơn Đổi Lịch Của Giáo Viên (Academic Staff Handle Teacher Reschedule Request)
+
+**Actors involved:** Academic Staff, System
+**Description:** Xử lý đơn xin đổi lịch của giáo viên (teacher_request.type = 'reschedule'), hệ thống tự động tìm slot mới phù hợp và tạo makeup session.
+
+**Database Tables Involved:**
+- `teacher_request` (type='reschedule', status='pending' → 'approved')
+- `session` (session gốc + tạo makeup session mới)
+- `teaching_slot` (clone sang makeup session)
+- `session_resource` (clone sang makeup session)
+- `student_session` (tạo mới cho makeup session)
+- `time_slot_template` (để tìm available slots)
+- `resource` (để tìm available resources)
+
+**Flow Steps:**
+
+1. **Academic Staff vào "Pending Requests" → Filter "Teacher Reschedule"**
+   - Xem danh sách teacher_request có type='reschedule', status='pending'
+
+2. **Academic Staff click vào request để xem chi tiết**
+   ```sql
+   SELECT
+     tr.id AS request_id,
+     tr.teacher_id,
+     tr.session_id AS original_session_id,
+     tr.reason,
+     tr.submitted_at,
+     t.teacher_code,
+     ua.full_name AS teacher_name,
+     s.date AS original_date,
+     s.start_time,
+     s.end_time,
+     c.class_code,
+     c.class_name
+   FROM teacher_request tr
+   JOIN teacher t ON tr.teacher_id = t.id
+   JOIN user_account ua ON t.user_account_id = ua.id
+   JOIN session s ON tr.session_id = s.id
+   JOIN class c ON s.class_id = c.id
+   WHERE tr.id = :request_id
+   ```
+
+3. **Academic Staff click "Auto-Find Available Slots"**
+
+4. **System tìm available time slots và resources**
+
+   **Step 4.1: Query danh sách time slots khả dụng (trong 2 tuần tới)**
+   ```sql
+   SELECT
+     tst.id AS time_slot_id,
+     tst.day_of_week,
+     tst.start_time,
+     tst.end_time,
+     tst.slot_name
+   FROM time_slot_template tst
+   WHERE tst.branch_id = :branch_id
+     AND tst.is_active = TRUE
+   ORDER BY tst.day_of_week, tst.start_time
+   ```
+
+   **Step 4.2: Lọc ra các slots mà teacher rảnh**
+   - Generate danh sách ngày trong 2 tuần tới matching day_of_week
+   - Với mỗi date + time_slot, check:
+   ```sql
+   -- Kiểm tra teacher có available không
+   SELECT COUNT(*)
+   FROM teaching_slot ts
+   JOIN session s ON ts.session_id = s.id
+   WHERE ts.teacher_id = :teacher_id
+     AND s.date = :candidate_date
+     AND s.status IN ('planned', 'ongoing')
+     -- Check overlap time
+     AND (
+       (s.start_time, s.end_time) OVERLAPS (:slot_start, :slot_end)
+     )
+   -- Nếu COUNT = 0 → Teacher rảnh
+   ```
+
+   **Step 4.3: Với mỗi available slot, tìm available resources**
+   ```sql
+   SELECT
+     r.id AS resource_id,
+     r.resource_code,
+     r.resource_name,
+     r.resource_type,
+     r.capacity
+   FROM resource r
+   WHERE r.branch_id = :branch_id
+     AND r.resource_type IN ('ROOM', 'VIRTUAL')  -- Match với class modality
+     AND r.capacity >= :class_enrolled_count
+     AND NOT EXISTS (
+       -- Check resource không bị conflict
+       SELECT 1
+       FROM session_resource sr
+       JOIN session s ON sr.session_id = s.id
+       WHERE sr.resource_id = r.id
+         AND s.date = :candidate_date
+         AND s.status IN ('planned', 'ongoing')
+         AND (s.start_time, s.end_time) OVERLAPS (:slot_start, :slot_end)
+     )
+   ORDER BY r.capacity ASC
+   LIMIT 5  -- Top 5 resources phù hợp nhất
+   ```
+
+5. **System hiển thị danh sách suggestions**
+   - Format: "Thứ 3, 15/05/2025, 14:00-16:00, Phòng A301 (Capacity: 30)"
+   - Sorted by date ASC (gần nhất trước)
+
+6. **Academic Staff chọn slot + resource phù hợp**
+   - Select: candidate_date, time_slot_id, resource_id
+
+7. **Academic Staff click "Approve & Reschedule"**
+
+8. **System tạo makeup session và sync students**
+   ```sql
    BEGIN;
-   
-   -- 1. Tạo session mới
-   INSERT INTO session (class_id, course_session_id, date, start_time, end_time, type, status)
-   SELECT 
+
+   -- 1. Cancel session gốc
+   UPDATE session
+   SET status = 'cancelled',
+       teacher_note = 'Rescheduled by teacher request #' || :request_id
+   WHERE id = :original_session_id;
+
+   -- 2. Mark original student_session as excused
+   UPDATE student_session
+   SET attendance_status = 'excused',
+       note = 'Original session cancelled, makeup session created'
+   WHERE session_id = :original_session_id;
+
+   -- 3. Tạo makeup session mới
+   INSERT INTO session (
      class_id,
      course_session_id,
-     :new_date,
-     :new_start_time,
-     :new_end_time,
+     date,
+     start_time,
+     end_time,
      type,
-     'planned'
-   FROM session
-   WHERE id = :old_session_id
-   RETURNING id INTO :new_session_id;
-   
-   -- 2. Copy teaching_slot
-   INSERT INTO teaching_slot (session_id, teacher_id, skill, role)
-   SELECT :new_session_id, teacher_id, skill, role
+     status,
+     teacher_note
+   )
+   SELECT
+     s.class_id,
+     s.course_session_id,
+     :new_date,  -- Ngày mới
+     tst.start_time,
+     tst.end_time,
+     'MAKEUP',  -- session_type_enum
+     'planned',
+     'Makeup session for original session #' || :original_session_id
+   FROM session s
+   JOIN time_slot_template tst ON tst.id = :new_time_slot_id
+   WHERE s.id = :original_session_id
+   RETURNING id INTO :makeup_session_id;
+
+   -- 4. Clone teaching_slot (giữ nguyên teacher)
+   INSERT INTO teaching_slot (session_id, teacher_id, skill, role, status)
+   SELECT
+     :makeup_session_id,
+     teacher_id,
+     skill,
+     role,
+     'scheduled'  -- teaching_slot_status_enum
    FROM teaching_slot
-   WHERE session_id = :old_session_id;
-   
-   -- 3. Copy session_resource
-   INSERT INTO session_resource (session_id, resource_type, resource_id, capacity_override)
-   SELECT :new_session_id, resource_type, resource_id, capacity_override
-   FROM session_resource
-   WHERE session_id = :old_session_id;
-   
-   -- 4. Transfer student_session
-   UPDATE student_session
-   SET session_id = :new_session_id
-   WHERE session_id = :old_session_id;
-   
-   -- 5. Cancel old session
-   UPDATE session
-   SET status = 'cancelled', teacher_note = 'Rescheduled to ' || :new_date
-   WHERE id = :old_session_id;
-   
-   -- 6. Approve leave request
+   WHERE session_id = :original_session_id;
+
+   -- 5. Assign resource mới
+   INSERT INTO session_resource (session_id, resource_type, resource_id)
+   VALUES (
+     :makeup_session_id,
+     (SELECT resource_type FROM resource WHERE id = :new_resource_id),
+     :new_resource_id
+   );
+
+   -- 6. Tạo student_session cho tất cả students đã enroll
+   INSERT INTO student_session (
+     student_id,
+     session_id,
+     attendance_status,
+     is_makeup,
+     note
+   )
+   SELECT
+     ss.student_id,
+     :makeup_session_id,
+     'planned',
+     TRUE,  -- Đánh dấu là makeup
+     'Makeup for cancelled session #' || :original_session_id
+   FROM student_session ss
+   WHERE ss.session_id = :original_session_id;
+
+   -- 7. Cập nhật teacher_request
    UPDATE teacher_request
-   SET status = 'approved', decided_by = :staff_user_id, decided_at = NOW(),
-       resolution = 'Session rescheduled'
+   SET status = 'approved',
+       decided_by = :academic_staff_user_id,
+       decided_at = NOW(),
+       new_date = :new_date,
+       new_time_slot_id = :new_time_slot_id,
+       new_resource_id = :new_resource_id,
+       resolution = 'Makeup session created: #' || :makeup_session_id
    WHERE id = :request_id;
-   
+
    COMMIT;
    ```
 
-7b. **System gửi notification tới tất cả students**
-   - "Buổi học ngày [...] đã được dời sang ngày [...]"
+9. **System gửi notification**
+   - **Tới teacher:** "Đơn đổi lịch của bạn đã được duyệt. Buổi học bù: [date] [time] tại [resource]"
+   - **Tới all students:** "Buổi học ngày [original_date] đã bị hủy. Buổi học bù: [new_date] [time] tại [resource]"
 
-### Option C: Hủy Buổi Học (Last Resort)
+**Lưu ý:**
+- Chi tiết flow từ phía teacher xem **teacher-flows.md FLOW 7**
+- Flow này là phần xử lý từ phía Academic Staff với auto-suggestion logic
+- System suggest top 5 available slots trong 2 tuần tới
+- Makeup session có type='MAKEUP' và is_makeup=TRUE trong student_session
 
-4c. **Academic Staff chọn "Cancel Session"**
-   ```
-   BEGIN;
-   
-   -- 1. Cancel session
-   UPDATE session
-   SET status = 'cancelled', teacher_note = 'Cancelled due to teacher unavailability'
-   WHERE id = :session_id;
-   
-   -- 2. Mark all students excused
-   UPDATE student_session
-   SET attendance_status = 'excused'
-   WHERE session_id = :session_id;
-   
-   -- 3. Approve leave request
-   UPDATE teacher_request
-   SET status = 'approved', decided_by = :staff_user_id, decided_at = NOW(),
-       resolution = 'Session cancelled'
-   WHERE id = :request_id;
-   
-   COMMIT;
-   ```
-
-5c. **System gửi notification**
-   - "Buổi học ngày [...] đã bị hủy. Bạn được đánh dấu nghỉ có phép."
-
-**Result:** 
-- Teacher request được xử lý
-- Session vẫn diễn ra (substitute/reschedule) hoặc bị hủy
+**Result:**
+- Teacher reschedule request được approve
+- Session gốc bị cancel, tất cả students được mark excused
+- Makeup session được tạo với slot/resource mới
+- Tất cả students enrolled vào class đều được auto-add vào makeup session
 
 ---
 
