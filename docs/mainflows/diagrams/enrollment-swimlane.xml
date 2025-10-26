@@ -1,0 +1,520 @@
+<mxfile host="app.diagrams.net">
+  <diagram id="enrollment-flow" name="Student Enrollment Flow">
+    <mxGraphModel dx="1434" dy="844" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="1654" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- Swimlane: Academic Staff -->
+        <mxCell id="swimlane-academic" value="Academic Staff" style="swimlane;startSize=40;horizontal=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=14;" parent="1" vertex="1">
+          <mxGeometry x="40" y="40" width="320" height="2600" as="geometry" />
+        </mxCell>
+        
+        <!-- Academic Staff: Start -->
+        <mxCell id="academic-start" value="Vào Chi Tiết Lớp" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" parent="swimlane-academic" vertex="1">
+          <mxGeometry x="85" y="60" width="150" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- Academic Staff: Click Enroll -->
+        <mxCell id="academic-click-enroll" value="Click &quot;Ghi danh học viên&quot;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="swimlane-academic" vertex="1">
+          <mxGeometry x="85" y="140" width="150" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- Academic Staff: View Available Students -->
+        <mxCell id="academic-view-available" value="Xem danh sách&#xa;students khả dụng" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="swimlane-academic" vertex="1">
+          <mxGeometry x="85" y="300" width="150" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Academic Staff: Choose Action -->
+        <mxCell id="academic-choose-method" value="Chọn hành động" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;" parent="swimlane-academic" vertex="1">
+          <mxGeometry x="60" y="400" width="200" height="100" as="geometry" />
+        </mxCell>
+        
+        <!-- Academic Staff: Option A - Select Existing -->
+        <mxCell id="academic-select-existing" value="OPTION A:&#xa;Chọn student có sẵn&#xa;từ danh sách" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="swimlane-academic" vertex="1">
+          <mxGeometry x="10" y="550" width="140" height="70" as="geometry" />
+        </mxCell>
+        
+        <!-- Academic Staff: Option B - Add New Individual -->
+        <mxCell id="academic-add-individual" value="OPTION B:&#xa;Click &quot;Thêm học viên mới&quot;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="swimlane-academic" vertex="1">
+          <mxGeometry x="90" y="650" width="140" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Academic Staff: Fill Form -->
+        <mxCell id="academic-fill-form" value="Điền form&#xa;thông tin student" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="swimlane-academic" vertex="1">
+          <mxGeometry x="90" y="740" width="140" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Academic Staff: Click Save -->
+        <mxCell id="academic-click-save" value="Click&#xa;&quot;Lưu và Thêm vào DS&quot;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="swimlane-academic" vertex="1">
+          <mxGeometry x="90" y="830" width="140" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Academic Staff: Option C - Import CSV -->
+        <mxCell id="academic-import-csv" value="OPTION C:&#xa;Click &quot;Import CSV&quot;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="swimlane-academic" vertex="1">
+          <mxGeometry x="170" y="550" width="140" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Academic Staff: Upload CSV -->
+        <mxCell id="academic-upload-csv" value="Upload file CSV" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="swimlane-academic" vertex="1">
+          <mxGeometry x="170" y="740" width="140" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Academic Staff: Review Preview -->
+        <mxCell id="academic-review-preview" value="Review preview&#xa;data" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="swimlane-academic" vertex="1">
+          <mxGeometry x="170" y="980" width="140" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Academic Staff: Click Import -->
+        <mxCell id="academic-click-import" value="Click&#xa;&quot;Import vào DS&quot;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="swimlane-academic" vertex="1">
+          <mxGeometry x="170" y="1070" width="140" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Academic Staff: Select from Updated List -->
+        <mxCell id="academic-select-updated" value="Chọn students&#xa;từ DS đã update" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="swimlane-academic" vertex="1">
+          <mxGeometry x="85" y="1180" width="150" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Academic Staff: Click Add to Class -->
+        <mxCell id="academic-click-add" value="Click&#xa;&quot;Ghi danh vào lớp&quot;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;" parent="swimlane-academic" vertex="1">
+          <mxGeometry x="85" y="1270" width="150" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Academic Staff: Handle Capacity Warning -->
+        <mxCell id="academic-capacity-decision" value="Capacity OK?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="swimlane-academic" vertex="1">
+          <mxGeometry x="70" y="1450" width="180" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- Academic Staff: Override Capacity -->
+        <mxCell id="academic-override" value="Override&#xa;với lý do" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="swimlane-academic" vertex="1">
+          <mxGeometry x="200" y="1460" width="100" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Academic Staff: View Success -->
+        <mxCell id="academic-view-success" value="Xem thông báo&#xa;thành công" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="swimlane-academic" vertex="1">
+          <mxGeometry x="85" y="2480" width="150" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Academic Staff: View Updated List -->
+        <mxCell id="academic-view-list" value="Xem danh sách&#xa;học viên đã enroll" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" parent="swimlane-academic" vertex="1">
+          <mxGeometry x="85" y="2580" width="150" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Swimlane: System -->
+        <mxCell id="swimlane-system" value="System" style="swimlane;startSize=40;horizontal=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;fontSize=14;" parent="1" vertex="1">
+          <mxGeometry x="360" y="40" width="480" height="2700" as="geometry" />
+        </mxCell>
+        
+        <!-- System: Check Class Status -->
+        <mxCell id="system-check-status" value="Kiểm tra class status&#xa;(scheduled/ongoing)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="swimlane-system" vertex="1">
+          <mxGeometry x="165" y="220" width="150" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- System: Load Available Students -->
+        <mxCell id="system-load-available" value="Load danh sách&#xa;students khả dụng&#xa;(chưa enroll trong lớp)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="swimlane-system" vertex="1">
+          <mxGeometry x="165" y="300" width="150" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- System: Show 3 Options -->
+        <mxCell id="system-show-options" value="Hiển thị 3 options:&#xa;- Chọn từ DS&#xa;- Thêm mới&#xa;- Import CSV" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="swimlane-system" vertex="1">
+          <mxGeometry x="165" y="400" width="150" height="90" as="geometry" />
+        </mxCell>
+        
+        <!-- System: Enable Selection (Option A) -->
+        <mxCell id="system-enable-selection" value="Enable checkboxes&#xa;để chọn students" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="swimlane-system" vertex="1">
+          <mxGeometry x="30" y="560" width="150" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- System: Show Form (Option B) -->
+        <mxCell id="system-show-form" value="Hiển thị form&#xa;tạo student mới" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="swimlane-system" vertex="1">
+          <mxGeometry x="80" y="660" width="150" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- System: Validate Form -->
+        <mxCell id="system-validate-form" value="Validate input:&#xa;- Email unique&#xa;- Phone format&#xa;- Required fields" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="swimlane-system" vertex="1">
+          <mxGeometry x="85" y="920" width="150" height="100" as="geometry" />
+        </mxCell>
+        
+        <!-- System: Create Student Record -->
+        <mxCell id="system-create-student-only" value="CREATE:&#xa;1. user_account&#xa;2. student record" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="swimlane-system" vertex="1">
+          <mxGeometry x="85" y="1050" width="150" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- System: Add to Available List -->
+        <mxCell id="system-add-to-list" value="Thêm student mới&#xa;vào DS khả dụng" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="swimlane-system" vertex="1">
+          <mxGeometry x="85" y="1160" width="150" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- System: Parse CSV (Option C) -->
+        <mxCell id="system-parse-csv" value="Parse và&#xa;validate CSV:&#xa;- Format&#xa;- Required fields&#xa;- Email/phone exist" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="swimlane-system" vertex="1">
+          <mxGeometry x="300" y="750" width="150" height="120" as="geometry" />
+        </mxCell>
+        
+        <!-- System: Show Preview -->
+        <mxCell id="system-show-preview" value="Hiển thị preview:&#xa;✅ Valid&#xa;⚠️ Warning&#xa;❌ Error" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="swimlane-system" vertex="1">
+          <mxGeometry x="300" y="980" width="150" height="100" as="geometry" />
+        </mxCell>
+        
+        <!-- System: Batch Create Students -->
+        <mxCell id="system-batch-create" value="Batch CREATE:&#xa;user_account + student&#xa;cho valid records" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="swimlane-system" vertex="1">
+          <mxGeometry x="300" y="1100" width="150" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- System: Update Available List -->
+        <mxCell id="system-update-available" value="Update DS khả dụng&#xa;với students mới" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="swimlane-system" vertex="1">
+          <mxGeometry x="300" y="1210" width="150" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- System: Get Selected Students -->
+        <mxCell id="system-get-selected" value="Lấy danh sách&#xa;students được chọn" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="swimlane-system" vertex="1">
+          <mxGeometry x="165" y="1280" width="150" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- System: Check Capacity -->
+        <mxCell id="system-check-capacity" value="Kiểm tra capacity:&#xa;enrolled_count + selected&#xa;&lt; max_capacity?" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="swimlane-system" vertex="1">
+          <mxGeometry x="165" y="1360" width="150" height="100" as="geometry" />
+        </mxCell>
+        
+        <!-- System: Show Warning -->
+        <mxCell id="system-show-warning" value="⚠️ Hiển thị cảnh báo&#xa;vượt capacity" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="swimlane-system" vertex="1">
+          <mxGeometry x="165" y="1570" width="150" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- System: Check Schedule Conflict -->
+        <mxCell id="system-check-conflict" value="Kiểm tra&#xa;schedule conflict" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="swimlane-system" vertex="1">
+          <mxGeometry x="165" y="1660" width="150" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- System: Transaction Start -->
+        <mxCell id="system-transaction-start" value="BEGIN TRANSACTION" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;" parent="swimlane-system" vertex="1">
+          <mxGeometry x="165" y="1760" width="150" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- System: Create Enrollments -->
+        <mxCell id="system-create-enrollment" value="CREATE enrollments&#xa;cho các students&#xa;được chọn" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="swimlane-system" vertex="1">
+          <mxGeometry x="165" y="1840" width="150" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- System: Generate Student Sessions -->
+        <mxCell id="system-generate-sessions" value="GENERATE&#xa;student_session&#xa;(cho tất cả future sessions&#xa;của từng student)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="swimlane-system" vertex="1">
+          <mxGeometry x="165" y="1950" width="150" height="100" as="geometry" />
+        </mxCell>
+        
+        <!-- System: Transaction Commit -->
+        <mxCell id="system-transaction-commit" value="COMMIT TRANSACTION" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" parent="swimlane-system" vertex="1">
+          <mxGeometry x="165" y="2080" width="150" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- System: Send Email Async -->
+        <mxCell id="system-send-email" value="Gửi email welcome&#xa;cho từng student&#xa;(async)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="swimlane-system" vertex="1">
+          <mxGeometry x="165" y="2300" width="150" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- System: Show Success -->
+        <mxCell id="system-show-success" value="Hiển thị success:&#xa;✅ X students enrolled&#xa;📧 Emails sent" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="swimlane-system" vertex="1">
+          <mxGeometry x="165" y="2480" width="150" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- System: Update Class List -->
+        <mxCell id="system-update-list" value="Update danh sách&#xa;học viên đã enroll&#xa;trên UI" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="swimlane-system" vertex="1">
+          <mxGeometry x="165" y="2580" width="150" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- Swimlane: Student -->
+        <mxCell id="swimlane-student" value="Student" style="swimlane;startSize=40;horizontal=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;fontSize=14;" parent="1" vertex="1">
+          <mxGeometry x="840" y="40" width="280" height="2700" as="geometry" />
+        </mxCell>
+        
+        <!-- Student: Receive Email -->
+        <mxCell id="student-receive-email" value="📧 Nhận email&#xa;welcome" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="swimlane-student" vertex="1">
+          <mxGeometry x="65" y="2210" width="150" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Student: Read Email -->
+        <mxCell id="student-read-email" value="Đọc thông tin:&#xa;- Lớp học&#xa;- Lịch học&#xa;- Link login" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="swimlane-student" vertex="1">
+          <mxGeometry x="65" y="2300" width="150" height="90" as="geometry" />
+        </mxCell>
+        
+        <!-- Student: Login -->
+        <mxCell id="student-login" value="Login hệ thống&#xa;và đổi password" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="swimlane-student" vertex="1">
+          <mxGeometry x="65" y="2420" width="150" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Student: View Schedule -->
+        <mxCell id="student-view-schedule" value="Xem lịch học&#xa;cá nhân" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" parent="swimlane-student" vertex="1">
+          <mxGeometry x="65" y="2510" width="150" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Arrows: Academic Staff -->
+        <mxCell id="arrow1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="academic-start" target="academic-click-enroll" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="academic-click-enroll" target="system-check-status" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="system-check-status" target="system-load-available" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="system-load-available" target="academic-view-available" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow5" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="academic-view-available" target="system-show-options" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow6" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="system-show-options" target="academic-choose-method" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Option A Path: Select Existing -->
+        <mxCell id="arrow7a" value="Chọn có sẵn" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontStyle=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" source="academic-choose-method" target="academic-select-existing" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow8a" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="academic-select-existing" target="system-enable-selection" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow9a" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;exitX=0.5;exitY=1;entryX=0;entryY=0.5;" parent="1" source="system-enable-selection" target="academic-select-updated" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="105" y="650" />
+              <mxPoint x="70" y="650" />
+              <mxPoint x="70" y="1210" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Option B Path: Add New Individual -->
+        <mxCell id="arrow7b" value="Thêm mới" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontStyle=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" source="academic-choose-method" target="academic-add-individual" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow8b" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="academic-add-individual" target="system-show-form" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow9b" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="system-show-form" target="academic-fill-form" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow10b" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="academic-fill-form" target="academic-click-save" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow11b" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="academic-click-save" target="system-validate-form" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow12b" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="system-validate-form" target="system-create-student-only" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow13b" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="system-create-student-only" target="system-add-to-list" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow14b" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" parent="1" source="system-add-to-list" target="academic-select-updated" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Option C Path: Import CSV -->
+        <mxCell id="arrow7c" value="Import CSV" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontStyle=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" source="academic-choose-method" target="academic-import-csv" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow8c" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="academic-import-csv" target="academic-upload-csv" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow9c" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="academic-upload-csv" target="system-parse-csv" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow10c" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="system-parse-csv" target="system-show-preview" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow11c" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="system-show-preview" target="academic-review-preview" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow12c" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="academic-review-preview" target="academic-click-import" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow13c" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="academic-click-import" target="system-batch-create" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow14c" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="system-batch-create" target="system-update-available" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow15c" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;exitX=0.5;exitY=1;entryX=1;entryY=0.5;" parent="1" source="system-update-available" target="academic-select-updated" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="675" y="1290" />
+              <mxPoint x="280" y="1290" />
+              <mxPoint x="280" y="1210" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Merge Paths: Add to Class -->
+        <mxCell id="arrow16" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="academic-select-updated" target="academic-click-add" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow17" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="academic-click-add" target="system-get-selected" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow18" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="system-get-selected" target="system-check-capacity" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Capacity Check Flow -->
+        <mxCell id="arrow19" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="system-check-capacity" target="academic-capacity-decision" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow20-yes" value="Yes" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontStyle=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" source="academic-capacity-decision" target="system-check-conflict" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow20-no" value="No" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontStyle=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" source="academic-capacity-decision" target="system-show-warning" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow21" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="system-show-warning" target="academic-override" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow22" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;exitX=0.5;exitY=1;entryX=1;entryY=0.5;" parent="1" source="academic-override" target="system-check-conflict" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Transaction Flow -->
+        <mxCell id="arrow23" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="system-check-conflict" target="system-transaction-start" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow24" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="system-transaction-start" target="system-create-enrollment" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow25" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="system-create-enrollment" target="system-generate-sessions" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow26" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="system-generate-sessions" target="system-transaction-commit" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Email and Success Flow -->
+        <mxCell id="arrow27" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;dashed=1;" parent="1" source="system-transaction-commit" target="system-send-email" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow28" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;dashed=1;" parent="1" source="system-send-email" target="student-receive-email" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow29" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="student-receive-email" target="student-read-email" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow30" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="student-read-email" target="student-login" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow31" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="student-login" target="student-view-schedule" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow32" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="system-transaction-commit" target="system-show-success" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow33" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="system-show-success" target="academic-view-success" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow34" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="academic-view-success" target="system-update-list" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow35" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="system-update-list" target="academic-view-list" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Legend -->
+        <mxCell id="legend-box" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;dashed=1;" parent="1" vertex="1">
+          <mxGeometry x="1160" y="80" width="200" height="280" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="legend-title" value="LEGEND" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontSize=16;" parent="1" vertex="1">
+          <mxGeometry x="1160" y="90" width="200" height="30" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="legend-1" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="1180" y="130" width="30" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-1-text" value="Start/End" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="1220" y="125" width="120" height="30" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="legend-2" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="1180" y="160" width="30" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-2-text" value="Action" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="1220" y="155" width="120" height="30" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="legend-3" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="1180" y="190" width="30" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-3-text" value="System Process" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="1220" y="185" width="120" height="30" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="legend-4" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="1180" y="220" width="30" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-4-text" value="DB Operation" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="1220" y="215" width="120" height="30" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="legend-5" value="" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
+          <mxGeometry x="1180" y="250" width="30" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-5-text" value="Decision" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="1220" y="245" width="120" height="30" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="legend-6" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="1180" y="280" width="30" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-6-text" value="Warning/Error" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="1220" y="275" width="120" height="30" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="legend-7" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;dashed=1;endArrow=classic;endFill=1;" parent="1" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1180" y="325" as="sourcePoint" />
+            <mxPoint x="1210" y="325" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="legend-7-text" value="Async Flow" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="1220" y="310" width="120" height="30" as="geometry" />
+        </mxCell>
+        
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

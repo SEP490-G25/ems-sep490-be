@@ -35,7 +35,6 @@ DROP TABLE IF EXISTS score CASCADE;
 DROP TABLE IF EXISTS assessment CASCADE;
 DROP TABLE IF EXISTS course_assessment_clo_mapping CASCADE;
 DROP TABLE IF EXISTS course_assessment CASCADE;
-DROP TABLE IF EXISTS teacher_availability_override CASCADE;
 DROP TABLE IF EXISTS teacher_availability CASCADE;
 DROP TABLE IF EXISTS student_session CASCADE;
 DROP TABLE IF EXISTS enrollment CASCADE;
@@ -322,11 +321,11 @@ CREATE TABLE student (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL UNIQUE,
     student_code VARCHAR(50) UNIQUE,
-    branch_id BIGINT,
+    education_level VARCHAR(50),
+    address TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    CONSTRAINT fk_student_user FOREIGN KEY (user_id) REFERENCES user_account(id) ON DELETE CASCADE,
-    CONSTRAINT fk_student_branch FOREIGN KEY (branch_id) REFERENCES branch(id) ON DELETE SET NULL
+    CONSTRAINT fk_student_user FOREIGN KEY (user_id) REFERENCES user_account(id) ON DELETE CASCADE
 );
 
 -- =========================================
@@ -829,8 +828,6 @@ CREATE INDEX idx_student_session_attendance ON student_session(attendance_status
 CREATE INDEX idx_teacher_availability_teacher ON teacher_availability(teacher_id);
 CREATE INDEX idx_teacher_availability_timeslot ON teacher_availability(time_slot_template_id);
 CREATE INDEX idx_teacher_availability_day ON teacher_availability(day_of_week);
-CREATE INDEX idx_teacher_availability_override_teacher ON teacher_availability_override(teacher_id);
-CREATE INDEX idx_teacher_availability_override_date ON teacher_availability_override(date);
 
 -- Assessment & Feedback
 CREATE INDEX idx_assessment_class ON assessment(class_id);
@@ -890,7 +887,6 @@ COMMENT ON TABLE teaching_slot IS 'Teacher assignment to session with skill and 
 COMMENT ON TABLE enrollment IS 'Student registration in a class';
 COMMENT ON TABLE student_session IS 'Individual student attendance record per session - auto-generated on enrollment';
 COMMENT ON TABLE teacher_availability IS 'Regular weekly availability patterns for teachers';
-COMMENT ON TABLE teacher_availability_override IS 'Date-specific availability exceptions';
 
 -- Assessment & Feedback
 COMMENT ON TABLE assessment IS 'Assessment definition within a class (quiz, midterm, final, etc.)';
