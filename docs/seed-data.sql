@@ -1727,6 +1727,184 @@ VALUES
 
 COMMENT ON TABLE student IS 'Students 1-50: Enrolled in various classes. Students 51-70: NOT ENROLLED (available for testing enrollment queries).';
 
+-- =========================================
+-- ADDITIONAL SKILL ASSESSMENTS FOR REMAINING STUDENTS
+-- =========================================
+-- Adding assessments for students who don't have any yet
+
+INSERT INTO replacement_skill_assessment (student_id, skill, level_id, score, assessment_date, assessment_type, note, assessed_by, created_at, updated_at)
+VALUES
+-- Student 4 (S004) - Beginner English
+(4, 'general', 1, 30, CURRENT_DATE - INTERVAL '80 days', 'placement_test', 'Complete beginner in English', 4, NOW() - INTERVAL '80 days', NOW()),
+(4, 'listening', 1, 28, CURRENT_DATE - INTERVAL '80 days', 'placement_test', 'Weak listening skills', 4, NOW() - INTERVAL '80 days', NOW()),
+
+-- Student 6 (S006) - Beginner English
+(6, 'general', 1, 32, CURRENT_DATE - INTERVAL '70 days', 'placement_test', 'Starting from basics', 4, NOW() - INTERVAL '70 days', NOW()),
+
+-- Student 8 (S008) - Beginner English
+(8, 'general', 1, 35, CURRENT_DATE - INTERVAL '60 days', 'placement_test', 'Some basic knowledge', 4, NOW() - INTERVAL '60 days', NOW()),
+(8, 'reading', 1, 38, CURRENT_DATE - INTERVAL '60 days', 'placement_test', 'Can read simple texts', 4, NOW() - INTERVAL '60 days', NOW()),
+
+-- Student 9 (S009) - Beginner English
+(9, 'general', 1, 28, CURRENT_DATE - INTERVAL '55 days', 'placement_test', 'Elementary level', 4, NOW() - INTERVAL '55 days', NOW()),
+
+-- Student 12 (S012) - Beginner English
+(12, 'general', 2, 45, CURRENT_DATE - INTERVAL '42 days', 'placement_test', 'Pre-intermediate level', 4, NOW() - INTERVAL '42 days', NOW()),
+(12, 'speaking', 2, 42, CURRENT_DATE - INTERVAL '42 days', 'placement_test', 'Basic conversation skills', 4, NOW() - INTERVAL '42 days', NOW()),
+
+-- Student 13 (S013) - Beginner English
+(13, 'general', 1, 33, CURRENT_DATE - INTERVAL '38 days', 'placement_test', 'Elementary English', 4, NOW() - INTERVAL '38 days', NOW()),
+
+-- Student 16 (S016) - Beginner English
+(16, 'general', 1, 30, CURRENT_DATE - INTERVAL '26 days', 'placement_test', 'Basic English skills', 4, NOW() - INTERVAL '26 days', NOW()),
+
+-- Student 17 (S017) - Beginner English
+(17, 'general', 1, 35, CURRENT_DATE - INTERVAL '24 days', 'placement_test', 'Elementary level confirmed', 4, NOW() - INTERVAL '24 days', NOW()),
+(17, 'writing', 1, 32, CURRENT_DATE - INTERVAL '24 days', 'placement_test', 'Weak writing skills', 4, NOW() - INTERVAL '24 days', NOW()),
+
+-- Student 19 (S019) - Beginner English
+(19, 'general', 1, 28, CURRENT_DATE - INTERVAL '20 days', 'placement_test', 'True beginner', 4, NOW() - INTERVAL '20 days', NOW()),
+
+-- Student 22 (S022) - Beginner English
+(22, 'general', 2, 48, CURRENT_DATE - INTERVAL '14 days', 'placement_test', 'A2 level, ready for elementary course', 4, NOW() - INTERVAL '14 days', NOW()),
+(22, 'reading', 2, 50, CURRENT_DATE - INTERVAL '14 days', 'placement_test', 'Reading comprehension adequate', 4, NOW() - INTERVAL '14 days', NOW()),
+
+-- Student 23 (S023) - Beginner English
+(23, 'general', 1, 32, CURRENT_DATE - INTERVAL '12 days', 'placement_test', 'Starting English journey', 4, NOW() - INTERVAL '12 days', NOW()),
+
+-- Student 26 (S026) - Beginner English
+(26, 'general', 1, 30, CURRENT_DATE - INTERVAL '9 days', 'placement_test', 'Basic level', 4, NOW() - INTERVAL '9 days', NOW()),
+
+-- Student 27 (S027) - Beginner English
+(27, 'general', 1, 35, CURRENT_DATE - INTERVAL '8 days', 'placement_test', 'Elementary English', 4, NOW() - INTERVAL '8 days', NOW()),
+
+-- Student 28 (S028) - Intermediate English
+(28, 'general', 3, 60, CURRENT_DATE - INTERVAL '7 days', 'placement_test', 'B1 level confirmed', 6, NOW() - INTERVAL '7 days', NOW()),
+(28, 'speaking', 3, 58, CURRENT_DATE - INTERVAL '7 days', 'placement_test', 'Good speaking ability', 6, NOW() - INTERVAL '7 days', NOW()),
+
+-- Student 30 (S030) - Beginner English
+(30, 'general', 1, 28, CURRENT_DATE - INTERVAL '5 days', 'placement_test', 'Complete beginner', 4, NOW() - INTERVAL '5 days', NOW()),
+
+-- Student 31 (S031) - Beginner English
+(31, 'general', 1, 32, CURRENT_DATE - INTERVAL '48 days', 'placement_test', 'Elementary level', 4, NOW() - INTERVAL '48 days', NOW()),
+
+-- Student 32 (S032) - Intermediate English
+(32, 'general', 3, 62, CURRENT_DATE - INTERVAL '46 days', 'placement_test', 'Solid B1 level', 6, NOW() - INTERVAL '46 days', NOW()),
+(32, 'listening', 3, 60, CURRENT_DATE - INTERVAL '46 days', 'placement_test', 'Good listening comprehension', 6, NOW() - INTERVAL '46 days', NOW()),
+
+-- Student 33 (S033) - Beginner English
+(33, 'general', 1, 30, CURRENT_DATE - INTERVAL '44 days', 'placement_test', 'True beginner', 4, NOW() - INTERVAL '44 days', NOW()),
+
+-- Student 36 (S036) - Beginner English
+(36, 'general', 1, 35, CURRENT_DATE - INTERVAL '38 days', 'placement_test', 'Basic English', 4, NOW() - INTERVAL '38 days', NOW()),
+
+-- Student 37 (S037) - Beginner English
+(37, 'general', 1, 28, CURRENT_DATE - INTERVAL '36 days', 'placement_test', 'Elementary level', 4, NOW() - INTERVAL '36 days', NOW()),
+
+-- Student 38 (S038) - Intermediate English
+(38, 'general', 3, 58, CURRENT_DATE - INTERVAL '34 days', 'placement_test', 'Intermediate level', 6, NOW() - INTERVAL '34 days', NOW()),
+(38, 'writing', 3, 55, CURRENT_DATE - INTERVAL '34 days', 'placement_test', 'Writing needs improvement', 6, NOW() - INTERVAL '34 days', NOW()),
+
+-- Student 40 (S040) - Beginner English
+(40, 'general', 1, 30, CURRENT_DATE - INTERVAL '30 days', 'placement_test', 'Complete beginner', 4, NOW() - INTERVAL '30 days', NOW()),
+
+-- Student 41 (S041) - Beginner English
+(41, 'general', 1, 32, CURRENT_DATE - INTERVAL '28 days', 'placement_test', 'Elementary English', 4, NOW() - INTERVAL '28 days', NOW()),
+
+-- Student 42 (S042) - Intermediate English
+(42, 'general', 3, 60, CURRENT_DATE - INTERVAL '26 days', 'placement_test', 'B1 level', 6, NOW() - INTERVAL '26 days', NOW()),
+(42, 'speaking', 3, 62, CURRENT_DATE - INTERVAL '26 days', 'placement_test', 'Strong speaking skills', 6, NOW() - INTERVAL '26 days', NOW()),
+
+-- Student 44 (S044) - Beginner English
+(44, 'general', 1, 28, CURRENT_DATE - INTERVAL '22 days', 'placement_test', 'True beginner', 4, NOW() - INTERVAL '22 days', NOW()),
+
+-- Student 45 (S045) - Intermediate English
+(45, 'general', 3, 58, CURRENT_DATE - INTERVAL '20 days', 'placement_test', 'Intermediate level', 6, NOW() - INTERVAL '20 days', NOW()),
+
+-- Student 46 (S046) - Beginner English
+(46, 'general', 1, 30, CURRENT_DATE - INTERVAL '18 days', 'placement_test', 'Basic English', 4, NOW() - INTERVAL '18 days', NOW()),
+
+-- Student 47 (S047) - Beginner English
+(47, 'general', 1, 35, CURRENT_DATE - INTERVAL '16 days', 'placement_test', 'Elementary level', 4, NOW() - INTERVAL '16 days', NOW()),
+
+-- Student 48 (S048) - Advanced English
+(48, 'general', 4, 75, CURRENT_DATE - INTERVAL '14 days', 'placement_test', 'Advanced level, B2', 6, NOW() - INTERVAL '14 days', NOW()),
+(48, 'reading', 4, 78, CURRENT_DATE - INTERVAL '14 days', 'placement_test', 'Excellent reading', 6, NOW() - INTERVAL '14 days', NOW()),
+
+-- Student 49 (S049) - Intermediate English
+(49, 'general', 3, 60, CURRENT_DATE - INTERVAL '12 days', 'placement_test', 'Solid B1', 6, NOW() - INTERVAL '12 days', NOW()),
+
+-- Student 50 (S050) - Beginner English
+(50, 'general', 1, 32, CURRENT_DATE - INTERVAL '10 days', 'placement_test', 'Elementary English', 4, NOW() - INTERVAL '10 days', NOW()),
+
+-- Student 51 (S051) - Beginner English
+(51, 'general', 1, 28, CURRENT_DATE - INTERVAL '8 days', 'placement_test', 'True beginner', 4, NOW() - INTERVAL '8 days', NOW()),
+
+-- Student 52 (S052) - Advanced English
+(52, 'general', 4, 80, CURRENT_DATE - INTERVAL '6 days', 'placement_test', 'Advanced level confirmed', 6, NOW() - INTERVAL '6 days', NOW()),
+(52, 'speaking', 4, 82, CURRENT_DATE - INTERVAL '6 days', 'placement_test', 'Fluent speaker', 6, NOW() - INTERVAL '6 days', NOW()),
+
+-- Student 53 (S053) - Intermediate English
+(53, 'general', 3, 58, CURRENT_DATE - INTERVAL '4 days', 'placement_test', 'B1 level', 6, NOW() - INTERVAL '4 days', NOW()),
+
+-- Student 54 (S054) - Beginner English
+(54, 'general', 1, 30, CURRENT_DATE - INTERVAL '2 days', 'placement_test', 'Basic English skills', 4, NOW() - INTERVAL '2 days', NOW()),
+
+-- Student 55 (S055) - Beginner English
+(55, 'general', 1, 32, CURRENT_DATE - INTERVAL '1 day', 'placement_test', 'Elementary level', 4, NOW() - INTERVAL '1 day', NOW()),
+
+-- Students 56-70 (newly added students)
+-- Student 56 (S056) - Intermediate English
+(56, 'general', 3, 60, CURRENT_DATE - INTERVAL '5 days', 'placement_test', 'B1 level', 6, NOW() - INTERVAL '5 days', NOW()),
+
+-- Student 57 (S057) - Beginner English
+(57, 'general', 1, 28, CURRENT_DATE - INTERVAL '5 days', 'placement_test', 'True beginner', 4, NOW() - INTERVAL '5 days', NOW()),
+
+-- Student 58 (S058) - Intermediate English
+(58, 'general', 3, 62, CURRENT_DATE - INTERVAL '5 days', 'placement_test', 'Solid B1', 6, NOW() - INTERVAL '5 days', NOW()),
+(58, 'listening', 3, 60, CURRENT_DATE - INTERVAL '5 days', 'placement_test', 'Good listening', 6, NOW() - INTERVAL '5 days', NOW()),
+
+-- Student 59 (S059) - Advanced English
+(59, 'general', 4, 78, CURRENT_DATE - INTERVAL '4 days', 'placement_test', 'Advanced B2', 6, NOW() - INTERVAL '4 days', NOW()),
+
+-- Student 60 (S060) - Beginner English
+(60, 'general', 1, 30, CURRENT_DATE - INTERVAL '4 days', 'placement_test', 'Basic level', 4, NOW() - INTERVAL '4 days', NOW()),
+
+-- Student 61 (S061) - Beginner English
+(61, 'general', 1, 32, CURRENT_DATE - INTERVAL '4 days', 'placement_test', 'Elementary English', 4, NOW() - INTERVAL '4 days', NOW()),
+
+-- Student 62 (S062) - Intermediate English
+(62, 'general', 3, 58, CURRENT_DATE - INTERVAL '3 days', 'placement_test', 'B1 level', 6, NOW() - INTERVAL '3 days', NOW()),
+
+-- Student 63 (S063) - Advanced English
+(63, 'general', 4, 75, CURRENT_DATE - INTERVAL '3 days', 'placement_test', 'Advanced level', 6, NOW() - INTERVAL '3 days', NOW()),
+(63, 'speaking', 4, 78, CURRENT_DATE - INTERVAL '3 days', 'placement_test', 'Excellent speaking', 6, NOW() - INTERVAL '3 days', NOW()),
+
+-- Student 64 (S064) - Beginner English
+(64, 'general', 1, 28, CURRENT_DATE - INTERVAL '3 days', 'placement_test', 'True beginner', 4, NOW() - INTERVAL '3 days', NOW()),
+
+-- Student 65 (S065) - Intermediate English
+(65, 'general', 3, 60, CURRENT_DATE - INTERVAL '2 days', 'placement_test', 'Solid B1', 6, NOW() - INTERVAL '2 days', NOW()),
+
+-- Student 66 (S066) - Beginner English
+(66, 'general', 1, 30, CURRENT_DATE - INTERVAL '2 days', 'placement_test', 'Basic English', 4, NOW() - INTERVAL '2 days', NOW()),
+
+-- Student 67 (S067) - Advanced English
+(67, 'general', 4, 80, CURRENT_DATE - INTERVAL '2 days', 'placement_test', 'Advanced B2/C1', 6, NOW() - INTERVAL '2 days', NOW()),
+(67, 'reading', 4, 82, CURRENT_DATE - INTERVAL '2 days', 'placement_test', 'Strong reading skills', 6, NOW() - INTERVAL '2 days', NOW()),
+
+-- Student 68 (S068) - Beginner English
+(68, 'general', 1, 32, CURRENT_DATE - INTERVAL '1 day', 'placement_test', 'Elementary level', 4, NOW() - INTERVAL '1 day', NOW()),
+
+-- Student 69 (S069) - Intermediate English
+(69, 'general', 3, 58, CURRENT_DATE - INTERVAL '1 day', 'placement_test', 'B1 level', 6, NOW() - INTERVAL '1 day', NOW()),
+
+-- Student 70 (S070) - Beginner English
+(70, 'general', 1, 28, CURRENT_DATE - INTERVAL '1 day', 'placement_test', 'True beginner', 4, NOW() - INTERVAL '1 day', NOW());
+
+-- Reset sequence for replacement_skill_assessment
+SELECT setval('replacement_skill_assessment_id_seq', (SELECT MAX(id) FROM replacement_skill_assessment));
+
 -- Update sequences to reflect new data
 SELECT setval('user_account_id_seq', (SELECT MAX(id) FROM user_account));
 SELECT setval('student_id_seq', (SELECT MAX(id) FROM student));

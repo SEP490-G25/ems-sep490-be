@@ -90,6 +90,7 @@ CREATE TABLE user_account (
   phone VARCHAR(50),
   facebook_url VARCHAR(500),
   full_name VARCHAR(255) NOT NULL,
+  gender VARCHAR(20),
   dob DATE,
   address TEXT,
   password_hash VARCHAR(255) NOT NULL,
