@@ -89,7 +89,9 @@ CREATE TABLE user_account (
   id BIGSERIAL PRIMARY KEY,
   email VARCHAR(255) UNIQUE,
   phone VARCHAR(50),
+  facebook_url VARCHAR(500),
   full_name VARCHAR(255) NOT NULL,
+  address TEXT,
   password_hash VARCHAR(255) NOT NULL,
   status VARCHAR(50),
   last_login_at TIMESTAMPTZ,
@@ -194,8 +196,7 @@ CREATE TABLE student (
   id BIGSERIAL PRIMARY KEY,
   user_id BIGINT NOT NULL UNIQUE,
   student_code VARCHAR(50) UNIQUE,
-  education_level VARCHAR(50),
-  address TEXT,
+  level VARCHAR(100),
   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
   updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
   CONSTRAINT fk_student_user FOREIGN KEY(user_id) REFERENCES user_account(id) ON DELETE CASCADE
@@ -671,66 +672,3 @@ CREATE INDEX idx_student_request_type           ON student_request(request_type)
 CREATE INDEX idx_teacher_request_teacher        ON teacher_request(teacher_id);
 CREATE INDEX idx_teacher_request_status         ON teacher_request(status);
 CREATE INDEX idx_teacher_request_type           ON teacher_request(request_type);
-
--- ========== SECTION 5: COMMENTS ==========
-COMMENT ON DATABASE ems IS 'Education Management System (EMS) - Multi-tenant language center';
-
--- Org & Infra
-COMMENT ON TABLE center                   IS 'Top-level organization entity representing a training center';
-COMMENT ON TABLE branch                   IS 'Physical branch of a center';
-COMMENT ON TABLE resource                 IS 'Unified resource model for ROOM and VIRTUAL (Zoom) assets';
-COMMENT ON TABLE time_slot_template       IS 'Allowed time slots per branch';
-
--- People & RBAC
-COMMENT ON TABLE role                     IS 'RBAC roles: ADMIN, MANAGER, CENTER_HEAD, ACADEMIC_STAFF, SUBJECT_LEADER, TEACHER, STUDENT, QA';
-COMMENT ON TABLE user_account             IS 'System user accounts';
-COMMENT ON TABLE user_role                IS 'Users ↔ Roles';
-COMMENT ON TABLE user_branches            IS 'Branch-scoped access for users';
-COMMENT ON TABLE teacher                  IS '1:1 with UserAccount for teachers';
-COMMENT ON TABLE student                  IS '1:1 with UserAccount for students';
-COMMENT ON TABLE teacher_skill            IS 'Teacher skills: GENERAL/READING/WRITING/SPEAKING/LISTENING';
-
--- Curriculum
-COMMENT ON TABLE subject                  IS 'Subject domain (e.g., English, Japanese)';
-COMMENT ON TABLE level                    IS 'Levels within a subject (e.g., A1, A2)';
-COMMENT ON TABLE course                   IS 'Course template (approved by Manager) used to open classes';
-COMMENT ON TABLE course_phase             IS 'Phases of a course';
-COMMENT ON TABLE course_session           IS 'Template sessions per phase (basis for generating sessions)';
-COMMENT ON TABLE course_material          IS 'Materials at course/phase/session granularity';
-COMMENT ON TABLE plo                      IS 'Program Learning Outcomes (subject-level)';
-COMMENT ON TABLE clo                      IS 'Course Learning Outcomes (course-level)';
-COMMENT ON TABLE plo_clo_mapping          IS 'CLO ↔ PLO mapping';
-COMMENT ON TABLE course_session_clo_mapping IS 'CourseSession ↔ CLO mapping';
-COMMENT ON TABLE course_assessment        IS 'Assessment templates at course level';
-COMMENT ON TABLE course_assessment_clo_mapping IS 'Which CLOs are assessed by each course assessment';
-
--- Operations
-COMMENT ON TABLE "class"                  IS 'Class instance (offering of a course at a branch)';
-COMMENT ON TABLE session                  IS 'Source of truth for schedule; generated from course template';
-COMMENT ON TABLE session_resource         IS 'Room/Zoom allocation per session';
-COMMENT ON TABLE teaching_slot            IS 'Teacher assignment per session with skill/role';
-COMMENT ON TABLE enrollment               IS 'Student registrations';
-COMMENT ON TABLE student_session          IS 'Per-student attendance record per session';
-COMMENT ON TABLE teacher_availability     IS 'Weekly availability patterns managed by Academic Staff';
-
--- Assessment & Feedback
-COMMENT ON TABLE assessment               IS 'Assessments at class level (cloned from course assessment or created ad-hoc)';
-COMMENT ON TABLE score                    IS 'Student scores & private feedback';
-COMMENT ON TABLE student_feedback         IS 'Student feedback per session/phase';
-COMMENT ON TABLE qa_report                IS 'QA monitoring & evaluation reports';
-
--- Requests
-COMMENT ON TABLE student_request          IS 'Student requests: absence/makeup/transfer/reschedule';
-COMMENT ON TABLE teacher_request          IS 'Teacher requests: leave/swap/OT/reschedule';
-
--- ========== COMPLETION NOTICE ==========
-DO $$
-BEGIN
-  RAISE NOTICE '========================================';
-  RAISE NOTICE 'EMS Database Schema Created Successfully';
-  RAISE NOTICE '========================================';
-  RAISE NOTICE 'Total Tables Created: 36';
-  RAISE NOTICE 'Total Enum Types: 15';
-  RAISE NOTICE 'Indexes created: ~80+';
-  RAISE NOTICE 'Key patterns: Session-first, Multi-tenant, RBAC, Composite PKs, Enums';
-END $$;

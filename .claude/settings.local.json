@@ -25,7 +25,8 @@
       "Bash(file=\"/Users/tatanh/Documents/Code/SEP490-Capstone/ems-sep490-be/src/test/java/org/fyp/emssep490be/repositories/LevelRepositoryIntegrationTest.java\")",
       "Bash(rm:*)",
       "Bash(mkdir:*)",
-      "Bash(dir /B \"d:\\Workspace\\projects\\EMS-SEP490\\ems-sep490-be\\docs\\mainflow\")"
+      "Bash(dir /B \"d:\\Workspace\\projects\\EMS-SEP490\\ems-sep490-be\\docs\\mainflow\")",
+      "Bash(python update_students.py:*)"
     ],
     "deny": [],
     "ask": []

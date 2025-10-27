@@ -1,20 +1,11 @@
+
 STUDENT ENROLLMENT
-TỔNG QUAN (Overview)
-Luồng ghi danh học viên (Student Enrollment Flow) mô tả quy trình giáo vụ (Academic Staff) thực hiện việc ghi danh học viên vào lớp học. Luồng này bao gồm 3 phương thức chính:
-
-Chọn học viên có sẵn từ danh sách học viên khả dụng của chi nhánh
-Thêm học viên mới lẻ thông qua form nhập liệu
-Import hàng loạt học viên mới từ file CSV/Excel
-
-Sau khi thêm học viên vào danh sách khả dụng (nếu cần), giáo vụ sẽ chọn các học viên cần ghi danh và hệ thống sẽ thực hiện kiểm tra capacity, conflict, tạo enrollment records, sinh student_session records cho các buổi học tương lai, và gửi email thông báo cho học viên.
-
-CHI TIẾT CÁC BƯỚC (Detailed Steps)
 GIAI ĐOẠN 1: KHỞI TẠO & XEM DANH SÁCH (Initialization)
-Step 1: [Academic Staff] Vào Chi Tiết Lớp
+Step 1: [Academic Affairs] Vào Chi Tiết Lớp
 Giáo vụ truy cập vào trang chi tiết lớp học (Class Detail page)
 Tại đây hiển thị thông tin lớp và danh sách học viên đã được ghi danh
 
-Step 2: [Academic Staff] Click "Ghi danh học viên"
+Step 2: [Academic Affairs] Click "Ghi danh học viên"
 Giáo vụ nhấn nút "Ghi danh học viên" để bắt đầu quy trình enrollment
 
 Step 3: [System] Kiểm tra class status (scheduled/ongoing)
@@ -22,45 +13,19 @@ Hệ thống kiểm tra trạng thái lớp học
 Chỉ cho phép ghi danh nếu lớp ở trạng thái "scheduled" hoặc "ongoing"
 Không cho phép ghi danh nếu lớp đã "completed" hoặc "cancelled"
 
--- Query để kiểm tra trạng thái lớp học
--- Input: class_id
--- Output: Trả về class nếu status là 'scheduled' hoặc 'ongoing'
-
-SELECT 
-    c.id,
-    c.class_code,
-    c.name,
-    c.status,
-    c.max_capacity,
-    c.enrolled_count,
-    c.start_date,
-    c.end_date
-FROM class c
-WHERE c.id = :classId
-  AND c.status IN ('scheduled', 'ongoing');
-
--- Nếu query không trả về kết quả → Block enrollment
--- Nếu trả về kết quả → Cho phép tiếp tục
-
-
 Step 4: [System] Load danh sách students khả dụng (chưa enroll trong lớp)
 Hệ thống load danh sách tất cả học viên thuộc chi nhánh (branch)
 Lọc ra những học viên chưa được ghi danh vào lớp này
 Danh sách này sẽ là nguồn để giáo vụ chọn
 
--- Query để lấy danh sách học viên chưa ghi danh vào lớp này
--- Lọc theo branch (từ user_branches)
--- Input: class_id, branch_id (hoặc lấy từ class)
--- Output: Danh sách students khả dụng
-
 WITH class_info AS (
-    SELECT branch_id FROM class WHERE id = :classId
+    SELECT branch_id FROM class WHERE id = 2
 ),
 enrolled_students AS (
     -- Lấy danh sách students đã enroll vào lớp này
-    SELECT student_id 
-    FROM enrollment 
-    WHERE class_id = :classId
+    SELECT student_id
+    FROM enrollment
+    WHERE class_id = 2
       AND status NOT IN ('dropped', 'transferred')
 )
 SELECT DISTINCT
@@ -81,10 +46,11 @@ WHERE s.id NOT IN (SELECT student_id FROM enrolled_students)
   AND u.status = 'active'  -- Chỉ lấy user active
 ORDER BY u.full_name;
 
+
 -- Kết quả: Danh sách students khả dụng để chọn
 
 
-Step 5: [Academic Staff] Xem danh sách students khả dụng
+Step 5: [Academic Affairs] Xem danh sách students khả dụng
 Giáo vụ xem danh sách học viên có thể ghi danh
 Danh sách hiển thị thông tin: họ tên, email, số điện thoại, v.v.
 
@@ -94,14 +60,14 @@ Option A: Chọn từ danh sách có sẵn
 Option B: Thêm học viên mới (thêm lẻ)
 Option C: Import CSV
 
-Step 7: [Academic Staff] Chọn hành động
+Step 7: [Academic Affairs] Chọn hành động
 Giáo vụ quyết định chọn một trong 3 phương thức
 
 GIAI ĐOẠN 2A: OPTION A - CHỌN HỌC VIÊN CÓ SẴN
-
-Step 8A: [Academic Staff] OPTION A: Chọn student có sẵn từ danh sách
-
+Step 8A: [Academic Affairs] OPTION A: Chọn student có sẵn từ danh sách
 Giáo vụ chọn phương thức "Chọn từ danh sách có sẵn"
+
+
 
 Step 9A: [System] Enable checkboxes để chọn students
 Hệ thống hiển thị checkbox bên cạnh mỗi học viên trong danh sách
@@ -111,18 +77,17 @@ Step 10A: Nhảy đến Step 20 (Chọn students từ DS đã update)
 Giáo vụ tiến hành chọn các học viên cần ghi danh
 
 GIAI ĐOẠN 2B: OPTION B - THÊM HỌC VIÊN MỚI (LẺ)
-
-Step 8B: [Academic Staff] OPTION B: Click "Thêm học viên mới"
+Step 8B: [Academic Affairs] OPTION B: Click "Thêm học viên mới"
 Giáo vụ chọn phương thức thêm học viên mới từng người
 
 Step 9B: [System] Hiển thị form tạo student mới
 Hệ thống mở form nhập thông tin học viên mới
 Form bao gồm: Họ tên, email, số điện thoại, ngày sinh, địa chỉ, v.v.
 
-Step 10B: [Academic Staff] Điền form thông tin student
+Step 10B: [Academic Affairs] Điền form thông tin student
 Giáo vụ điền đầy đủ thông tin học viên mới vào form
 
-Step 11B: [Academic Staff] Click "Lưu và Thêm vào DS"
+Step 11B: [Academic Affairs] Click "Lưu và Thêm vào DS"
 Giáo vụ nhấn nút "Lưu và Thêm vào Danh Sách"
 
 Step 12B: [System] Validate input
@@ -155,7 +120,6 @@ Hệ thống tạo tài khoản user_account (nếu email chưa tồn tại)
 Tạo bản ghi student record liên kết với user_account
 Gán role STUDENT cho user
 
--- Transaction 1: Tạo user_account
 INSERT INTO user_account (
     email,
     phone,
@@ -165,33 +129,37 @@ INSERT INTO user_account (
     created_at,
     updated_at
 ) VALUES (
-    :email,
-    :phone,
-    :fullName,
-    :passwordHash,  -- Mật khẩu mặc định đã hash (ví dụ: bcrypt)
+    'testuser001@gmail.com',
+    '+84-925-111-111',
+    'Nguyen Van Test 1',
+    '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6',  -- password: "password123"
     'active',
     CURRENT_TIMESTAMP,
     CURRENT_TIMESTAMP
 )
-RETURNING id AS user_id;
+RETURNING id;
+-- Expected: Returns user_id (e.g., 96)
 
--- Transaction 2: Assign role STUDENT
+
+-- Step 2: Assign STUDENT role (giả sử user_id = 96)
 INSERT INTO user_role (user_id, role_id)
 VALUES (
-    :userId,  -- Từ RETURNING của query trên
+    96,  -- user_id từ bước 1
     (SELECT id FROM role WHERE code = 'STUDENT')
 );
 
--- Transaction 3: Assign branch (nếu cần)
+
+-- Step 3: Assign to Branch 1 (Main Campus)
 INSERT INTO user_branches (user_id, branch_id, assigned_at, assigned_by)
 VALUES (
-    :userId,
-    :branchId,  -- branch_id của class
+    96,  -- user_id từ bước 1
+    1,   -- Branch 1 (Main Campus)
     CURRENT_TIMESTAMP,
-    :currentUserId  -- ID của academic staff đang thực hiện
+    4    -- Assigned by Academic Affairs 1 (user_id = 4)
 );
 
--- Transaction 4: Tạo student record
+
+-- Step 4: Create student record
 INSERT INTO student (
     user_id,
     student_code,
@@ -200,14 +168,14 @@ INSERT INTO student (
     created_at,
     updated_at
 ) VALUES (
-    :userId,
-    :studentCode,
-    :educationLevel,
-    :address,
+    96,     -- user_id từ bước 1
+    'S071',  -- Student code (tiếp theo từ S070)
+    'Undergraduate',
+    'Hanoi, Vietnam',
     CURRENT_TIMESTAMP,
     CURRENT_TIMESTAMP
 )
-RETURNING id AS student_id;
+RETURNING id;
 
 
 Step 14B: [System] Thêm student mới vào DS khả dụng
@@ -218,11 +186,10 @@ Step 15B: Chuyển đến Step 20 (Chọn students từ DS đã update)
 Giáo vụ tiếp tục chọn học viên (bao gồm cả học viên vừa thêm) để ghi danh
 
 GIAI ĐOẠN 2C: OPTION C - IMPORT CSV
-
-Step 8C: [Academic Staff] OPTION C: Click "Import CSV"
+Step 8C: [Academic Affairs] OPTION C: Click "Import CSV"
 Giáo vụ chọn phương thức import hàng loạt từ file CSV
 
-Step 9C: [Academic Staff] Upload file CSV
+Step 9C: [Academic Affairs] Upload file CSV
 
 Giáo vụ chọn và upload file CSV chứa thông tin học viên
 File CSV phải tuân theo template chuẩn của hệ thống
@@ -258,15 +225,15 @@ WHERE student_code = ANY(:studentCodeArray);
 
 Step 11C: [System] Hiển thị preview
 Hệ thống hiển thị preview kết quả validation:
-✅ Valid: Các bản ghi hợp lệ, sẵn sàng import
-⚠️ Warning: Các bản ghi có cảnh báo (ví dụ: email đã tồn tại, sẽ skip)
-❌ Error: Các bản ghi lỗi, không thể import (ví dụ: thiếu thông tin bắt buộc)
+Valid: Các bản ghi hợp lệ, sẵn sàng import
+Warning: Các bản ghi có cảnh báo (ví dụ: email đã tồn tại, sẽ skip)
+Error: Các bản ghi lỗi, không thể import (ví dụ: thiếu thông tin bắt buộc)
 
-Step 12C: [Academic Staff] Review preview data
+Step 12C: [Academic Affairs] Review preview data
 Giáo vụ xem xét kết quả preview
 Quyết định có tiếp tục import hay không
 
-Step 13C: [Academic Staff] Click "Import vào DS"
+Step 13C: [Academic Affairs] Click "Import vào DS"
 Giáo vụ xác nhận import các bản ghi valid vào hệ thống
 
 Step 14C: [System] Batch CREATE: user_account + student cho valid records
@@ -327,16 +294,46 @@ Step 16C: Chuyển đến Step 20 (Chọn students từ DS đã update)
 Giáo vụ tiếp tục chọn học viên để ghi danh vào lớp
 
 GIAI ĐOẠN 3: GHI DANH VÀO LỚP (Enrollment Process)
-
-Step 20: [Academic Staff] Chọn students từ DS đã update
+Step 20: [Academic Affairs] Chọn students từ DS đã update
 Giáo vụ chọn (tick checkbox) các học viên cần ghi danh vào lớp
 Có thể chọn một hoặc nhiều học viên
 
-Step 21: [Academic Staff] Click "Ghi danh vào lớp"
+Step 21: [Academic Affairs] Click "Ghi danh vào lớp"
 Giáo vụ nhấn nút "Ghi danh vào lớp" để xác nhận
 
 Step 22: [System] Lấy danh sách students được chọn
 Hệ thống lấy danh sách tất cả học viên đã được tick checkbox
+WITH class_info AS (
+    SELECT branch_id FROM class WHERE id = 2
+),
+enrolled_students AS (
+    -- Lấy danh sách students đã enroll vào lớp này
+    SELECT student_id
+    FROM enrollment
+    WHERE class_id = 2
+      AND status NOT IN ('dropped', 'transferred')
+)
+SELECT DISTINCT
+    s.id AS student_id,
+    u.full_name,
+    u.email,
+    u.phone,
+    s.student_code,
+    s.education_level,
+    s.created_at
+FROM student s
+INNER JOIN user_account u ON s.user_id = u.id
+-- Kiểm tra student thuộc branch của class (qua user_branches)
+INNER JOIN user_branches ub ON u.id = ub.user_id
+INNER JOIN class_info ci ON ub.branch_id = ci.branch_id
+-- Loại trừ students đã enroll
+WHERE s.id NOT IN (SELECT student_id FROM enrolled_students)
+  AND u.status = 'active'  -- Chỉ lấy user active
+ORDER BY u.full_name;
+
+
+-- Kết quả: Danh sách students khả dụng để chọn
+
 
 Step 23: [System] Kiểm tra capacity
 Hệ thống kiểm tra sức chứa lớp học:
@@ -364,7 +361,7 @@ WHERE c.id = :classId;
 -- Nếu capacity_ok = true → Tiếp tục
 
 
-Step 24: [Academic Staff] Capacity OK?
+Step 24: [Academic Affairs] Capacity OK?
 Giáo vụ quyết định dựa trên kết quả kiểm tra capacity
 
 Step 25a: [YES] Capacity OK → Chuyển đến Step 28
@@ -373,12 +370,12 @@ Nếu còn chỗ trống, tiếp tục quy trình enrollment
 
 Step 25b: [NO] Capacity vượt mức → Step 26
 
-Step 26: [System] ⚠️ Hiển thị cảnh báo vượt capacity
+Step 26: [System]  Hiển thị cảnh báo vượt capacity
 Hệ thống hiển thị thông báo cảnh báo
 Thông tin: Lớp sẽ vượt sức chứa tối đa X học viên
 Yêu cầu giáo vụ xác nhận override
 
-Step 27: [Academic Staff] Override với lý do
+Step 27: [Academic Affairs] Override với lý do
 Giáo vụ nhập lý do vượt capacity (ví dụ: "Học viên VIP", "Yêu cầu từ ban giám đốc")
 Xác nhận override để tiếp tục
 
@@ -534,25 +531,16 @@ Link login hệ thống
 Thông tin tài khoản: Username (email), mật khẩu mặc định (yêu cầu đổi khi đăng nhập đầu tiên)
 
 Step 34: [System] Hiển thị success
-Hệ thống hiển thị thông báo thành công:
-✅ X students enrolled successfully
-📧 Welcome emails sent
 
-Step 35: [Academic Staff] Xem thông báo thành công
-Giáo vụ xem thông báo enrollment thành công
+Step 35: [Academic Affairs] Xem thông báo thành công
 
-Step 36: [System] Update danh sách học viên đã enroll trên UI
-Hệ thống cập nhật danh sách học viên trong lớp trên giao diện
-Hiển thị tổng số học viên, enrolled_count, remaining capacity
+Step 36: [System] Update danh sách học viên đã enroll trên UI (refresh)
 
-Step 37: [Academic Staff] Xem danh sách học viên đã enroll
-Giáo vụ xem danh sách học viên đã được ghi danh
-Kết thúc luồng enrollment
+Step 37: [Academic Affairs] Xem danh sách học viên đã enroll
 
 GIAI ĐOẠN 6: HỌC VIÊN NHẬN THÔNG BÁO (Student Perspective)
 
-Step 38: [Student] 📧 Nhận email welcome
-Học viên nhận email thông báo ghi danh thành công từ hệ thống
+Step 38: [Student] Học viên nhận email thông báo ghi danh thành công từ hệ thống
 
 Step 39: [Student] Đọc thông tin
 Học viên đọc thông tin trong email:

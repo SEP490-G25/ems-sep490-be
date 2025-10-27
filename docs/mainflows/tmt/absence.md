@@ -1,5 +1,4 @@
 STUDENT ABSENCE REQUEST
-Đây là quy trình cho phép học viên quản lý và tạo yêu cầu xin nghỉ học từ trang "My Requests". Học viên chọn ngày, chọn lớp, sau đó chọn session trong ngày đó để gửi yêu cầu xin nghỉ. Giáo vụ (Academic Staff) sẽ xem xét và phê duyệt hoặc từ chối yêu cầu.
 
 CÁC BƯỚC THỰC HIỆN (STEP-BY-STEP)
 PHẦN 1: HỌC VIÊN GỬI YÊU CẦU
@@ -13,10 +12,9 @@ Học viên click vào tab "My Requests" trên sidebar
 Bước 3: Hệ thống load danh sách requests
 System thực hiện query:
 Query student_request WHERE student_id = :id
-Hiển thị 2 tab: "Requests tôi đã gửi" và "Requests tôi nhận được"
 ORDER BY submitted_at DESC
 
--- Load all requests của student (tab "Sent")
+-- Load all requests của student
 SELECT 
     sr.id,
     sr.request_type,
@@ -38,9 +36,6 @@ JOIN class c ON s.class_id = c.id
 LEFT JOIN user_account decider ON sr.decided_by = decider.id
 WHERE sr.student_id = :student_id
 ORDER BY sr.submitted_at DESC;
-
--- Load requests mà student nhận được (tab "Received")
--- (Nếu có flow học viên nhận request từ hệ thống - hiện tại chưa có trong flow này)
 
 
 Bước 4: Hệ thống hiển thị trang My Requests
@@ -244,7 +239,7 @@ target_session_id (từ session đã chọn)
 request_type = 'absence'
 reason (từ form)
 notes (từ form, optional)
-status = 'pending' ⭐
+status = 'pending' 
 submitted_at = NOW()
 submitted_by = student_id
 
@@ -272,12 +267,12 @@ RETURNING id, submitted_at;
 
 
 Bước 18: Hệ thống hiển thị thông báo thành công
-Hiển thị success notification: ✅ "Yêu cầu đã được gửi thành công"
+Hiển thị success notification: "Yêu cầu đã được gửi thành công"
 Đóng modal
 Refresh danh sách requests trong tab "Requests tôi đã gửi"
 
-Bước 19: Gửi email thông báo cho Academic Staff (async)
-System gửi email bất đồng bộ tới Academic Staff thông báo:
+Bước 19: Gửi email thông báo cho Academic Affairs (async)
+System gửi email bất đồng bộ tới Academic Affairs thông báo:
 "Học viên [Student Name] yêu cầu nghỉ buổi học"
 "Lớp: [Class Name]"
 "Ngày: [Session Date]"
@@ -286,13 +281,13 @@ Link đến request detail
 
 Bước 20: Request xuất hiện trong danh sách với status "Pending"
 Request mới xuất hiện trong tab "Requests tôi đã gửi"
-Hiển thị badge: ⏳ Pending (Chờ phê duyệt)
+Hiển thị badge: Pending (Chờ phê duyệt)
 Hiển thị thông tin: Date, Class, Session, Status, Submitted date
 
 PHẦN 2: GIÁO VỤ XỬ LÝ YÊU CẦU
 
-Bước 21: Academic Staff nhận email thông báo
-📧 Giáo vụ nhận email thông báo có yêu cầu mới
+Bước 21: Academic Affairs nhận email thông báo
+Giáo vụ nhận email thông báo có yêu cầu mới
 
 Bước 22: Login hệ thống và vào menu "Pending Requests"
 Giáo vụ đăng nhập và truy cập phần "Request Management" hoặc "Pending Requests"
@@ -305,10 +300,10 @@ JOIN session s ON sr.target_session_id = s.session_id
 JOIN class c ON s.class_id = c.class_id
 WHERE sr.status = 'pending'
 AND sr.request_type = 'absence'
-AND c.branch_id IN (SELECT branch_id FROM user_branches WHERE user_id = :staff_id)
+AND c.branch_id IN (SELECT branch_id FROM user_branches WHERE user_id = :Affairs_id)
 ORDER BY sr.submitted_at ASC
 
--- Load pending absence requests cho Academic Staff
+-- Load pending absence requests cho Academic Affairs
 SELECT 
     sr.id as request_id,
     sr.request_type,
@@ -359,10 +354,10 @@ LEFT JOIN user_account ua_teacher ON t.user_account_id = ua_teacher.id
 WHERE sr.status = 'pending'
     AND sr.request_type = 'absence'
     AND c.branch_id IN (
-        -- Academic Staff chỉ thấy requests thuộc branches họ quản lý
+        -- Academic Affairs chỉ thấy requests thuộc branches họ quản lý
         SELECT branch_id 
         FROM user_branches 
-        WHERE user_id = :staff_user_id
+        WHERE user_id = :Affairs_user_id
     )
 GROUP BY sr.id, sr.request_type, sr.status, sr.reason, sr.notes, sr.submitted_at,
          st.student_code, ua_student.full_name, ua_student.email, ua_student.phone,
@@ -512,6 +507,72 @@ GROUP BY sr.id, sr.request_type, sr.status, sr.reason, sr.notes, sr.submitted_at
          decider.full_name;
 
 
+OUTPUT từ query:
+
+[
+  {
+    "request_id": 1,
+    "request_type": "absence",
+    "status": "approved",
+    "reason": "Family emergency",
+    "submitted_at": "2025-10-12 03:39:48.986989+00",
+    "decided_at": "2025-10-13 03:39:48.986989+00",
+    "student_id": 14,
+    "student_code": "S014",
+    "student_name": "Mac Thi Lan",
+    "student_email": "student014@gmail.com",
+    "student_phone": "+84-913-444-444",
+    "education_level": "Working Professional",
+    "student_address": "Hanoi",
+    "session_id": 53,
+    "session_date": "2025-10-14",
+    "session_type": "class",
+    "session_status": "done",
+    "class_id": 3,
+    "class_code": "B1-IELTS-001",
+    "class_name": "IELTS Foundation B1 - Afternoon",
+    "class_start_date": "2025-09-07",
+    "class_end_date": "2025-12-28",
+    "actual_end_date": null,
+    "max_capacity": 18,
+    "branch_name": "Main Campus",
+    "branch_phone": "+84-24-3123-4567",
+    "branch_address": "123 Nguyen Trai Street, Thanh Xuan District",
+    "course_name": "IELTS Foundation (B1)",
+    "course_code": "ENG-B1-IELTS-V1",
+    "duration_weeks": 16,
+    "session_per_week": 3,
+    "session_title": "Listening Section 1 - Forms & Details",
+    "student_task": "Practice form completion, note-taking",
+    "sequence_no": 2,
+    "time_slot_name": "Afternoon Slot 1",
+    "slot_start": "13:00:00",
+    "slot_end": "14:30:00",
+    "duration_min": 90,
+    "room_name": "Room 201",
+    "room_location": "Floor 2",
+    "room_capacity": 15,
+    "teachers": [
+      {
+        "name": "Emily Davis",
+        "role": "primary",
+        "email": "teacher.emily@elc-hanoi.edu.vn",
+        "skill": "reading",
+        "status": "completed",
+        "teacher_id": 4
+      }
+    ],
+    "total_absences": 1,
+    "total_sessions": 7,
+    "absence_percentage": "14.29",
+    "days_until_session": -13,
+    "enrolled_at": "2025-09-02 03:39:48.986989+00",
+    "enrollment_status": "enrolled",
+    "decided_by_name": "Pham Thi Academic",
+    "decided_by_email": "academic1@elc-hanoi.edu.vn"
+  }
+]
+
 Bước 27: Review thông tin
 Giáo vụ xem xét:
 Lý do nghỉ có hợp lý không
@@ -534,12 +595,12 @@ Giáo vụ confirm
 Bước 31: Thực hiện transaction approve
 System thực hiện BEGIN TRANSACTION:
 UPDATE student_request SET:
-status = 'approved' ⭐
-decided_by = :staff_id
+status = 'approved' 
+decided_by = :Affairs_id
 decided_at = NOW()
 approval_note = :note (nếu có)
 UPDATE student_session SET:
-attendance_status = 'excused' ⭐
+attendance_status = 'excused' 
 WHERE student_id = :student_id AND session_id = :session_id
 COMMIT
 
@@ -550,7 +611,7 @@ BEGIN;
 UPDATE student_request
 SET 
     status = 'approved',
-    decided_by = :staff_user_id,
+    decided_by = :Affairs_user_id,
     decided_at = NOW(),
     approval_note = :approval_note  -- optional
 WHERE id = :request_id
@@ -574,7 +635,7 @@ COMMIT;
 
 
 Bước 32: Gửi email thông báo cho học viên (approved)
-📧 System gửi email tới Student:
+System gửi email tới Student:
 "Yêu cầu xin nghỉ của bạn đã được phê duyệt"
 "Lớp: [Class Name]"
 "Ngày: [Session Date]"
@@ -583,22 +644,20 @@ Bước 32: Gửi email thông báo cho học viên (approved)
 "Approval Note: [...]" (nếu có)
 
 Bước 33: Giáo vụ xem thông báo xử lý thành công
-Hiển thị success notification: ✅ "Yêu cầu đã được phê duyệt"
+Hiển thị success notification: "Yêu cầu đã được phê duyệt"
 Request biến mất khỏi danh sách "Pending"
 (Optional) Chuyển sang "Processed Requests" với filter
 
 Bước 34: Học viên nhận thông báo
-📧 Học viên nhận email thông báo approved
-🔔 In-app notification (nếu có)
 
 Bước 35: Học viên kiểm tra lại trong "My Requests"
 Học viên vào lại tab "My Requests"
-Request hiển thị với status: ✅ Approved
+Request hiển thị với status: Approved
 Có thể xem chi tiết: Approved by, Approved at, Approval note
 
 Bước 36: Lịch học cập nhật
 Nếu học viên vào "My Schedule" / "Lịch Học Của Tôi"
-Session đã được approve sẽ hiển thị: ✅ Excused (Nghỉ có phép)
+Session đã được approve sẽ hiển thị: Excused (Nghỉ có phép)
 
 PHẦN 3B: TRƯỜNG HỢP REJECT (TỪ CHỐI)
 Bước 29 (alternative): Click "Reject"
@@ -620,7 +679,7 @@ UPDATE student_request
 SET 
     status = 'rejected',
     rejection_reason = :rejection_reason,
-    decided_by = :staff_user_id,
+    decided_by = :Affairs_user_id,
     decided_at = NOW()
 WHERE id = :request_id
     AND status = 'pending'
@@ -631,14 +690,14 @@ RETURNING id, student_id, target_session_id, rejection_reason;
 
 Bước 32 (alternative): Thực hiện update reject
 System thực hiện UPDATE student_request:
-status = 'rejected' ⭐
+status = 'rejected'
 rejection_reason = :reason
-decided_by = :staff_id
+decided_by = :Affairs_id
 decided_at = NOW()
 (student_session.attendance_status KHÔNG thay đổi, vẫn là 'planned')
 
 Bước 33 (alternative): Gửi email thông báo từ chối
-📧 System gửi email tới Student:
+System gửi email tới Student:
 "Yêu cầu xin nghỉ của bạn đã bị từ chối"
 "Lớp: [Class Name]"
 "Ngày: [Session Date]"
@@ -647,16 +706,16 @@ Bước 33 (alternative): Gửi email thông báo từ chối
 "Vui lòng liên hệ giáo vụ nếu có thắc mắc"
 
 Bước 34 (alternative): Giáo vụ xem thông báo xử lý thành công
-Hiển thị success notification: ✅ "Yêu cầu đã bị từ chối"
+Hiển thị success notification: "Yêu cầu đã bị từ chối"
 Request biến mất khỏi danh sách "Pending"
 
 Bước 35 (alternative): Học viên nhận thông báo
-📧 Học viên nhận email thông báo rejected
-🔔 In-app notification (nếu có)
+Học viên nhận email thông báo rejected
+In-app notification (nếu có)
 
 Bước 36 (alternative): Học viên kiểm tra lại trong "My Requests"
 Học viên vào lại tab "My Requests"
-Request hiển thị với status: ❌ Rejected
+Request hiển thị với status: Rejected
 Có thể xem chi tiết: Rejected by, Rejected at, Rejection reason
 
 Bước 37 (alternative): Lịch học không thay đổi
