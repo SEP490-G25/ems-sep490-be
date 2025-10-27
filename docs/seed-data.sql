@@ -754,93 +754,94 @@ SELECT setval('course_assessment_id_seq', (SELECT MAX(id) FROM course_assessment
 -- =========================================
 -- Placement tests and skill assessments for students before enrollment
 -- This helps determine which class/level is suitable for each student
+-- Note: level_id links to level table which already contains subject_id
 
-INSERT INTO replacement_skill_assessment (id, student_id, subject_id, skill, level_id, score, assessment_date, assessment_type, note, assessed_by, created_at, updated_at)
+INSERT INTO replacement_skill_assessment (id, student_id, skill, level_id, score, assessment_date, assessment_type, note, assessed_by, created_at, updated_at)
 VALUES
--- English Placement Tests (subject_id=1)
+-- English Placement Tests (level_id 1-6 for English A1-C2)
 -- Student 1 (S001) - Intermediate level, tested for General English
-(1, 1, 1, 'general', 3, 60, CURRENT_DATE - INTERVAL '105 days', 'placement_test', 'Good foundation, recommended for B1 level', 4, NOW() - INTERVAL '105 days', NOW()),
-(2, 1, 1, 'reading', 3, 65, CURRENT_DATE - INTERVAL '105 days', 'placement_test', 'Strong reading comprehension', 4, NOW() - INTERVAL '105 days', NOW()),
-(3, 1, 1, 'listening', 3, 58, CURRENT_DATE - INTERVAL '105 days', 'placement_test', 'Needs improvement in listening', 4, NOW() - INTERVAL '105 days', NOW()),
+(1, 1, 'general', 3, 60, CURRENT_DATE - INTERVAL '105 days', 'placement_test', 'Good foundation, recommended for B1 level', 4, NOW() - INTERVAL '105 days', NOW()),
+(2, 1, 'reading', 3, 65, CURRENT_DATE - INTERVAL '105 days', 'placement_test', 'Strong reading comprehension', 4, NOW() - INTERVAL '105 days', NOW()),
+(3, 1, 'listening', 3, 58, CURRENT_DATE - INTERVAL '105 days', 'placement_test', 'Needs improvement in listening', 4, NOW() - INTERVAL '105 days', NOW()),
 
 -- Student 2 (S002) - Beginner, starting from A1
-(4, 2, 1, 'general', 1, 35, CURRENT_DATE - INTERVAL '100 days', 'placement_test', 'Complete beginner, start from A1', 4, NOW() - INTERVAL '100 days', NOW()),
+(4, 2, 'general', 1, 35, CURRENT_DATE - INTERVAL '100 days', 'placement_test', 'Complete beginner, start from A1', 4, NOW() - INTERVAL '100 days', NOW()),
 
 -- Student 3 (S003) - Intermediate, tested for IELTS
-(5, 3, 1, 'general', 3, 62, CURRENT_DATE - INTERVAL '98 days', 'placement_test', 'Ready for IELTS B1 preparation', 6, NOW() - INTERVAL '98 days', NOW()),
-(6, 3, 1, 'speaking', 3, 55, CURRENT_DATE - INTERVAL '98 days', 'placement_test', 'Speaking needs more practice', 6, NOW() - INTERVAL '98 days', NOW()),
-(7, 3, 1, 'writing', 3, 60, CURRENT_DATE - INTERVAL '98 days', 'placement_test', 'Good writing structure', 6, NOW() - INTERVAL '98 days', NOW()),
+(5, 3, 'general', 3, 62, CURRENT_DATE - INTERVAL '98 days', 'placement_test', 'Ready for IELTS B1 preparation', 6, NOW() - INTERVAL '98 days', NOW()),
+(6, 3, 'speaking', 3, 55, CURRENT_DATE - INTERVAL '98 days', 'placement_test', 'Speaking needs more practice', 6, NOW() - INTERVAL '98 days', NOW()),
+(7, 3, 'writing', 3, 60, CURRENT_DATE - INTERVAL '98 days', 'placement_test', 'Good writing structure', 6, NOW() - INTERVAL '98 days', NOW()),
 
 -- Student 5 (S005) - Advanced level
-(8, 5, 1, 'general', 4, 78, CURRENT_DATE - INTERVAL '85 days', 'placement_test', 'Advanced level, suitable for B2/C1 courses', 6, NOW() - INTERVAL '85 days', NOW()),
-(9, 5, 1, 'reading', 5, 82, CURRENT_DATE - INTERVAL '85 days', 'placement_test', 'Excellent reading comprehension', 6, NOW() - INTERVAL '85 days', NOW()),
-(10, 5, 1, 'listening', 4, 75, CURRENT_DATE - INTERVAL '85 days', 'placement_test', 'Very good listening skills', 6, NOW() - INTERVAL '85 days', NOW()),
+(8, 5, 'general', 4, 78, CURRENT_DATE - INTERVAL '85 days', 'placement_test', 'Advanced level, suitable for B2/C1 courses', 6, NOW() - INTERVAL '85 days', NOW()),
+(9, 5, 'reading', 5, 82, CURRENT_DATE - INTERVAL '85 days', 'placement_test', 'Excellent reading comprehension', 6, NOW() - INTERVAL '85 days', NOW()),
+(10, 5, 'listening', 4, 75, CURRENT_DATE - INTERVAL '85 days', 'placement_test', 'Very good listening skills', 6, NOW() - INTERVAL '85 days', NOW()),
 
 -- Student 7 (S007) - Has IELTS certificate
-(11, 7, 1, 'general', 3, 55, CURRENT_DATE - INTERVAL '75 days', 'ielts', 'IELTS overall 5.5', 4, NOW() - INTERVAL '75 days', NOW()),
-(12, 7, 1, 'reading', 3, 60, CURRENT_DATE - INTERVAL '75 days', 'ielts', 'IELTS Reading 6.0', 4, NOW() - INTERVAL '75 days', NOW()),
-(13, 7, 1, 'listening', 3, 55, CURRENT_DATE - INTERVAL '75 days', 'ielts', 'IELTS Listening 5.5', 4, NOW() - INTERVAL '75 days', NOW()),
-(14, 7, 1, 'writing', 3, 50, CURRENT_DATE - INTERVAL '75 days', 'ielts', 'IELTS Writing 5.0', 4, NOW() - INTERVAL '75 days', NOW()),
-(15, 7, 1, 'speaking', 3, 55, CURRENT_DATE - INTERVAL '75 days', 'ielts', 'IELTS Speaking 5.5', 4, NOW() - INTERVAL '75 days', NOW()),
+(11, 7, 'general', 3, 55, CURRENT_DATE - INTERVAL '75 days', 'ielts', 'IELTS overall 5.5', 4, NOW() - INTERVAL '75 days', NOW()),
+(12, 7, 'reading', 3, 60, CURRENT_DATE - INTERVAL '75 days', 'ielts', 'IELTS Reading 6.0', 4, NOW() - INTERVAL '75 days', NOW()),
+(13, 7, 'listening', 3, 55, CURRENT_DATE - INTERVAL '75 days', 'ielts', 'IELTS Listening 5.5', 4, NOW() - INTERVAL '75 days', NOW()),
+(14, 7, 'writing', 3, 50, CURRENT_DATE - INTERVAL '75 days', 'ielts', 'IELTS Writing 5.0', 4, NOW() - INTERVAL '75 days', NOW()),
+(15, 7, 'speaking', 3, 55, CURRENT_DATE - INTERVAL '75 days', 'ielts', 'IELTS Speaking 5.5', 4, NOW() - INTERVAL '75 days', NOW()),
 
 -- Student 10 (S010) - Advanced with TOEIC
-(16, 10, 1, 'general', 4, 80, CURRENT_DATE - INTERVAL '60 days', 'toeic', 'TOEIC 800/990', 6, NOW() - INTERVAL '60 days', NOW()),
-(17, 10, 1, 'reading', 4, 85, CURRENT_DATE - INTERVAL '60 days', 'toeic', 'TOEIC Reading 425/495', 6, NOW() - INTERVAL '60 days', NOW()),
-(18, 10, 1, 'listening', 4, 75, CURRENT_DATE - INTERVAL '60 days', 'toeic', 'TOEIC Listening 375/495', 6, NOW() - INTERVAL '60 days', NOW()),
+(16, 10, 'general', 4, 80, CURRENT_DATE - INTERVAL '60 days', 'toeic', 'TOEIC 800/990', 6, NOW() - INTERVAL '60 days', NOW()),
+(17, 10, 'reading', 4, 85, CURRENT_DATE - INTERVAL '60 days', 'toeic', 'TOEIC Reading 425/495', 6, NOW() - INTERVAL '60 days', NOW()),
+(18, 10, 'listening', 4, 75, CURRENT_DATE - INTERVAL '60 days', 'toeic', 'TOEIC Listening 375/495', 6, NOW() - INTERVAL '60 days', NOW()),
 
 -- Student 15 (S015) - Advanced learner
-(19, 15, 1, 'general', 5, 85, CURRENT_DATE - INTERVAL '35 days', 'internal_exam', 'Excellent performance in internal test', 6, NOW() - INTERVAL '35 days', NOW()),
-(20, 15, 1, 'speaking', 4, 80, CURRENT_DATE - INTERVAL '35 days', 'internal_exam', 'Fluent speaker', 6, NOW() - INTERVAL '35 days', NOW()),
+(19, 15, 'general', 5, 85, CURRENT_DATE - INTERVAL '35 days', 'internal_exam', 'Excellent performance in internal test', 6, NOW() - INTERVAL '35 days', NOW()),
+(20, 15, 'speaking', 4, 80, CURRENT_DATE - INTERVAL '35 days', 'internal_exam', 'Fluent speaker', 6, NOW() - INTERVAL '35 days', NOW()),
 
--- Japanese Placement Tests (subject_id=2)
+-- Japanese Placement Tests (level_id 7-11 for Japanese N5-N1)
 -- Student 20 (S020) - Complete beginner in Japanese
-(21, 20, 2, 'general', 7, 20, CURRENT_DATE - INTERVAL '145 days', 'placement_test', 'No prior knowledge, start from N5', 7, NOW() - INTERVAL '145 days', NOW()),
+(21, 20, 'general', 7, 20, CURRENT_DATE - INTERVAL '145 days', 'placement_test', 'No prior knowledge, start from N5', 7, NOW() - INTERVAL '145 days', NOW()),
 
 -- Student 24 (S024) - Some Japanese knowledge
-(22, 24, 2, 'general', 7, 45, CURRENT_DATE - INTERVAL '140 days', 'placement_test', 'Knows hiragana, can start N5 course', 7, NOW() - INTERVAL '140 days', NOW()),
-(23, 24, 2, 'reading', 7, 40, CURRENT_DATE - INTERVAL '140 days', 'placement_test', 'Can read hiragana partially', 7, NOW() - INTERVAL '140 days', NOW()),
+(22, 24, 'general', 7, 45, CURRENT_DATE - INTERVAL '140 days', 'placement_test', 'Knows hiragana, can start N5 course', 7, NOW() - INTERVAL '140 days', NOW()),
+(23, 24, 'reading', 7, 40, CURRENT_DATE - INTERVAL '140 days', 'placement_test', 'Can read hiragana partially', 7, NOW() - INTERVAL '140 days', NOW()),
 
 -- Student 29 (S029) - Has N5 certificate, ready for N4
-(24, 29, 2, 'general', 8, 65, CURRENT_DATE - INTERVAL '50 days', 'jlpt', 'Passed JLPT N5, ready for N4', 7, NOW() - INTERVAL '50 days', NOW()),
-(25, 29, 2, 'reading', 8, 70, CURRENT_DATE - INTERVAL '50 days', 'jlpt', 'Good kanji recognition', 7, NOW() - INTERVAL '50 days', NOW()),
-(26, 29, 2, 'listening', 8, 60, CURRENT_DATE - INTERVAL '50 days', 'jlpt', 'Listening comprehension adequate', 7, NOW() - INTERVAL '50 days', NOW()),
+(24, 29, 'general', 8, 65, CURRENT_DATE - INTERVAL '50 days', 'jlpt', 'Passed JLPT N5, ready for N4', 7, NOW() - INTERVAL '50 days', NOW()),
+(25, 29, 'reading', 8, 70, CURRENT_DATE - INTERVAL '50 days', 'jlpt', 'Good kanji recognition', 7, NOW() - INTERVAL '50 days', NOW()),
+(26, 29, 'listening', 8, 60, CURRENT_DATE - INTERVAL '50 days', 'jlpt', 'Listening comprehension adequate', 7, NOW() - INTERVAL '50 days', NOW()),
 
 -- Student 34 (S034) - Advanced Japanese learner
-(27, 34, 2, 'general', 9, 72, CURRENT_DATE - INTERVAL '48 days', 'placement_test', 'N3 level, can proceed to N3 prep', 7, NOW() - INTERVAL '48 days', NOW()),
-(28, 34, 2, 'speaking', 9, 68, CURRENT_DATE - INTERVAL '48 days', 'placement_test', 'Good conversational skills', 7, NOW() - INTERVAL '48 days', NOW()),
-(29, 34, 2, 'writing', 9, 70, CURRENT_DATE - INTERVAL '48 days', 'placement_test', 'Can write intermediate kanji', 7, NOW() - INTERVAL '48 days', NOW()),
+(27, 34, 'general', 9, 72, CURRENT_DATE - INTERVAL '48 days', 'placement_test', 'N3 level, can proceed to N3 prep', 7, NOW() - INTERVAL '48 days', NOW()),
+(28, 34, 'speaking', 9, 68, CURRENT_DATE - INTERVAL '48 days', 'placement_test', 'Good conversational skills', 7, NOW() - INTERVAL '48 days', NOW()),
+(29, 34, 'writing', 9, 70, CURRENT_DATE - INTERVAL '48 days', 'placement_test', 'Can write intermediate kanji', 7, NOW() - INTERVAL '48 days', NOW()),
 
 -- Student 39 (S039) - High level Japanese
-(30, 39, 2, 'general', 10, 78, CURRENT_DATE - INTERVAL '38 days', 'internal_exam', 'Near N2 level', 7, NOW() - INTERVAL '38 days', NOW()),
-(31, 39, 2, 'reading', 10, 80, CURRENT_DATE - INTERVAL '38 days', 'internal_exam', 'Strong reading comprehension', 7, NOW() - INTERVAL '38 days', NOW()),
+(30, 39, 'general', 10, 78, CURRENT_DATE - INTERVAL '38 days', 'internal_exam', 'Near N2 level', 7, NOW() - INTERVAL '38 days', NOW()),
+(31, 39, 'reading', 10, 80, CURRENT_DATE - INTERVAL '38 days', 'internal_exam', 'Strong reading comprehension', 7, NOW() - INTERVAL '38 days', NOW()),
 
 -- Student 43 (S043) - Self-assessed for conversation course
-(32, 43, 2, 'general', 9, 65, CURRENT_DATE - INTERVAL '30 days', 'self_assessment', 'Student wants to improve speaking', 7, NOW() - INTERVAL '30 days', NOW()),
-(33, 43, 2, 'speaking', 9, 60, CURRENT_DATE - INTERVAL '30 days', 'self_assessment', 'Self-reported intermediate speaking', 7, NOW() - INTERVAL '30 days', NOW()),
+(32, 43, 'general', 9, 65, CURRENT_DATE - INTERVAL '30 days', 'self_assessment', 'Student wants to improve speaking', 7, NOW() - INTERVAL '30 days', NOW()),
+(33, 43, 'speaking', 9, 60, CURRENT_DATE - INTERVAL '30 days', 'self_assessment', 'Self-reported intermediate speaking', 7, NOW() - INTERVAL '30 days', NOW()),
 
 -- Additional assessments for other students
 -- Student 11 (S011) - Intermediate English
-(34, 11, 1, 'general', 3, 58, CURRENT_DATE - INTERVAL '55 days', 'placement_test', 'Intermediate level confirmed', 4, NOW() - INTERVAL '55 days', NOW()),
+(34, 11, 'general', 3, 58, CURRENT_DATE - INTERVAL '55 days', 'placement_test', 'Intermediate level confirmed', 4, NOW() - INTERVAL '55 days', NOW()),
 
 -- Student 14 (S014) - Intermediate with focus on speaking
-(35, 14, 1, 'general', 3, 62, CURRENT_DATE - INTERVAL '40 days', 'placement_test', 'Good overall, weak in speaking', 6, NOW() - INTERVAL '40 days', NOW()),
-(36, 14, 1, 'speaking', 2, 45, CURRENT_DATE - INTERVAL '40 days', 'placement_test', 'Speaking at A2 level, needs improvement', 6, NOW() - INTERVAL '40 days', NOW()),
+(35, 14, 'general', 3, 62, CURRENT_DATE - INTERVAL '40 days', 'placement_test', 'Good overall, weak in speaking', 6, NOW() - INTERVAL '40 days', NOW()),
+(36, 14, 'speaking', 2, 45, CURRENT_DATE - INTERVAL '40 days', 'placement_test', 'Speaking at A2 level, needs improvement', 6, NOW() - INTERVAL '40 days', NOW()),
 
 -- Student 18 (S018) - Retake assessment after initial course
-(37, 18, 1, 'general', 3, 55, CURRENT_DATE - INTERVAL '28 days', 'placement_test', 'Initial assessment B1 level', 4, NOW() - INTERVAL '28 days', NOW()),
-(38, 18, 1, 'general', 3, 68, CURRENT_DATE - INTERVAL '5 days', 'internal_exam', 'Progress check after 3 weeks - improving', 6, NOW() - INTERVAL '5 days', NOW()),
+(37, 18, 'general', 3, 55, CURRENT_DATE - INTERVAL '28 days', 'placement_test', 'Initial assessment B1 level', 4, NOW() - INTERVAL '28 days', NOW()),
+(38, 18, 'general', 3, 68, CURRENT_DATE - INTERVAL '5 days', 'internal_exam', 'Progress check after 3 weeks - improving', 6, NOW() - INTERVAL '5 days', NOW()),
 
 -- Student 21 (S021) - Business English candidate
-(39, 21, 1, 'general', 4, 70, CURRENT_DATE - INTERVAL '22 days', 'placement_test', 'Suitable for Business English B2', 6, NOW() - INTERVAL '22 days', NOW()),
-(40, 21, 1, 'speaking', 4, 72, CURRENT_DATE - INTERVAL '22 days', 'placement_test', 'Good business communication skills', 6, NOW() - INTERVAL '22 days', NOW()),
+(39, 21, 'general', 4, 70, CURRENT_DATE - INTERVAL '22 days', 'placement_test', 'Suitable for Business English B2', 6, NOW() - INTERVAL '22 days', NOW()),
+(40, 21, 'speaking', 4, 72, CURRENT_DATE - INTERVAL '22 days', 'placement_test', 'Good business communication skills', 6, NOW() - INTERVAL '22 days', NOW()),
 
 -- Student 25 (S025) - Conversational English
-(41, 25, 1, 'general', 2, 48, CURRENT_DATE - INTERVAL '15 days', 'placement_test', 'A2 level, suitable for conversation class', 4, NOW() - INTERVAL '15 days', NOW()),
-(42, 25, 1, 'speaking', 2, 42, CURRENT_DATE - INTERVAL '15 days', 'placement_test', 'Needs confidence in speaking', 4, NOW() - INTERVAL '15 days', NOW()),
+(41, 25, 'general', 2, 48, CURRENT_DATE - INTERVAL '15 days', 'placement_test', 'A2 level, suitable for conversation class', 4, NOW() - INTERVAL '15 days', NOW()),
+(42, 25, 'speaking', 2, 42, CURRENT_DATE - INTERVAL '15 days', 'placement_test', 'Needs confidence in speaking', 4, NOW() - INTERVAL '15 days', NOW()),
 
 -- Student 35 (S035) - Japanese N4 level
-(43, 35, 2, 'general', 8, 62, CURRENT_DATE - INTERVAL '47 days', 'placement_test', 'Ready for N4 course', 7, NOW() - INTERVAL '47 days', NOW()),
-(44, 35, 2, 'listening', 8, 58, CURRENT_DATE - INTERVAL '47 days', 'placement_test', 'Listening skills adequate', 7, NOW() - INTERVAL '47 days', NOW());
+(43, 35, 'general', 8, 62, CURRENT_DATE - INTERVAL '47 days', 'placement_test', 'Ready for N4 course', 7, NOW() - INTERVAL '47 days', NOW()),
+(44, 35, 'listening', 8, 58, CURRENT_DATE - INTERVAL '47 days', 'placement_test', 'Listening skills adequate', 7, NOW() - INTERVAL '47 days', NOW());
 
 -- Reset sequence
 SELECT setval('replacement_skill_assessment_id_seq', (SELECT MAX(id) FROM replacement_skill_assessment));
