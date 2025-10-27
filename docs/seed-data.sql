@@ -777,7 +777,32 @@ VALUES
 -- DRAFT Classes (created but not yet submitted/approved)
 (11, 1, 11, 'N3-CONV-001', 'Japanese Conversation N3 - Morning', 'offline', CURRENT_DATE + INTERVAL '35 days', CURRENT_DATE + INTERVAL '119 days', NULL, '{2,4,6}', 12, 'draft', 5, NULL, NULL, NULL, NOW() - INTERVAL '2 days', NOW()),
 
-(12, 1, 12, 'N2-BUS-001', 'Business Japanese N2 - Evening', 'offline', CURRENT_DATE + INTERVAL '42 days', CURRENT_DATE + INTERVAL '140 days', NULL, '{3,5}', 14, 'draft', 4, NULL, NULL, NULL, NOW() - INTERVAL '1 day', NOW());
+(12, 1, 12, 'N2-BUS-001', 'Business Japanese N2 - Evening', 'offline', CURRENT_DATE + INTERVAL '42 days', CURRENT_DATE + INTERVAL '140 days', NULL, '{3,5}', 14, 'draft', 4, NULL, NULL, NULL, NOW() - INTERVAL '1 day', NOW()),
+
+-- ADDITIONAL CLASSES FOR TRANSFER TESTING
+-- More General English A1 classes (course_id = 1) - different modalities
+(13, 1, 1, 'A1-GEN-003', 'General English A1 - Evening Online', 'online', CURRENT_DATE - INTERVAL '30 days', CURRENT_DATE + INTERVAL '54 days', NULL, '{2,4,6}', 20, 'ongoing', 4, NOW() - INTERVAL '35 days', 3, NOW() - INTERVAL '34 days', NOW() - INTERVAL '36 days', NOW()),
+
+(14, 1, 1, 'A1-GEN-004', 'General English A1 - Morning Offline', 'offline', CURRENT_DATE + INTERVAL '14 days', CURRENT_DATE + INTERVAL '98 days', NULL, '{3,5}', 15, 'scheduled', 4, NOW() - INTERVAL '8 days', 3, NOW() - INTERVAL '7 days', NOW() - INTERVAL '9 days', NOW()),
+
+(15, 1, 1, 'A1-GEN-005', 'General English A1 - Weekend Online', 'online', CURRENT_DATE + INTERVAL '21 days', CURRENT_DATE + INTERVAL '105 days', NULL, '{7,1}', 25, 'scheduled', 5, NOW() - INTERVAL '6 days', 3, NOW() - INTERVAL '5 days', NOW() - INTERVAL '7 days', NOW()),
+
+-- More IELTS Foundation B1 classes (course_id = 2) - for same course transfer
+(16, 1, 2, 'B1-IELTS-002', 'IELTS Foundation B1 - Morning Online', 'online', CURRENT_DATE - INTERVAL '40 days', CURRENT_DATE + INTERVAL '72 days', NULL, '{2,4,6}', 20, 'ongoing', 4, NOW() - INTERVAL '45 days', 3, NOW() - INTERVAL '44 days', NOW() - INTERVAL '46 days', NOW()),
+
+(17, 1, 2, 'B1-IELTS-003', 'IELTS Foundation B1 - Evening Offline', 'offline', CURRENT_DATE + INTERVAL '10 days', CURRENT_DATE + INTERVAL '122 days', NULL, '{3,5}', 18, 'scheduled', 4, NOW() - INTERVAL '5 days', 3, NOW() - INTERVAL '4 days', NOW() - INTERVAL '6 days', NOW()),
+
+(18, 1, 2, 'B1-IELTS-004', 'IELTS Foundation B1 - Weekend Hybrid', 'hybrid', CURRENT_DATE + INTERVAL '28 days', CURRENT_DATE + INTERVAL '140 days', NULL, '{7}', 16, 'scheduled', 5, NOW() - INTERVAL '3 days', 3, NOW() - INTERVAL '2 days', NOW() - INTERVAL '4 days', NOW()),
+
+-- More IELTS B2 classes (course_id = 3) - for different course transfer (progression)
+(19, 1, 3, 'B2-IELTS-002', 'IELTS Intermediate B2 - Morning Online', 'online', CURRENT_DATE - INTERVAL '45 days', CURRENT_DATE + INTERVAL '81 days', NULL, '{2,4,6}', 20, 'ongoing', 4, NOW() - INTERVAL '50 days', 3, NOW() - INTERVAL '49 days', NOW() - INTERVAL '51 days', NOW()),
+
+(20, 1, 3, 'B2-IELTS-003', 'IELTS Intermediate B2 - Afternoon Offline', 'offline', CURRENT_DATE + INTERVAL '14 days', CURRENT_DATE + INTERVAL '140 days', NULL, '{3,5}', 18, 'scheduled', 4, NOW() - INTERVAL '7 days', 3, NOW() - INTERVAL '6 days', NOW() - INTERVAL '8 days', NOW()),
+
+-- More Conversational A2 classes (course_id = 5) - for different course transfer
+(21, 1, 5, 'A2-CONV-002', 'Conversational English A2 - Evening Online', 'online', CURRENT_DATE - INTERVAL '25 days', CURRENT_DATE + INTERVAL '45 days', NULL, '{2,4,6}', 15, 'ongoing', 5, NOW() - INTERVAL '30 days', 3, NOW() - INTERVAL '29 days', NOW() - INTERVAL '31 days', NOW()),
+
+(22, 1, 5, 'A2-CONV-003', 'Conversational English A2 - Morning Offline', 'offline', CURRENT_DATE + INTERVAL '20 days', CURRENT_DATE + INTERVAL '90 days', NULL, '{3,5}', 12, 'scheduled', 5, NOW() - INTERVAL '5 days', 3, NOW() - INTERVAL '4 days', NOW() - INTERVAL '6 days', NOW());
 
 -- 8.2 Sessions for COMPLETED Class 1 (General English A1 - completed 12 weeks ago)
 -- Schedule: Monday, Wednesday, Friday (days 2,4,6), Total: 36 sessions (12 weeks × 3/week)
@@ -978,7 +1003,69 @@ VALUES
 (49, 5, 49, 'enrolled', NOW() - INTERVAL '40 days', 72, NOW() - INTERVAL '40 days', NOW()),
 (50, 5, 50, 'enrolled', NOW() - INTERVAL '40 days', 72, NOW() - INTERVAL '40 days', NOW());
 
--- 9.5 Sample Student Sessions for Class 1, Student 1 (showing varied attendance)
+-- 9.5 Enrollments for NEW CLASSES (for transfer testing)
+-- Class 13 (A1-GEN-003 - Online, ongoing) - 15 students
+INSERT INTO enrollment (id, class_id, student_id, status, enrolled_at, created_at, updated_at)
+VALUES
+(51, 13, 1, 'enrolled', NOW() - INTERVAL '35 days', NOW() - INTERVAL '35 days', NOW()),
+(52, 13, 2, 'enrolled', NOW() - INTERVAL '35 days', NOW() - INTERVAL '35 days', NOW()),
+(53, 13, 3, 'enrolled', NOW() - INTERVAL '35 days', NOW() - INTERVAL '35 days', NOW()),
+(54, 13, 4, 'enrolled', NOW() - INTERVAL '35 days', NOW() - INTERVAL '35 days', NOW()),
+(55, 13, 5, 'enrolled', NOW() - INTERVAL '35 days', NOW() - INTERVAL '35 days', NOW()),
+(56, 13, 6, 'enrolled', NOW() - INTERVAL '35 days', NOW() - INTERVAL '35 days', NOW()),
+(57, 13, 7, 'enrolled', NOW() - INTERVAL '35 days', NOW() - INTERVAL '35 days', NOW()),
+(58, 13, 8, 'enrolled', NOW() - INTERVAL '35 days', NOW() - INTERVAL '35 days', NOW()),
+(59, 13, 9, 'enrolled', NOW() - INTERVAL '35 days', NOW() - INTERVAL '35 days', NOW()),
+(60, 13, 10, 'enrolled', NOW() - INTERVAL '35 days', NOW() - INTERVAL '35 days', NOW()),
+(61, 13, 11, 'enrolled', NOW() - INTERVAL '35 days', NOW() - INTERVAL '35 days', NOW()),
+(62, 13, 12, 'enrolled', NOW() - INTERVAL '35 days', NOW() - INTERVAL '35 days', NOW()),
+(63, 13, 51, 'enrolled', NOW() - INTERVAL '35 days', NOW() - INTERVAL '35 days', NOW()),
+(64, 13, 52, 'enrolled', NOW() - INTERVAL '35 days', NOW() - INTERVAL '35 days', NOW()),
+(65, 13, 53, 'enrolled', NOW() - INTERVAL '35 days', NOW() - INTERVAL '35 days', NOW());
+
+-- Class 16 (B1-IELTS-002 - Online, ongoing) - 12 students (has capacity for more)
+INSERT INTO enrollment (id, class_id, student_id, status, enrolled_at, created_at, updated_at)
+VALUES
+(66, 16, 29, 'enrolled', NOW() - INTERVAL '45 days', NOW() - INTERVAL '45 days', NOW()),
+(67, 16, 30, 'enrolled', NOW() - INTERVAL '45 days', NOW() - INTERVAL '45 days', NOW()),
+(68, 16, 31, 'enrolled', NOW() - INTERVAL '45 days', NOW() - INTERVAL '45 days', NOW()),
+(69, 16, 32, 'enrolled', NOW() - INTERVAL '45 days', NOW() - INTERVAL '45 days', NOW()),
+(70, 16, 33, 'enrolled', NOW() - INTERVAL '45 days', NOW() - INTERVAL '45 days', NOW()),
+(71, 16, 34, 'enrolled', NOW() - INTERVAL '45 days', NOW() - INTERVAL '45 days', NOW()),
+(72, 16, 35, 'enrolled', NOW() - INTERVAL '45 days', NOW() - INTERVAL '45 days', NOW()),
+(73, 16, 36, 'enrolled', NOW() - INTERVAL '45 days', NOW() - INTERVAL '45 days', NOW()),
+(74, 16, 37, 'enrolled', NOW() - INTERVAL '45 days', NOW() - INTERVAL '45 days', NOW()),
+(75, 16, 38, 'enrolled', NOW() - INTERVAL '45 days', NOW() - INTERVAL '45 days', NOW()),
+(76, 16, 39, 'enrolled', NOW() - INTERVAL '45 days', NOW() - INTERVAL '45 days', NOW()),
+(77, 16, 40, 'enrolled', NOW() - INTERVAL '45 days', NOW() - INTERVAL '45 days', NOW());
+
+-- Class 19 (B2-IELTS-002 - Online, ongoing) - 10 students (has good capacity)
+INSERT INTO enrollment (id, class_id, student_id, status, enrolled_at, created_at, updated_at)
+VALUES
+(78, 19, 41, 'enrolled', NOW() - INTERVAL '50 days', NOW() - INTERVAL '50 days', NOW()),
+(79, 19, 42, 'enrolled', NOW() - INTERVAL '50 days', NOW() - INTERVAL '50 days', NOW()),
+(80, 19, 43, 'enrolled', NOW() - INTERVAL '50 days', NOW() - INTERVAL '50 days', NOW()),
+(81, 19, 44, 'enrolled', NOW() - INTERVAL '50 days', NOW() - INTERVAL '50 days', NOW()),
+(82, 19, 45, 'enrolled', NOW() - INTERVAL '50 days', NOW() - INTERVAL '50 days', NOW()),
+(83, 19, 46, 'enrolled', NOW() - INTERVAL '50 days', NOW() - INTERVAL '50 days', NOW()),
+(84, 19, 47, 'enrolled', NOW() - INTERVAL '50 days', NOW() - INTERVAL '50 days', NOW()),
+(85, 19, 48, 'enrolled', NOW() - INTERVAL '50 days', NOW() - INTERVAL '50 days', NOW()),
+(86, 19, 49, 'enrolled', NOW() - INTERVAL '50 days', NOW() - INTERVAL '50 days', NOW()),
+(87, 19, 50, 'enrolled', NOW() - INTERVAL '50 days', NOW() - INTERVAL '50 days', NOW());
+
+-- Class 21 (A2-CONV-002 - Online, ongoing) - 8 students  
+INSERT INTO enrollment (id, class_id, student_id, status, enrolled_at, created_at, updated_at)
+VALUES
+(88, 21, 51, 'enrolled', NOW() - INTERVAL '30 days', NOW() - INTERVAL '30 days', NOW()),
+(89, 21, 52, 'enrolled', NOW() - INTERVAL '30 days', NOW() - INTERVAL '30 days', NOW()),
+(90, 21, 53, 'enrolled', NOW() - INTERVAL '30 days', NOW() - INTERVAL '30 days', NOW()),
+(91, 21, 54, 'enrolled', NOW() - INTERVAL '30 days', NOW() - INTERVAL '30 days', NOW()),
+(92, 21, 55, 'enrolled', NOW() - INTERVAL '30 days', NOW() - INTERVAL '30 days', NOW()),
+(93, 21, 1, 'enrolled', NOW() - INTERVAL '30 days', NOW() - INTERVAL '30 days', NOW()),
+(94, 21, 2, 'enrolled', NOW() - INTERVAL '30 days', NOW() - INTERVAL '30 days', NOW()),
+(95, 21, 3, 'enrolled', NOW() - INTERVAL '30 days', NOW() - INTERVAL '30 days', NOW());
+
+-- 9.6 Sample Student Sessions for Class 1, Student 1 (showing varied attendance)
 INSERT INTO student_session (student_id, session_id, is_makeup, attendance_status, homework_status, note, recorded_at)
 VALUES
 -- First week - all present
@@ -994,7 +1081,7 @@ VALUES
 (1, 35, false, 'present', 'no_homework', 'Review session', CURRENT_DATE - INTERVAL '70 days'),
 (1, 36, false, 'present', 'no_homework', 'Passed final assessment', CURRENT_DATE - INTERVAL '68 days');
 
--- 9.6 Sample Student Sessions for Class 3, Students 13-15 (recent sessions)
+-- 9.7 Sample Student Sessions for Class 3, Students 13-15 (recent sessions)
 INSERT INTO student_session (student_id, session_id, is_makeup, attendance_status, homework_status, note, recorded_at)
 VALUES
 -- Student 13 - good attendance
@@ -1224,58 +1311,62 @@ SELECT setval('teacher_request_id_seq', (SELECT MAX(id) FROM teacher_request));
 -- =========================================
 -- SECTION 12: CLASS ASSESSMENTS (INSTANCES)
 -- =========================================
--- These are actual assessments for classes (cloned from course_assessment templates)
+-- These are actual assessments for classes (linked to course_assessment templates via course_assessment_id)
+-- Teacher can customize name/description but maintain link to template for CLO tracking
+
 -- Class 1 (Completed): General English A1 - All assessments completed
-INSERT INTO assessment (id, class_id, name, kind, max_score, weight, description, created_by, created_at, updated_at)
+INSERT INTO assessment (id, class_id, course_assessment_id, name, kind, max_score, weight, description, created_by, created_at, updated_at)
 VALUES
--- Vocabulary Quizzes
-(1, 1, 'Vocabulary Quiz 1', 'quiz', 20.00, 5.00, 'Basic vocabulary test covering greetings and introductions', 1, CURRENT_DATE - INTERVAL '145 days', CURRENT_DATE - INTERVAL '138 days'),
-(2, 1, 'Vocabulary Quiz 2', 'quiz', 20.00, 5.00, 'Vocabulary test on daily activities and routines', 1, CURRENT_DATE - INTERVAL '125 days', CURRENT_DATE - INTERVAL '118 days'),
-(3, 1, 'Vocabulary Quiz 3', 'quiz', 20.00, 5.00, 'Vocabulary test covering shopping and food', 1, CURRENT_DATE - INTERVAL '105 days', CURRENT_DATE - INTERVAL '98 days'),
+-- Vocabulary Quizzes (linked to course_assessment_id = 1)
+(1, 1, 1, 'Vocabulary Quiz 1', 'quiz', 20.00, 5.00, 'Basic vocabulary test covering greetings and introductions', 1, CURRENT_DATE - INTERVAL '145 days', CURRENT_DATE - INTERVAL '138 days'),
+(2, 1, 1, 'Vocabulary Quiz 2 - Daily Life', 'quiz', 20.00, 5.00, 'Vocabulary test on daily activities and routines', 1, CURRENT_DATE - INTERVAL '125 days', CURRENT_DATE - INTERVAL '118 days'),
+(3, 1, 1, 'Vocabulary Quiz 3 - Food & Shopping', 'quiz', 20.00, 5.00, 'Vocabulary test covering shopping and food', 1, CURRENT_DATE - INTERVAL '105 days', CURRENT_DATE - INTERVAL '98 days'),
 
--- Grammar Tests
-(4, 1, 'Grammar Test: Present Simple & Present Continuous', 'quiz', 30.00, 8.00, 'Test on present tense forms', 1, CURRENT_DATE - INTERVAL '135 days', CURRENT_DATE - INTERVAL '128 days'),
-(5, 1, 'Grammar Test: Past Tense', 'quiz', 30.00, 8.00, 'Test on past simple and past continuous', 1, CURRENT_DATE - INTERVAL '115 days', CURRENT_DATE - INTERVAL '108 days'),
+-- Grammar Tests (linked to course_assessment_id = 2)
+(4, 1, 2, 'Grammar Test: Present Simple & Present Continuous', 'quiz', 30.00, 8.00, 'Test on present tense forms', 1, CURRENT_DATE - INTERVAL '135 days', CURRENT_DATE - INTERVAL '128 days'),
+(5, 1, 2, 'Grammar Test: Past Tense', 'quiz', 30.00, 8.00, 'Test on past simple and past continuous', 1, CURRENT_DATE - INTERVAL '115 days', CURRENT_DATE - INTERVAL '108 days'),
 
--- Speaking Tests
-(6, 1, 'Speaking Test: Self Introduction', 'oral', 25.00, 10.00, 'Oral assessment on self-introduction', 1, CURRENT_DATE - INTERVAL '140 days', CURRENT_DATE - INTERVAL '133 days'),
-(7, 1, 'Speaking Test: Daily Conversation', 'oral', 25.00, 10.00, 'Conversational assessment on daily topics', 1, CURRENT_DATE - INTERVAL '100 days', CURRENT_DATE - INTERVAL '93 days'),
+-- Speaking Tests (linked to course_assessment_id = 3)
+(6, 1, 3, 'Speaking Test: Self Introduction', 'oral', 25.00, 10.00, 'Oral assessment on self-introduction', 1, CURRENT_DATE - INTERVAL '140 days', CURRENT_DATE - INTERVAL '133 days'),
+(7, 1, 3, 'Speaking Test: Daily Conversation', 'oral', 25.00, 10.00, 'Conversational assessment on daily topics', 1, CURRENT_DATE - INTERVAL '100 days', CURRENT_DATE - INTERVAL '93 days'),
 
--- Midterm & Final
-(8, 1, 'Midterm Exam', 'midterm', 100.00, 20.00, 'Comprehensive midterm covering weeks 1-6', 1, CURRENT_DATE - INTERVAL '120 days', CURRENT_DATE - INTERVAL '113 days'),
-(9, 1, 'Final Exam', 'final', 100.00, 25.00, 'Comprehensive final exam covering all material', 1, CURRENT_DATE - INTERVAL '75 days', CURRENT_DATE - INTERVAL '68 days'),
+-- Midterm & Final (linked to course_assessment_id = 4, 5)
+(8, 1, 4, 'Midterm Exam', 'midterm', 100.00, 20.00, 'Comprehensive midterm covering weeks 1-6', 1, CURRENT_DATE - INTERVAL '120 days', CURRENT_DATE - INTERVAL '113 days'),
+(9, 1, 5, 'Final Exam', 'final', 100.00, 25.00, 'Comprehensive final exam covering all material', 1, CURRENT_DATE - INTERVAL '75 days', CURRENT_DATE - INTERVAL '68 days'),
 
--- Assignments
-(10, 1, 'Writing Assignment: My Family', 'assignment', 20.00, 5.00, 'Short essay about family members', 1, CURRENT_DATE - INTERVAL '130 days', CURRENT_DATE - INTERVAL '123 days'),
-(11, 1, 'Writing Assignment: My Daily Routine', 'assignment', 20.00, 4.00, 'Essay describing daily routine', 1, CURRENT_DATE - INTERVAL '95 days', CURRENT_DATE - INTERVAL '88 days'),
+-- Custom Assignments (no course_assessment link - teacher created)
+(10, 1, NULL, 'Writing Assignment: My Family', 'assignment', 20.00, 5.00, 'Short essay about family members', 1, CURRENT_DATE - INTERVAL '130 days', CURRENT_DATE - INTERVAL '123 days'),
+(11, 1, NULL, 'Writing Assignment: My Daily Routine', 'assignment', 20.00, 4.00, 'Essay describing daily routine', 1, CURRENT_DATE - INTERVAL '95 days', CURRENT_DATE - INTERVAL '88 days'),
 
 -- Class 3 (Ongoing): IELTS Foundation B1 - Some assessments completed, some pending
-(12, 3, 'IELTS Listening Practice Test 1', 'practice', 40.00, 8.00, 'First listening practice test', 2, CURRENT_DATE - INTERVAL '55 days', CURRENT_DATE - INTERVAL '48 days'),
-(13, 3, 'IELTS Reading Practice Test 1', 'practice', 40.00, 8.00, 'First reading practice test', 2, CURRENT_DATE - INTERVAL '50 days', CURRENT_DATE - INTERVAL '43 days'),
-(14, 3, 'Writing Task 1 Assignment', 'assignment', 25.00, 10.00, 'Describe a chart/graph', 2, CURRENT_DATE - INTERVAL '40 days', CURRENT_DATE - INTERVAL '33 days'),
-(15, 3, 'Speaking Part 1 Mock Test', 'oral', 25.00, 10.00, 'IELTS Speaking Part 1 practice', 2, CURRENT_DATE - INTERVAL '35 days', CURRENT_DATE - INTERVAL '28 days'),
-(16, 3, 'Midterm Exam', 'midterm', 100.00, 20.00, 'IELTS midterm covering all skills', 2, CURRENT_DATE - INTERVAL '25 days', CURRENT_DATE - INTERVAL '18 days'),
+-- Linked to Course 2 assessments (IDs 7-12)
+(12, 3, 7, 'IELTS Listening Practice Test 1', 'practice', 40.00, 8.00, 'First listening practice test', 2, CURRENT_DATE - INTERVAL '55 days', CURRENT_DATE - INTERVAL '48 days'),
+(13, 3, 8, 'IELTS Reading Practice Test 1', 'practice', 40.00, 8.00, 'First reading practice test', 2, CURRENT_DATE - INTERVAL '50 days', CURRENT_DATE - INTERVAL '43 days'),
+(14, 3, 10, 'Writing Task 1 Assignment', 'assignment', 25.00, 10.00, 'Describe a chart/graph', 2, CURRENT_DATE - INTERVAL '40 days', CURRENT_DATE - INTERVAL '33 days'),
+(15, 3, 9, 'Speaking Part 1 Mock Test', 'oral', 25.00, 10.00, 'IELTS Speaking Part 1 practice', 2, CURRENT_DATE - INTERVAL '35 days', CURRENT_DATE - INTERVAL '28 days'),
+(16, 3, NULL, 'Midterm Exam', 'midterm', 100.00, 20.00, 'IELTS midterm covering all skills', 2, CURRENT_DATE - INTERVAL '25 days', CURRENT_DATE - INTERVAL '18 days'),
 -- Upcoming assessments (created but not graded yet)
-(17, 3, 'IELTS Full Mock Test', 'practice', 100.00, 20.00, 'Complete IELTS mock exam', 2, CURRENT_DATE - INTERVAL '10 days', CURRENT_DATE - INTERVAL '10 days'),
-(18, 3, 'Final Exam', 'final', 100.00, 24.00, 'Comprehensive IELTS final exam', 2, CURRENT_DATE - INTERVAL '5 days', CURRENT_DATE - INTERVAL '5 days'),
+(17, 3, 12, 'IELTS Full Mock Test', 'practice', 100.00, 20.00, 'Complete IELTS mock exam', 2, CURRENT_DATE - INTERVAL '10 days', CURRENT_DATE - INTERVAL '10 days'),
+(18, 3, 12, 'Final Exam', 'final', 100.00, 24.00, 'Comprehensive IELTS final exam', 2, CURRENT_DATE - INTERVAL '5 days', CURRENT_DATE - INTERVAL '5 days'),
 
--- Class 4 (Ongoing): Business English B2 - Some completed
-(19, 4, 'Business Vocabulary Quiz', 'quiz', 25.00, 6.00, 'Business terminology test', 3, CURRENT_DATE - INTERVAL '47 days', CURRENT_DATE - INTERVAL '40 days'),
-(20, 4, 'Presentation Project', 'project', 50.00, 20.00, 'Business presentation on company analysis', 3, CURRENT_DATE - INTERVAL '50 days', CURRENT_DATE - INTERVAL '23 days'),
-(21, 4, 'Email Writing Assignment', 'assignment', 30.00, 10.00, 'Professional email correspondence', 3, CURRENT_DATE - INTERVAL '35 days', CURRENT_DATE - INTERVAL '28 days'),
-(22, 4, 'Midterm Exam', 'midterm', 100.00, 20.00, 'Business English midterm', 3, CURRENT_DATE - INTERVAL '20 days', CURRENT_DATE - INTERVAL '13 days'),
+-- Class 4 (Ongoing): Business English B2 - Some completed (No course_assessment template for this course, all custom)
+(19, 4, NULL, 'Business Vocabulary Quiz', 'quiz', 25.00, 6.00, 'Business terminology test', 3, CURRENT_DATE - INTERVAL '47 days', CURRENT_DATE - INTERVAL '40 days'),
+(20, 4, NULL, 'Presentation Project', 'project', 50.00, 20.00, 'Business presentation on company analysis', 3, CURRENT_DATE - INTERVAL '50 days', CURRENT_DATE - INTERVAL '23 days'),
+(21, 4, NULL, 'Email Writing Assignment', 'assignment', 30.00, 10.00, 'Professional email correspondence', 3, CURRENT_DATE - INTERVAL '35 days', CURRENT_DATE - INTERVAL '28 days'),
+(22, 4, NULL, 'Midterm Exam', 'midterm', 100.00, 20.00, 'Business English midterm', 3, CURRENT_DATE - INTERVAL '20 days', CURRENT_DATE - INTERVAL '13 days'),
 -- Upcoming
-(23, 4, 'Negotiation Role-play', 'oral', 40.00, 15.00, 'Business negotiation simulation', 3, CURRENT_DATE - INTERVAL '5 days', CURRENT_DATE - INTERVAL '5 days'),
-(24, 4, 'Final Exam', 'final', 100.00, 25.00, 'Business English final exam', 3, CURRENT_DATE - INTERVAL '3 days', CURRENT_DATE - INTERVAL '3 days'),
+(23, 4, NULL, 'Negotiation Role-play', 'oral', 40.00, 15.00, 'Business negotiation simulation', 3, CURRENT_DATE - INTERVAL '5 days', CURRENT_DATE - INTERVAL '5 days'),
+(24, 4, NULL, 'Final Exam', 'final', 100.00, 25.00, 'Business English final exam', 3, CURRENT_DATE - INTERVAL '3 days', CURRENT_DATE - INTERVAL '3 days'),
 
 -- Class 5 (Ongoing): Japanese N5 - Early stage, few assessments
-(25, 5, 'Hiragana Quiz', 'quiz', 30.00, 8.00, 'Hiragana reading and writing test', 10, CURRENT_DATE - INTERVAL '60 days', CURRENT_DATE - INTERVAL '53 days'),
-(26, 5, 'Katakana Quiz', 'quiz', 30.00, 8.00, 'Katakana reading and writing test', 10, CURRENT_DATE - INTERVAL '45 days', CURRENT_DATE - INTERVAL '38 days'),
-(27, 5, 'Basic Kanji Test', 'quiz', 25.00, 7.00, 'First 50 kanji characters', 10, CURRENT_DATE - INTERVAL '30 days', CURRENT_DATE - INTERVAL '23 days'),
-(28, 5, 'Speaking Test: Self Introduction', 'oral', 25.00, 10.00, 'Japanese self-introduction', 10, CURRENT_DATE - INTERVAL '40 days', CURRENT_DATE - INTERVAL '33 days'),
+-- Linked to Course 7 assessments (IDs 13-18)
+(25, 5, 13, 'Hiragana Quiz', 'quiz', 30.00, 8.00, 'Hiragana reading and writing test', 10, CURRENT_DATE - INTERVAL '60 days', CURRENT_DATE - INTERVAL '53 days'),
+(26, 5, 14, 'Katakana Quiz', 'quiz', 30.00, 8.00, 'Katakana reading and writing test', 10, CURRENT_DATE - INTERVAL '45 days', CURRENT_DATE - INTERVAL '38 days'),
+(27, 5, 15, 'Basic Kanji Test', 'quiz', 25.00, 7.00, 'First 50 kanji characters', 10, CURRENT_DATE - INTERVAL '30 days', CURRENT_DATE - INTERVAL '23 days'),
+(28, 5, 17, 'Speaking Test: Self Introduction', 'oral', 25.00, 10.00, 'Japanese self-introduction', 10, CURRENT_DATE - INTERVAL '40 days', CURRENT_DATE - INTERVAL '33 days'),
 -- Upcoming
-(29, 5, 'Midterm Exam', 'midterm', 100.00, 20.00, 'N5 midterm covering grammar and vocabulary', 10, CURRENT_DATE - INTERVAL '7 days', CURRENT_DATE - INTERVAL '7 days'),
-(30, 5, 'Final Exam', 'final', 100.00, 25.00, 'JLPT N5 mock exam', 10, CURRENT_DATE - INTERVAL '5 days', CURRENT_DATE - INTERVAL '5 days');
+(29, 5, 16, 'Midterm Exam', 'midterm', 100.00, 20.00, 'N5 midterm covering grammar and vocabulary', 10, CURRENT_DATE - INTERVAL '7 days', CURRENT_DATE - INTERVAL '7 days'),
+(30, 5, 18, 'Final Exam', 'final', 100.00, 25.00, 'JLPT N5 mock exam', 10, CURRENT_DATE - INTERVAL '5 days', CURRENT_DATE - INTERVAL '5 days');
 
 -- Reset sequence
 SELECT setval('assessment_id_seq', (SELECT MAX(id) FROM assessment));
@@ -1449,7 +1540,89 @@ BEGIN
     RAISE NOTICE '  - Sample Student & Teacher Requests';
     RAISE NOTICE '  - 30 Class Assessment Instances';
     RAISE NOTICE '  - 87 Student Score Records';
+    RAISE NOTICE '  - Additional 15 Students NOT ENROLLED (for testing enrollment queries)';
     RAISE NOTICE '';
     RAISE NOTICE 'Database ready for testing!';
     RAISE NOTICE '=========================================';
 END $$;
+
+-- =========================================
+-- ADDITIONAL TEST DATA: STUDENTS NOT ENROLLED IN ANY CLASS
+-- Purpose: Test query for available students to enroll
+-- These students are assigned to Branch 1 via user_branches
+-- But have NO enrollments yet
+-- =========================================
+
+-- Additional User Accounts for Students (IDs: 81-95)
+INSERT INTO user_account (id, email, phone, full_name, password_hash, status, last_login_at, created_at, updated_at)
+VALUES
+(81, 'student056@gmail.com', '+84-922-111-111', 'Nguyen Van Hung', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '1 hour', NOW() - INTERVAL '5 days', NOW()),
+(82, 'student057@gmail.com', '+84-922-222-222', 'Tran Thi Lan', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '2 hours', NOW() - INTERVAL '5 days', NOW()),
+(83, 'student058@gmail.com', '+84-922-333-333', 'Le Van Minh', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '3 hours', NOW() - INTERVAL '5 days', NOW()),
+(84, 'student059@gmail.com', '+84-922-444-444', 'Pham Thi Nga', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '4 hours', NOW() - INTERVAL '4 days', NOW()),
+(85, 'student060@gmail.com', '+84-922-555-555', 'Hoang Van Phong', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '5 hours', NOW() - INTERVAL '4 days', NOW()),
+(86, 'student061@gmail.com', '+84-923-111-111', 'Vo Thi Quynh', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '6 hours', NOW() - INTERVAL '4 days', NOW()),
+(87, 'student062@gmail.com', '+84-923-222-222', 'Dang Van Son', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '7 hours', NOW() - INTERVAL '3 days', NOW()),
+(88, 'student063@gmail.com', '+84-923-333-333', 'Bui Thi Thao', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '8 hours', NOW() - INTERVAL '3 days', NOW()),
+(89, 'student064@gmail.com', '+84-923-444-444', 'Do Van Tuan', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '9 hours', NOW() - INTERVAL '3 days', NOW()),
+(90, 'student065@gmail.com', '+84-923-555-555', 'Ngo Thi Uyen', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '10 hours', NOW() - INTERVAL '2 days', NOW()),
+(91, 'student066@gmail.com', '+84-924-111-111', 'Truong Van Vinh', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '11 hours', NOW() - INTERVAL '2 days', NOW()),
+(92, 'student067@gmail.com', '+84-924-222-222', 'Duong Thi Xuan', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '12 hours', NOW() - INTERVAL '2 days', NOW()),
+(93, 'student068@gmail.com', '+84-924-333-333', 'Ly Van Yen', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '1 day', NOW() - INTERVAL '1 day', NOW()),
+(94, 'student069@gmail.com', '+84-924-444-444', 'Mac Thi Anh', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '1 day', NOW() - INTERVAL '1 day', NOW()),
+(95, 'student070@gmail.com', '+84-924-555-555', 'Vu Van Binh', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '1 day', NOW() - INTERVAL '1 day', NOW());
+
+-- Assign STUDENT role to new users
+INSERT INTO user_role (user_id, role_id)
+VALUES
+(81, 7), (82, 7), (83, 7), (84, 7), (85, 7),
+(86, 7), (87, 7), (88, 7), (89, 7), (90, 7),
+(91, 7), (92, 7), (93, 7), (94, 7), (95, 7);
+
+-- Assign students to Branch 1 (Main Campus) via user_branches
+-- This makes them eligible to enroll in classes at Branch 1
+INSERT INTO user_branches (user_id, branch_id, assigned_at, assigned_by)
+VALUES
+(81, 1, NOW() - INTERVAL '5 days', 4),  -- Assigned by Academic Staff 1
+(82, 1, NOW() - INTERVAL '5 days', 4),
+(83, 1, NOW() - INTERVAL '5 days', 4),
+(84, 1, NOW() - INTERVAL '4 days', 4),
+(85, 1, NOW() - INTERVAL '4 days', 4),
+(86, 1, NOW() - INTERVAL '4 days', 5),  -- Assigned by Academic Staff 2
+(87, 1, NOW() - INTERVAL '3 days', 5),
+(88, 1, NOW() - INTERVAL '3 days', 5),
+(89, 1, NOW() - INTERVAL '3 days', 5),
+(90, 1, NOW() - INTERVAL '2 days', 5),
+(91, 1, NOW() - INTERVAL '2 days', 5),
+(92, 1, NOW() - INTERVAL '2 days', 4),
+(93, 1, NOW() - INTERVAL '1 day', 4),
+(94, 1, NOW() - INTERVAL '1 day', 4),
+(95, 1, NOW() - INTERVAL '1 day', 4);
+
+-- Create Student records for these new users
+INSERT INTO student (id, user_id, student_code, education_level, address, created_at, updated_at)
+VALUES
+(56, 81, 'S056', 'Undergraduate', 'Hanoi', NOW() - INTERVAL '5 days', NOW()),
+(57, 82, 'S057', 'High School', 'Hanoi', NOW() - INTERVAL '5 days', NOW()),
+(58, 83, 'S058', 'Working Professional', 'Hanoi', NOW() - INTERVAL '5 days', NOW()),
+(59, 84, 'S059', 'Graduate', 'Hanoi', NOW() - INTERVAL '4 days', NOW()),
+(60, 85, 'S060', 'Undergraduate', 'Hanoi', NOW() - INTERVAL '4 days', NOW()),
+(61, 86, 'S061', 'High School', 'Hanoi', NOW() - INTERVAL '4 days', NOW()),
+(62, 87, 'S062', 'Working Professional', 'Hanoi', NOW() - INTERVAL '3 days', NOW()),
+(63, 88, 'S063', 'Graduate', 'Hanoi', NOW() - INTERVAL '3 days', NOW()),
+(64, 89, 'S064', 'Undergraduate', 'Hanoi', NOW() - INTERVAL '3 days', NOW()),
+(65, 90, 'S065', 'Working Professional', 'Hanoi', NOW() - INTERVAL '2 days', NOW()),
+(66, 91, 'S066', 'High School', 'Hanoi', NOW() - INTERVAL '2 days', NOW()),
+(67, 92, 'S067', 'Graduate', 'Hanoi', NOW() - INTERVAL '2 days', NOW()),
+(68, 93, 'S068', 'Undergraduate', 'Hanoi', NOW() - INTERVAL '1 day', NOW()),
+(69, 94, 'S069', 'Working Professional', 'Hanoi', NOW() - INTERVAL '1 day', NOW()),
+(70, 95, 'S070', 'High School', 'Hanoi', NOW() - INTERVAL '1 day', NOW());
+
+-- Note: Students 51-55 (from existing data) also have NO enrollments
+-- So now you have 20 students total (51-70) without any enrollments for testing
+
+COMMENT ON TABLE student IS 'Students 1-50: Enrolled in various classes. Students 51-70: NOT ENROLLED (available for testing enrollment queries).';
+
+-- Update sequences to reflect new data
+SELECT setval('user_account_id_seq', (SELECT MAX(id) FROM user_account));
+SELECT setval('student_id_seq', (SELECT MAX(id) FROM student));

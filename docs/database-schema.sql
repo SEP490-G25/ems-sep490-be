@@ -474,6 +474,7 @@ CREATE TABLE student_session (
 CREATE TABLE assessment (
   id BIGSERIAL PRIMARY KEY,
   class_id BIGINT NOT NULL,
+  course_assessment_id BIGINT,  -- Link to course template (NULL if custom assessment)
   name VARCHAR(255) NOT NULL,
   kind assessment_kind_enum NOT NULL,
   max_score DECIMAL(5,2) NOT NULL,
@@ -483,6 +484,7 @@ CREATE TABLE assessment (
   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
   updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
   CONSTRAINT fk_assessment_class FOREIGN KEY(class_id) REFERENCES "class"(id) ON DELETE CASCADE,
+  CONSTRAINT fk_assessment_course_assessment FOREIGN KEY(course_assessment_id) REFERENCES course_assessment(id) ON DELETE SET NULL,
   CONSTRAINT fk_assessment_created_by FOREIGN KEY(created_by) REFERENCES user_account(id) ON DELETE SET NULL
 );
 
@@ -588,6 +590,7 @@ CREATE TABLE teacher_request (
   CONSTRAINT fk_teacher_request_submitted_by FOREIGN KEY(submitted_by) REFERENCES user_account(id) ON DELETE SET NULL,
   CONSTRAINT fk_teacher_request_decided_by FOREIGN KEY(decided_by) REFERENCES user_account(id) ON DELETE SET NULL
 );
+
 
 -- ========== SECTION 4: INDEXES ==========
 -- Organization & Infrastructure
