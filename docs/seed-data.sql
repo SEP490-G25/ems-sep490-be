@@ -64,104 +64,104 @@ VALUES
 -- 2.2 User Accounts
 -- Note: Password hash is bcrypt for "password123" - in production use secure passwords!
 -- Admin & Management (IDs: 1-5)
-INSERT INTO user_account (id, email, phone, facebook_url, full_name, address, password_hash, status, last_login_at, created_at, updated_at)
+INSERT INTO user_account (id, email, phone, facebook_url, full_name, dob, address, password_hash, status, last_login_at, created_at, updated_at)
 VALUES
-(1, 'admin@elc-hanoi.edu.vn', '+84-901-111-111', NULL, 'Nguyen Van Admin', '10 Tran Hung Dao, Hoan Kiem, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '2 hours', NOW() - INTERVAL '365 days', NOW()),
-(2, 'manager@elc-hanoi.edu.vn', '+84-901-222-222', NULL, 'Tran Thi Manager', '25 Hang Bong, Hoan Kiem, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '5 hours', NOW() - INTERVAL '300 days', NOW()),
-(3, 'centerhead@elc-hanoi.edu.vn', '+84-901-333-333', NULL, 'Le Van Center Head', '50 Nguyen Chi Thanh, Dong Da, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '1 hour', NOW() - INTERVAL '200 days', NOW()),
-(4, 'academic1@elc-hanoi.edu.vn', '+84-901-444-444', NULL, 'Pham Thi Academic', '88 Lang Ha, Ba Dinh, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '3 hours', NOW() - INTERVAL '180 days', NOW()),
-(5, 'academic2@elc-hanoi.edu.vn', '+84-901-555-555', NULL, 'Hoang Van Academic', '123 Giang Vo, Ba Dinh, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '4 hours', NOW() - INTERVAL '180 days', NOW());
+(1, 'admin@elc-hanoi.edu.vn', '+84-901-111-111', NULL, 'Nguyen Van Admin', '1985-03-15', '10 Tran Hung Dao, Hoan Kiem, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '2 hours', NOW() - INTERVAL '365 days', NOW()),
+(2, 'manager@elc-hanoi.edu.vn', '+84-901-222-222', NULL, 'Tran Thi Manager', '1982-07-22', '25 Hang Bong, Hoan Kiem, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '5 hours', NOW() - INTERVAL '300 days', NOW()),
+(3, 'centerhead@elc-hanoi.edu.vn', '+84-901-333-333', NULL, 'Le Van Center Head', '1980-11-08', '50 Nguyen Chi Thanh, Dong Da, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '1 hour', NOW() - INTERVAL '200 days', NOW()),
+(4, 'academic1@elc-hanoi.edu.vn', '+84-901-444-444', NULL, 'Pham Thi Academic', '1988-05-12', '88 Lang Ha, Ba Dinh, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '3 hours', NOW() - INTERVAL '180 days', NOW()),
+(5, 'academic2@elc-hanoi.edu.vn', '+84-901-555-555', NULL, 'Hoang Van Academic', '1990-09-25', '123 Giang Vo, Ba Dinh, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '4 hours', NOW() - INTERVAL '180 days', NOW());
 
 -- Subject Leaders (IDs: 6-8)
-INSERT INTO user_account (id, email, phone, facebook_url, full_name, address, password_hash, status, last_login_at, created_at, updated_at)
+INSERT INTO user_account (id, email, phone, facebook_url, full_name, dob, address, password_hash, status, last_login_at, created_at, updated_at)
 VALUES
-(6, 'english.leader@elc-hanoi.edu.vn', '+84-902-111-111', NULL, 'Nguyen Thi English Leader', '45 Tran Phu, Ba Dinh, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '6 hours', NOW() - INTERVAL '250 days', NOW()),
-(7, 'japanese.leader@elc-hanoi.edu.vn', '+84-902-222-222', NULL, 'Tanaka Yuki', '77 Kim Ma, Ba Dinh, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '8 hours', NOW() - INTERVAL '220 days', NOW()),
-(8, 'qa.staff@elc-hanoi.edu.vn', '+84-902-333-333', NULL, 'Vo Thi QA', '99 Nguyen Thai Hoc, Ba Dinh, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '10 hours', NOW() - INTERVAL '150 days', NOW());
+(6, 'english.leader@elc-hanoi.edu.vn', '+84-902-111-111', NULL, 'Nguyen Thi English Leader', '1983-04-18', '45 Tran Phu, Ba Dinh, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '6 hours', NOW() - INTERVAL '250 days', NOW()),
+(7, 'japanese.leader@elc-hanoi.edu.vn', '+84-902-222-222', NULL, 'Tanaka Yuki', '1981-12-05', '77 Kim Ma, Ba Dinh, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '8 hours', NOW() - INTERVAL '220 days', NOW()),
+(8, 'qa.staff@elc-hanoi.edu.vn', '+84-902-333-333', NULL, 'Vo Thi QA', '1987-06-30', '99 Nguyen Thai Hoc, Ba Dinh, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '10 hours', NOW() - INTERVAL '150 days', NOW());
 
 -- Teachers (IDs: 9-25) - 17 teachers with diverse names
-INSERT INTO user_account (id, email, phone, facebook_url, full_name, address, password_hash, status, last_login_at, created_at, updated_at)
+INSERT INTO user_account (id, email, phone, facebook_url, full_name, dob, address, password_hash, status, last_login_at, created_at, updated_at)
 VALUES
 -- English Teachers
-(9, 'teacher.john@elc-hanoi.edu.vn', '+84-903-111-111', 'https://facebook.com/john.smith', 'John Smith', '12 Tay Ho, Tay Ho, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '1 day', NOW() - INTERVAL '200 days', NOW()),
-(10, 'teacher.sarah@elc-hanoi.edu.vn', '+84-903-222-222', 'https://facebook.com/sarah.johnson', 'Sarah Johnson', '34 Xuan Dieu, Tay Ho, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '12 hours', NOW() - INTERVAL '190 days', NOW()),
-(11, 'teacher.michael@elc-hanoi.edu.vn', '+84-903-333-333', NULL, 'Michael Brown', '56 Au Co, Tay Ho, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '8 hours', NOW() - INTERVAL '185 days', NOW()),
-(12, 'teacher.emily@elc-hanoi.edu.vn', '+84-903-444-444', NULL, 'Emily Davis', '78 Yen Phu, Tay Ho, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '2 days', NOW() - INTERVAL '180 days', NOW()),
-(13, 'teacher.linh@elc-hanoi.edu.vn', '+84-903-555-555', NULL, 'Nguyen Thi Linh', '11 Cau Giay, Cau Giay, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '5 hours', NOW() - INTERVAL '175 days', NOW()),
-(14, 'teacher.huy@elc-hanoi.edu.vn', '+84-903-666-666', NULL, 'Tran Van Huy', '22 Duy Tan, Cau Giay, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '15 hours', NOW() - INTERVAL '170 days', NOW()),
-(15, 'teacher.mai@elc-hanoi.edu.vn', '+84-903-777-777', NULL, 'Le Thi Mai', '33 Tran Thai Tong, Cau Giay, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '10 hours', NOW() - INTERVAL '165 days', NOW()),
-(16, 'teacher.david@elc-hanoi.edu.vn', '+84-903-888-888', NULL, 'David Wilson', '44 Xuan Thuy, Cau Giay, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '1 day', NOW() - INTERVAL '160 days', NOW()),
+(9, 'teacher.john@elc-hanoi.edu.vn', '+84-903-111-111', 'https://facebook.com/john.smith', 'John Smith', '1985-08-14', '12 Tay Ho, Tay Ho, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '1 day', NOW() - INTERVAL '200 days', NOW()),
+(10, 'teacher.sarah@elc-hanoi.edu.vn', '+84-903-222-222', 'https://facebook.com/sarah.johnson', 'Sarah Johnson', '1988-02-28', '34 Xuan Dieu, Tay Ho, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '12 hours', NOW() - INTERVAL '190 days', NOW()),
+(11, 'teacher.michael@elc-hanoi.edu.vn', '+84-903-333-333', NULL, 'Michael Brown', '1982-11-19', '56 Au Co, Tay Ho, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '8 hours', NOW() - INTERVAL '185 days', NOW()),
+(12, 'teacher.emily@elc-hanoi.edu.vn', '+84-903-444-444', NULL, 'Emily Davis', '1990-05-07', '78 Yen Phu, Tay Ho, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '2 days', NOW() - INTERVAL '180 days', NOW()),
+(13, 'teacher.linh@elc-hanoi.edu.vn', '+84-903-555-555', NULL, 'Nguyen Thi Linh', '1991-09-13', '11 Cau Giay, Cau Giay, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '5 hours', NOW() - INTERVAL '175 days', NOW()),
+(14, 'teacher.huy@elc-hanoi.edu.vn', '+84-903-666-666', NULL, 'Tran Van Huy', '1986-03-21', '22 Duy Tan, Cau Giay, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '15 hours', NOW() - INTERVAL '170 days', NOW()),
+(15, 'teacher.mai@elc-hanoi.edu.vn', '+84-903-777-777', NULL, 'Le Thi Mai', '1989-07-16', '33 Tran Thai Tong, Cau Giay, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '10 hours', NOW() - INTERVAL '165 days', NOW()),
+(16, 'teacher.david@elc-hanoi.edu.vn', '+84-903-888-888', NULL, 'David Wilson', '1984-12-03', '44 Xuan Thuy, Cau Giay, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '1 day', NOW() - INTERVAL '160 days', NOW()),
 -- Japanese Teachers
-(17, 'teacher.yuki@elc-hanoi.edu.vn', '+84-904-111-111', NULL, 'Yamamoto Yuki', '55 Linh Lang, Ba Dinh, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '6 hours', NOW() - INTERVAL '155 days', NOW()),
-(18, 'teacher.sakura@elc-hanoi.edu.vn', '+84-904-222-222', NULL, 'Sato Sakura', '66 Lieu Giai, Ba Dinh, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '18 hours', NOW() - INTERVAL '150 days', NOW()),
-(19, 'teacher.kenji@elc-hanoi.edu.vn', '+84-904-333-333', NULL, 'Suzuki Kenji', '77 Dao Tan, Ba Dinh, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '12 hours', NOW() - INTERVAL '145 days', NOW()),
-(20, 'teacher.anh@elc-hanoi.edu.vn', '+84-904-444-444', NULL, 'Pham Thi Anh', '88 Hoang Hoa Tham, Ba Dinh, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '9 hours', NOW() - INTERVAL '140 days', NOW()),
+(17, 'teacher.yuki@elc-hanoi.edu.vn', '+84-904-111-111', NULL, 'Yamamoto Yuki', '1987-04-25', '55 Linh Lang, Ba Dinh, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '6 hours', NOW() - INTERVAL '155 days', NOW()),
+(18, 'teacher.sakura@elc-hanoi.edu.vn', '+84-904-222-222', NULL, 'Sato Sakura', '1990-10-11', '66 Lieu Giai, Ba Dinh, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '18 hours', NOW() - INTERVAL '150 days', NOW()),
+(19, 'teacher.kenji@elc-hanoi.edu.vn', '+84-904-333-333', NULL, 'Suzuki Kenji', '1983-06-08', '77 Dao Tan, Ba Dinh, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '12 hours', NOW() - INTERVAL '145 days', NOW()),
+(20, 'teacher.anh@elc-hanoi.edu.vn', '+84-904-444-444', NULL, 'Pham Thi Anh', '1992-01-17', '88 Hoang Hoa Tham, Ba Dinh, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '9 hours', NOW() - INTERVAL '140 days', NOW()),
 -- Multi-skilled Teachers
-(21, 'teacher.james@elc-hanoi.edu.vn', '+84-905-111-111', NULL, 'James Anderson', '99 Nguyen Khang, Cau Giay, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '7 hours', NOW() - INTERVAL '135 days', NOW()),
-(22, 'teacher.linda@elc-hanoi.edu.vn', '+84-905-222-222', NULL, 'Linda Martinez', '111 Hoang Quoc Viet, Cau Giay, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '14 hours', NOW() - INTERVAL '130 days', NOW()),
-(23, 'teacher.robert@elc-hanoi.edu.vn', '+84-905-333-333', NULL, 'Robert Taylor', '222 Pham Van Dong, Cau Giay, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '20 hours', NOW() - INTERVAL '125 days', NOW()),
-(24, 'teacher.thu@elc-hanoi.edu.vn', '+84-905-444-444', NULL, 'Nguyen Thu Ha', '333 Tran Duy Hung, Cau Giay, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '11 hours', NOW() - INTERVAL '120 days', NOW()),
-(25, 'teacher.nam@elc-hanoi.edu.vn', '+84-905-555-555', NULL, 'Hoang Van Nam', '444 Nguyen Van Huyen, Cau Giay, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '16 hours', NOW() - INTERVAL '115 days', NOW());
+(21, 'teacher.james@elc-hanoi.edu.vn', '+84-905-111-111', NULL, 'James Anderson', '1981-09-22', '99 Nguyen Khang, Cau Giay, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '7 hours', NOW() - INTERVAL '135 days', NOW()),
+(22, 'teacher.linda@elc-hanoi.edu.vn', '+84-905-222-222', NULL, 'Linda Martinez', '1986-05-14', '111 Hoang Quoc Viet, Cau Giay, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '14 hours', NOW() - INTERVAL '130 days', NOW()),
+(23, 'teacher.robert@elc-hanoi.edu.vn', '+84-905-333-333', NULL, 'Robert Taylor', '1979-08-30', '222 Pham Van Dong, Cau Giay, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '20 hours', NOW() - INTERVAL '125 days', NOW()),
+(24, 'teacher.thu@elc-hanoi.edu.vn', '+84-905-444-444', NULL, 'Nguyen Thu Ha', '1993-02-26', '333 Tran Duy Hung, Cau Giay, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '11 hours', NOW() - INTERVAL '120 days', NOW()),
+(25, 'teacher.nam@elc-hanoi.edu.vn', '+84-905-555-555', NULL, 'Hoang Van Nam', '1988-11-09', '444 Nguyen Van Huyen, Cau Giay, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '16 hours', NOW() - INTERVAL '115 days', NOW());
 
 -- Students (IDs: 26-80) - 55 students with diverse Vietnamese names
-INSERT INTO user_account (id, email, phone, facebook_url, full_name, address, password_hash, status, last_login_at, created_at, updated_at)
+INSERT INTO user_account (id, email, phone, facebook_url, full_name, dob, address, password_hash, status, last_login_at, created_at, updated_at)
 VALUES
-(26, 'student001@gmail.com', '+84-911-111-111', NULL, 'Nguyen Van An', '15 Le Thanh Nghi, Hai Ba Trung, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '2 hours', NOW() - INTERVAL '100 days', NOW()),
-(27, 'student002@gmail.com', '+84-911-222-222', NULL, 'Tran Thi Binh', '20 Bach Mai, Hai Ba Trung, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '5 hours', NOW() - INTERVAL '95 days', NOW()),
-(28, 'student003@gmail.com', '+84-911-333-333', NULL, 'Le Van Cuong', '25 Minh Khai, Hai Ba Trung, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '1 day', NOW() - INTERVAL '90 days', NOW()),
-(29, 'student004@gmail.com', '+84-911-444-444', NULL, 'Pham Thi Dung', '30 Tran Khanh Du, Hai Ba Trung, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '3 hours', NOW() - INTERVAL '85 days', NOW()),
-(30, 'student005@gmail.com', '+84-911-555-555', NULL, 'Hoang Van Duy', '35 Truong Dinh, Hai Ba Trung, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '8 hours', NOW() - INTERVAL '80 days', NOW()),
-(31, 'student006@gmail.com', '+84-912-111-111', NULL, 'Vo Thi Em', '40 Nguyen Du, Hai Ba Trung, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '4 hours', NOW() - INTERVAL '75 days', NOW()),
-(32, 'student007@gmail.com', '+84-912-222-222', NULL, 'Dang Van Giang', '45 Le Dai Hanh, Hai Ba Trung, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '6 hours', NOW() - INTERVAL '70 days', NOW()),
-(33, 'student008@gmail.com', '+84-912-333-333', NULL, 'Bui Thi Ha', '50 Tran Nhan Tong, Hai Ba Trung, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '12 hours', NOW() - INTERVAL '65 days', NOW()),
-(34, 'student009@gmail.com', '+84-912-444-444', NULL, 'Do Van Hieu', '55 Pho Hue, Hai Ba Trung, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '2 days', NOW() - INTERVAL '60 days', NOW()),
-(35, 'student010@gmail.com', '+84-912-555-555', NULL, 'Ngo Thi Hong', '60 Dai Co Viet, Hai Ba Trung, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '10 hours', NOW() - INTERVAL '55 days', NOW()),
-(36, 'student011@gmail.com', '+84-913-111-111', NULL, 'Truong Van Huy', '65 Nguyen Luong Bang, Dong Da, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '7 hours', NOW() - INTERVAL '50 days', NOW()),
-(37, 'student012@gmail.com', '+84-913-222-222', NULL, 'Duong Thi Khanh', '70 Ton Duc Thang, Dong Da, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '15 hours', NOW() - INTERVAL '45 days', NOW()),
-(38, 'student013@gmail.com', '+84-913-333-333', NULL, 'Ly Van Kien', '75 Kham Thien, Dong Da, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '1 day', NOW() - INTERVAL '40 days', NOW()),
-(39, 'student014@gmail.com', '+84-913-444-444', NULL, 'Mac Thi Lan', '80 Tay Son, Dong Da, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '9 hours', NOW() - INTERVAL '35 days', NOW()),
-(40, 'student015@gmail.com', '+84-913-555-555', NULL, 'Vu Van Linh', '85 Giai Phong, Dong Da, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '5 hours', NOW() - INTERVAL '30 days', NOW()),
-(41, 'student016@gmail.com', '+84-914-111-111', NULL, 'Trinh Thi Mai', '90 La Thanh, Dong Da, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '11 hours', NOW() - INTERVAL '28 days', NOW()),
-(42, 'student017@gmail.com', '+84-914-222-222', NULL, 'Quach Van Minh', '95 O Cho Dua, Dong Da, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '14 hours', NOW() - INTERVAL '26 days', NOW()),
-(43, 'student018@gmail.com', '+84-914-333-333', NULL, 'Dinh Thi Nga', '100 Lang, Dong Da, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '3 hours', NOW() - INTERVAL '24 days', NOW()),
-(44, 'student019@gmail.com', '+84-914-444-444', NULL, 'Ta Van Phong', '105 Huynh Thuc Khang, Dong Da, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '18 hours', NOW() - INTERVAL '22 days', NOW()),
-(45, 'student020@gmail.com', '+84-914-555-555', NULL, 'Ha Thi Phuong', '110 Nguyen Phuc Lai, Dong Da, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '6 hours', NOW() - INTERVAL '20 days', NOW()),
-(46, 'student021@gmail.com', '+84-915-111-111', NULL, 'Cao Van Quang', '115 Thai Ha, Dong Da, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '8 hours', NOW() - INTERVAL '18 days', NOW()),
-(47, 'student022@gmail.com', '+84-915-222-222', NULL, 'Tong Thi Quynh', '120 Chua Lang, Dong Da, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '13 hours', NOW() - INTERVAL '16 days', NOW()),
-(48, 'student023@gmail.com', '+84-915-333-333', NULL, 'Lam Van Son', '125 Nguyen Khuyen, Dong Da, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '2 hours', NOW() - INTERVAL '14 days', NOW()),
-(49, 'student024@gmail.com', '+84-915-444-444', NULL, 'Ong Thi Thao', '130 Khuat Duy Tien, Thanh Xuan, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '19 hours', NOW() - INTERVAL '12 days', NOW()),
-(50, 'student025@gmail.com', '+84-915-555-555', NULL, 'Nghiem Van Tuan', '135 Nguyen Tuan, Thanh Xuan, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '4 hours', NOW() - INTERVAL '10 days', NOW()),
-(51, 'student026@gmail.com', '+84-916-111-111', NULL, 'Bach Thi Uyen', '140 Khuc Thua Du, Thanh Xuan, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '7 hours', NOW() - INTERVAL '9 days', NOW()),
-(52, 'student027@gmail.com', '+84-916-222-222', NULL, 'Chu Van Vinh', '145 Nguy Nhu Kon Tum, Thanh Xuan, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '16 hours', NOW() - INTERVAL '8 days', NOW()),
-(53, 'student028@gmail.com', '+84-916-333-333', NULL, 'Doan Thi Xuan', '150 Kim Dong, Thanh Xuan, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '10 hours', NOW() - INTERVAL '7 days', NOW()),
-(54, 'student029@gmail.com', '+84-916-444-444', NULL, 'Dao Van Yen', '155 Trung Kinh, Thanh Xuan, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '12 hours', NOW() - INTERVAL '6 days', NOW()),
-(55, 'student030@gmail.com', '+84-916-555-555', NULL, 'Phung Thi Anh', '160 Ton That Tung, Dong Da, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '5 hours', NOW() - INTERVAL '5 days', NOW()),
+(26, 'student001@gmail.com', '+84-911-111-111', NULL, 'Nguyen Van An', '1998-03-15', '15 Le Thanh Nghi, Hai Ba Trung, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '2 hours', NOW() - INTERVAL '100 days', NOW()),
+(27, 'student002@gmail.com', '+84-911-222-222', NULL, 'Tran Thi Binh', '2000-07-22', '20 Bach Mai, Hai Ba Trung, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '5 hours', NOW() - INTERVAL '95 days', NOW()),
+(28, 'student003@gmail.com', '+84-911-333-333', NULL, 'Le Van Cuong', '1997-11-08', '25 Minh Khai, Hai Ba Trung, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '1 day', NOW() - INTERVAL '90 days', NOW()),
+(29, 'student004@gmail.com', '+84-911-444-444', NULL, 'Pham Thi Dung', '2001-05-12', '30 Tran Khanh Du, Hai Ba Trung, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '3 hours', NOW() - INTERVAL '85 days', NOW()),
+(30, 'student005@gmail.com', '+84-911-555-555', NULL, 'Hoang Van Duy', '1999-09-25', '35 Truong Dinh, Hai Ba Trung, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '8 hours', NOW() - INTERVAL '80 days', NOW()),
+(31, 'student006@gmail.com', '+84-912-111-111', NULL, 'Vo Thi Em', '2002-04-18', '40 Nguyen Du, Hai Ba Trung, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '4 hours', NOW() - INTERVAL '75 days', NOW()),
+(32, 'student007@gmail.com', '+84-912-222-222', NULL, 'Dang Van Giang', '1996-12-05', '45 Le Dai Hanh, Hai Ba Trung, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '6 hours', NOW() - INTERVAL '70 days', NOW()),
+(33, 'student008@gmail.com', '+84-912-333-333', NULL, 'Bui Thi Ha', '2000-06-30', '50 Tran Nhan Tong, Hai Ba Trung, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '12 hours', NOW() - INTERVAL '65 days', NOW()),
+(34, 'student009@gmail.com', '+84-912-444-444', NULL, 'Do Van Hieu', '2003-08-14', '55 Pho Hue, Hai Ba Trung, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '2 days', NOW() - INTERVAL '60 days', NOW()),
+(35, 'student010@gmail.com', '+84-912-555-555', NULL, 'Ngo Thi Hong', '1998-02-28', '60 Dai Co Viet, Hai Ba Trung, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '10 hours', NOW() - INTERVAL '55 days', NOW()),
+(36, 'student011@gmail.com', '+84-913-111-111', NULL, 'Truong Van Huy', '1997-10-19', '65 Nguyen Luong Bang, Dong Da, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '7 hours', NOW() - INTERVAL '50 days', NOW()),
+(37, 'student012@gmail.com', '+84-913-222-222', NULL, 'Duong Thi Khanh', '2001-05-07', '70 Ton Duc Thang, Dong Da, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '15 hours', NOW() - INTERVAL '45 days', NOW()),
+(38, 'student013@gmail.com', '+84-913-333-333', NULL, 'Ly Van Kien', '1999-09-13', '75 Kham Thien, Dong Da, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '1 day', NOW() - INTERVAL '40 days', NOW()),
+(39, 'student014@gmail.com', '+84-913-444-444', NULL, 'Mac Thi Lan', '2002-03-21', '80 Tay Son, Dong Da, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '9 hours', NOW() - INTERVAL '35 days', NOW()),
+(40, 'student015@gmail.com', '+84-913-555-555', NULL, 'Vu Van Linh', '1996-07-16', '85 Giai Phong, Dong Da, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '5 hours', NOW() - INTERVAL '30 days', NOW()),
+(41, 'student016@gmail.com', '+84-914-111-111', NULL, 'Trinh Thi Mai', '2000-12-03', '90 La Thanh, Dong Da, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '11 hours', NOW() - INTERVAL '28 days', NOW()),
+(42, 'student017@gmail.com', '+84-914-222-222', NULL, 'Quach Van Minh', '2003-04-25', '95 O Cho Dua, Dong Da, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '14 hours', NOW() - INTERVAL '26 days', NOW()),
+(43, 'student018@gmail.com', '+84-914-333-333', NULL, 'Dinh Thi Nga', '1998-10-11', '100 Lang, Dong Da, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '3 hours', NOW() - INTERVAL '24 days', NOW()),
+(44, 'student019@gmail.com', '+84-914-444-444', NULL, 'Ta Van Phong', '2001-06-08', '105 Huynh Thuc Khang, Dong Da, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '18 hours', NOW() - INTERVAL '22 days', NOW()),
+(45, 'student020@gmail.com', '+84-914-555-555', NULL, 'Ha Thi Phuong', '1999-01-17', '110 Nguyen Phuc Lai, Dong Da, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '6 hours', NOW() - INTERVAL '20 days', NOW()),
+(46, 'student021@gmail.com', '+84-915-111-111', NULL, 'Cao Van Quang', '1997-09-22', '115 Thai Ha, Dong Da, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '8 hours', NOW() - INTERVAL '18 days', NOW()),
+(47, 'student022@gmail.com', '+84-915-222-222', NULL, 'Tong Thi Quynh', '2002-05-14', '120 Chua Lang, Dong Da, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '13 hours', NOW() - INTERVAL '16 days', NOW()),
+(48, 'student023@gmail.com', '+84-915-333-333', NULL, 'Lam Van Son', '1998-08-30', '125 Nguyen Khuyen, Dong Da, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '2 hours', NOW() - INTERVAL '14 days', NOW()),
+(49, 'student024@gmail.com', '+84-915-444-444', NULL, 'Ong Thi Thao', '2000-02-26', '130 Khuat Duy Tien, Thanh Xuan, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '19 hours', NOW() - INTERVAL '12 days', NOW()),
+(50, 'student025@gmail.com', '+84-915-555-555', NULL, 'Nghiem Van Tuan', '1999-11-09', '135 Nguyen Tuan, Thanh Xuan, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '4 hours', NOW() - INTERVAL '10 days', NOW()),
+(51, 'student026@gmail.com', '+84-916-111-111', NULL, 'Bach Thi Uyen', '2001-07-15', '140 Khuc Thua Du, Thanh Xuan, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '7 hours', NOW() - INTERVAL '9 days', NOW()),
+(52, 'student027@gmail.com', '+84-916-222-222', NULL, 'Chu Van Vinh', '1996-03-22', '145 Nguy Nhu Kon Tum, Thanh Xuan, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '16 hours', NOW() - INTERVAL '8 days', NOW()),
+(53, 'student028@gmail.com', '+84-916-333-333', NULL, 'Doan Thi Xuan', '2003-11-18', '150 Kim Dong, Thanh Xuan, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '10 hours', NOW() - INTERVAL '7 days', NOW()),
+(54, 'student029@gmail.com', '+84-916-444-444', NULL, 'Dao Van Yen', '1998-06-25', '155 Trung Kinh, Thanh Xuan, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '12 hours', NOW() - INTERVAL '6 days', NOW()),
+(55, 'student030@gmail.com', '+84-916-555-555', NULL, 'Phung Thi Anh', '2000-10-12', '160 Ton That Tung, Dong Da, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '5 hours', NOW() - INTERVAL '5 days', NOW()),
 -- Additional students for diverse class enrollments
-(56, 'student031@gmail.com', '+84-917-111-111', NULL, 'Phan Van Bao', '165 Nguyen Trai, Thanh Xuan, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '3 hours', NOW() - INTERVAL '50 days', NOW()),
-(57, 'student032@gmail.com', '+84-917-222-222', NULL, 'Luong Thi Cam', '170 Le Van Luong, Thanh Xuan, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '9 hours', NOW() - INTERVAL '48 days', NOW()),
-(58, 'student033@gmail.com', '+84-917-333-333', NULL, 'Huynh Van Dat', '175 Nguyen Xien, Thanh Xuan, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '11 hours', NOW() - INTERVAL '46 days', NOW()),
-(59, 'student034@gmail.com', '+84-917-444-444', NULL, 'Khuu Thi Dieu', '180 Khuong Dinh, Thanh Xuan, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '15 hours', NOW() - INTERVAL '44 days', NOW()),
-(60, 'student035@gmail.com', '+84-917-555-555', NULL, 'To Van Duc', '185 Nguyen Luong Bang, Thanh Xuan, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '6 hours', NOW() - INTERVAL '42 days', NOW()),
-(61, 'student036@gmail.com', '+84-918-111-111', NULL, 'Si Thi Eo', '190 Hoang Dao Thuy, Thanh Xuan, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '8 hours', NOW() - INTERVAL '40 days', NOW()),
-(62, 'student037@gmail.com', '+84-918-222-222', NULL, 'Ung Van Phuc', '195 Vu Trong Phung, Thanh Xuan, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '13 hours', NOW() - INTERVAL '38 days', NOW()),
-(63, 'student038@gmail.com', '+84-918-333-333', NULL, 'Tang Thi Gia', '200 Nguyen Huu Tho, Thanh Xuan, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '17 hours', NOW() - INTERVAL '36 days', NOW()),
-(64, 'student039@gmail.com', '+84-918-444-444', NULL, 'Vuong Van Hai', '205 Khuc Hao, Thanh Xuan, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '4 hours', NOW() - INTERVAL '34 days', NOW()),
-(65, 'student040@gmail.com', '+84-918-555-555', NULL, 'Kieu Thi Hang', '210 Ton Duc Thang, Thanh Xuan, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '14 hours', NOW() - INTERVAL '32 days', NOW()),
-(66, 'student041@gmail.com', '+84-919-111-111', NULL, 'Nham Van Khanh', '215 Khuat Duy Tien, Cau Giay, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '7 hours', NOW() - INTERVAL '30 days', NOW()),
-(67, 'student042@gmail.com', '+84-919-222-222', NULL, 'Uong Thi Kim', '220 Nguyen Phong Sac, Cau Giay, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '12 hours', NOW() - INTERVAL '28 days', NOW()),
-(68, 'student043@gmail.com', '+84-919-333-333', NULL, 'Thach Van Long', '225 Tran Thai Tong, Cau Giay, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '2 hours', NOW() - INTERVAL '26 days', NOW()),
-(69, 'student044@gmail.com', '+84-919-444-444', NULL, 'Khong Thi My', '230 Hoang Minh Giam, Cau Giay, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '18 hours', NOW() - INTERVAL '24 days', NOW()),
-(70, 'student045@gmail.com', '+84-919-555-555', NULL, 'Tieu Van Nam', '235 Duong Lang, Dong Da, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '10 hours', NOW() - INTERVAL '22 days', NOW()),
-(71, 'student046@gmail.com', '+84-920-111-111', NULL, 'Quan Thi Oanh', '240 Pham Ngoc Thach, Dong Da, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '5 hours', NOW() - INTERVAL '20 days', NOW()),
-(72, 'student047@gmail.com', '+84-920-222-222', NULL, 'Luu Van Phuc', '245 Xa Dan, Dong Da, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '16 hours', NOW() - INTERVAL '18 days', NOW()),
-(73, 'student048@gmail.com', '+84-920-333-333', NULL, 'An Thi Quyen', '250 Nguyen Cong Tru, Hai Ba Trung, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '9 hours', NOW() - INTERVAL '16 days', NOW()),
-(74, 'student049@gmail.com', '+84-920-444-444', NULL, 'Ninh Van Sang', '255 Pho Vong, Hai Ba Trung, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '1 day', NOW() - INTERVAL '14 days', NOW()),
-(75, 'student050@gmail.com', '+84-920-555-555', NULL, 'Nghia Thi Tam', '260 Tran Khat Chan, Hai Ba Trung, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '3 hours', NOW() - INTERVAL '12 days', NOW()),
-(76, 'student051@gmail.com', '+84-921-111-111', NULL, 'Thai Van Tung', '265 Hai Ba Trung, Hai Ba Trung, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '11 hours', NOW() - INTERVAL '10 days', NOW()),
-(77, 'student052@gmail.com', '+84-921-222-222', NULL, 'Thi Thi Uyen', '270 Bui Thi Xuan, Hai Ba Trung, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '6 hours', NOW() - INTERVAL '8 days', NOW()),
-(78, 'student053@gmail.com', '+84-921-333-333', NULL, 'Kim Van Vu', '275 Ly Thuong Kiet, Hoan Kiem, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '15 hours', NOW() - INTERVAL '6 days', NOW()),
-(79, 'student054@gmail.com', '+84-921-444-444', NULL, 'Tay Thi Xuan', '280 Trang Tien, Hoan Kiem, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '8 hours', NOW() - INTERVAL '4 days', NOW()),
-(80, 'student055@gmail.com', '+84-921-555-555', NULL, 'Y Van Yen', '285 Hang Bai, Hoan Kiem, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '2 hours', NOW() - INTERVAL '2 days', NOW());
+(56, 'student031@gmail.com', '+84-917-111-111', NULL, 'Phan Van Bao', '1997-04-08', '165 Nguyen Trai, Thanh Xuan, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '3 hours', NOW() - INTERVAL '50 days', NOW()),
+(57, 'student032@gmail.com', '+84-917-222-222', NULL, 'Luong Thi Cam', '2001-08-19', '170 Le Van Luong, Thanh Xuan, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '9 hours', NOW() - INTERVAL '48 days', NOW()),
+(58, 'student033@gmail.com', '+84-917-333-333', NULL, 'Huynh Van Dat', '1999-12-27', '175 Nguyen Xien, Thanh Xuan, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '11 hours', NOW() - INTERVAL '46 days', NOW()),
+(59, 'student034@gmail.com', '+84-917-444-444', NULL, 'Khuu Thi Dieu', '2002-06-14', '180 Khuong Dinh, Thanh Xuan, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '15 hours', NOW() - INTERVAL '44 days', NOW()),
+(60, 'student035@gmail.com', '+84-917-555-555', NULL, 'To Van Duc', '1998-02-03', '185 Nguyen Luong Bang, Thanh Xuan, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '6 hours', NOW() - INTERVAL '42 days', NOW()),
+(61, 'student036@gmail.com', '+84-918-111-111', NULL, 'Si Thi Eo', '2000-09-28', '190 Hoang Dao Thuy, Thanh Xuan, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '8 hours', NOW() - INTERVAL '40 days', NOW()),
+(62, 'student037@gmail.com', '+84-918-222-222', NULL, 'Ung Van Phuc', '1997-05-16', '195 Vu Trong Phung, Thanh Xuan, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '13 hours', NOW() - INTERVAL '38 days', NOW()),
+(63, 'student038@gmail.com', '+84-918-333-333', NULL, 'Tang Thi Gia', '2003-01-24', '200 Nguyen Huu Tho, Thanh Xuan, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '17 hours', NOW() - INTERVAL '36 days', NOW()),
+(64, 'student039@gmail.com', '+84-918-444-444', NULL, 'Vuong Van Hai', '1996-07-11', '205 Khuc Hao, Thanh Xuan, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '4 hours', NOW() - INTERVAL '34 days', NOW()),
+(65, 'student040@gmail.com', '+84-918-555-555', NULL, 'Kieu Thi Hang', '2001-11-05', '210 Ton Duc Thang, Thanh Xuan, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '14 hours', NOW() - INTERVAL '32 days', NOW()),
+(66, 'student041@gmail.com', '+84-919-111-111', NULL, 'Nham Van Khanh', '1999-03-19', '215 Khuat Duy Tien, Cau Giay, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '7 hours', NOW() - INTERVAL '30 days', NOW()),
+(67, 'student042@gmail.com', '+84-919-222-222', NULL, 'Uong Thi Kim', '2002-10-26', '220 Nguyen Phong Sac, Cau Giay, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '12 hours', NOW() - INTERVAL '28 days', NOW()),
+(68, 'student043@gmail.com', '+84-919-333-333', NULL, 'Thach Van Long', '1998-06-13', '225 Tran Thai Tong, Cau Giay, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '2 hours', NOW() - INTERVAL '26 days', NOW()),
+(69, 'student044@gmail.com', '+84-919-444-444', NULL, 'Khong Thi My', '2000-12-08', '230 Hoang Minh Giam, Cau Giay, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '18 hours', NOW() - INTERVAL '24 days', NOW()),
+(70, 'student045@gmail.com', '+84-919-555-555', NULL, 'Tieu Van Nam', '1997-08-23', '235 Duong Lang, Dong Da, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '10 hours', NOW() - INTERVAL '22 days', NOW()),
+(71, 'student046@gmail.com', '+84-920-111-111', NULL, 'Quan Thi Oanh', '2001-04-17', '240 Pham Ngoc Thach, Dong Da, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '5 hours', NOW() - INTERVAL '20 days', NOW()),
+(72, 'student047@gmail.com', '+84-920-222-222', NULL, 'Luu Van Phuc', '1996-11-30', '245 Xa Dan, Dong Da, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '16 hours', NOW() - INTERVAL '18 days', NOW()),
+(73, 'student048@gmail.com', '+84-920-333-333', NULL, 'An Thi Quyen', '2003-07-21', '250 Nguyen Cong Tru, Hai Ba Trung, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '9 hours', NOW() - INTERVAL '16 days', NOW()),
+(74, 'student049@gmail.com', '+84-920-444-444', NULL, 'Ninh Van Sang', '1999-02-14', '255 Pho Vong, Hai Ba Trung, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '1 day', NOW() - INTERVAL '14 days', NOW()),
+(75, 'student050@gmail.com', '+84-920-555-555', NULL, 'Nghia Thi Tam', '2002-09-05', '260 Tran Khat Chan, Hai Ba Trung, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '3 hours', NOW() - INTERVAL '12 days', NOW()),
+(76, 'student051@gmail.com', '+84-921-111-111', NULL, 'Thai Van Tung', '1998-05-28', '265 Hai Ba Trung, Hai Ba Trung, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '11 hours', NOW() - INTERVAL '10 days', NOW()),
+(77, 'student052@gmail.com', '+84-921-222-222', NULL, 'Thi Thi Uyen', '2000-01-10', '270 Bui Thi Xuan, Hai Ba Trung, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '6 hours', NOW() - INTERVAL '8 days', NOW()),
+(78, 'student053@gmail.com', '+84-921-333-333', NULL, 'Kim Van Vu', '1997-10-02', '275 Ly Thuong Kiet, Hoan Kiem, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '15 hours', NOW() - INTERVAL '6 days', NOW()),
+(79, 'student054@gmail.com', '+84-921-444-444', NULL, 'Tay Thi Xuan', '2001-06-19', '280 Trang Tien, Hoan Kiem, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '8 hours', NOW() - INTERVAL '4 days', NOW()),
+(80, 'student055@gmail.com', '+84-921-555-555', NULL, 'Y Van Yen', '1999-12-25', '285 Hang Bai, Hoan Kiem, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '2 hours', NOW() - INTERVAL '2 days', NOW());
 
 -- Reset sequence
 SELECT setval('user_account_id_seq', (SELECT MAX(id) FROM user_account));
@@ -358,6 +358,13 @@ VALUES
 -- Reset sequences
 SELECT setval('teacher_id_seq', (SELECT MAX(id) FROM teacher));
 SELECT setval('student_id_seq', (SELECT MAX(id) FROM student));
+
+-- =========================================
+-- SECTION 4.5: STUDENT SKILL ASSESSMENTS
+-- =========================================
+-- Note: Cần chạy sau khi có subject và level data. 
+-- Tạm thời comment out phần này, sẽ thêm sau khi có subject và level IDs.
+-- Sẽ uncomment và điền data sau SECTION 6 & 7 (sau khi có subject_id và level_id)
 
 -- =========================================
 -- SECTION 5: RESOURCES & TIME SLOTS
@@ -688,29 +695,29 @@ VALUES
 (17, 7, 7, NULL, 'N5 Kanji List with Examples', 'https://drive.google.com/file/n5-kanji-list.xlsx', 7, NOW() - INTERVAL '205 days', NOW());
 
 -- 7B.10 Course Assessments (Templates at course level)
-INSERT INTO course_assessment (id, course_id, name, kind, max_score, weight, description, created_at, updated_at)
+INSERT INTO course_assessment (id, course_id, name, kind, skills, max_score, description, created_at, updated_at)
 VALUES
 -- Course 1 (General English A1) Assessments
-(1, 1, 'Vocabulary Quiz 1', 'quiz', 20.00, 5.00, 'Basic vocabulary test covering greetings and personal information', NOW() - INTERVAL '240 days', NOW()),
-(2, 1, 'Grammar Quiz - Simple Present', 'quiz', 25.00, 10.00, 'Quiz on simple present tense usage', NOW() - INTERVAL '240 days', NOW()),
-(3, 1, 'Speaking Assessment', 'oral', 30.00, 15.00, 'Oral examination on self-introduction and daily conversations', NOW() - INTERVAL '240 days', NOW()),
-(4, 1, 'Midterm Written Exam', 'midterm', 50.00, 25.00, 'Comprehensive midterm covering all Phase 1 & 2 materials', NOW() - INTERVAL '240 days', NOW()),
-(5, 1, 'Final Written Exam', 'final', 100.00, 30.00, 'Final examination covering entire course content', NOW() - INTERVAL '240 days', NOW()),
-(6, 1, 'Class Participation', 'other', 20.00, 15.00, 'Active participation and homework completion', NOW() - INTERVAL '240 days', NOW()),
+(1, 1, 'Vocabulary Quiz 1', 'quiz', '{general,reading}', 20.00, 'Basic vocabulary test covering greetings and personal information', NOW() - INTERVAL '240 days', NOW()),
+(2, 1, 'Grammar Quiz - Simple Present', 'quiz', '{general,writing}', 25.00, 'Quiz on simple present tense usage', NOW() - INTERVAL '240 days', NOW()),
+(3, 1, 'Speaking Assessment', 'oral', '{speaking}', 30.00, 'Oral examination on self-introduction and daily conversations', NOW() - INTERVAL '240 days', NOW()),
+(4, 1, 'Midterm Written Exam', 'midterm', '{general,reading,writing}', 50.00, 'Comprehensive midterm covering all Phase 1 & 2 materials', NOW() - INTERVAL '240 days', NOW()),
+(5, 1, 'Final Written Exam', 'final', '{general,reading,writing,listening}', 100.00, 'Final examination covering entire course content', NOW() - INTERVAL '240 days', NOW()),
+(6, 1, 'Class Participation', 'other', '{general}', 20.00, 'Active participation and homework completion', NOW() - INTERVAL '240 days', NOW()),
 -- Course 2 (IELTS Foundation B1) Assessments
-(7, 2, 'Listening Practice Test 1', 'practice', 40.00, 10.00, 'IELTS Listening full practice test', NOW() - INTERVAL '235 days', NOW()),
-(8, 2, 'Reading Practice Test 1', 'practice', 40.00, 10.00, 'IELTS Reading full practice test', NOW() - INTERVAL '235 days', NOW()),
-(9, 2, 'Speaking Mock Test', 'oral', 9.00, 15.00, 'IELTS Speaking test simulation (all 3 parts)', NOW() - INTERVAL '235 days', NOW()),
-(10, 2, 'Writing Task 1 Assessment', 'assignment', 25.00, 10.00, 'IELTS Writing Task 1 assessment', NOW() - INTERVAL '235 days', NOW()),
-(11, 2, 'Writing Task 2 Assessment', 'assignment', 25.00, 15.00, 'IELTS Writing Task 2 essay', NOW() - INTERVAL '235 days', NOW()),
-(12, 2, 'Full IELTS Mock Exam', 'final', 100.00, 40.00, 'Complete IELTS simulation test (all 4 skills)', NOW() - INTERVAL '235 days', NOW()),
+(7, 2, 'Listening Practice Test 1', 'practice', '{listening}', 40.00, 'IELTS Listening full practice test', NOW() - INTERVAL '235 days', NOW()),
+(8, 2, 'Reading Practice Test 1', 'practice', '{reading}', 40.00, 'IELTS Reading full practice test', NOW() - INTERVAL '235 days', NOW()),
+(9, 2, 'Speaking Mock Test', 'oral', '{speaking}', 9.00, 'IELTS Speaking test simulation (all 3 parts)', NOW() - INTERVAL '235 days', NOW()),
+(10, 2, 'Writing Task 1 Assessment', 'assignment', '{writing}', 25.00, 'IELTS Writing Task 1 assessment', NOW() - INTERVAL '235 days', NOW()),
+(11, 2, 'Writing Task 2 Assessment', 'assignment', '{writing}', 25.00, 'IELTS Writing Task 2 essay', NOW() - INTERVAL '235 days', NOW()),
+(12, 2, 'Full IELTS Mock Exam', 'final', '{reading,writing,listening,speaking}', 100.00, 'Complete IELTS simulation test (all 4 skills)', NOW() - INTERVAL '235 days', NOW()),
 -- Course 7 (Japanese N5) Assessments
-(13, 7, 'Hiragana Test', 'quiz', 50.00, 10.00, 'Reading and writing all hiragana characters', NOW() - INTERVAL '210 days', NOW()),
-(14, 7, 'Katakana Test', 'quiz', 50.00, 10.00, 'Reading and writing all katakana characters', NOW() - INTERVAL '210 days', NOW()),
-(15, 7, 'Basic Kanji Quiz', 'quiz', 30.00, 10.00, 'Recognition and usage of 50 basic kanji', NOW() - INTERVAL '210 days', NOW()),
-(16, 7, 'Grammar Test', 'midterm', 60.00, 20.00, 'Comprehensive grammar test on N5 grammar patterns', NOW() - INTERVAL '210 days', NOW()),
-(17, 7, 'Speaking Test', 'oral', 40.00, 15.00, 'Oral examination on daily conversations', NOW() - INTERVAL '210 days', NOW()),
-(18, 7, 'N5 Mock Exam', 'final', 100.00, 35.00, 'Full JLPT N5 simulation exam', NOW() - INTERVAL '210 days', NOW());
+(13, 7, 'Hiragana Test', 'quiz', '{reading,writing}', 50.00, 'Reading and writing all hiragana characters', NOW() - INTERVAL '210 days', NOW()),
+(14, 7, 'Katakana Test', 'quiz', '{reading,writing}', 50.00, 'Reading and writing all katakana characters', NOW() - INTERVAL '210 days', NOW()),
+(15, 7, 'Basic Kanji Quiz', 'quiz', '{reading,writing}', 30.00, 'Recognition and usage of 50 basic kanji', NOW() - INTERVAL '210 days', NOW()),
+(16, 7, 'Grammar Test', 'midterm', '{general,reading,writing}', 60.00, 'Comprehensive grammar test on N5 grammar patterns', NOW() - INTERVAL '210 days', NOW()),
+(17, 7, 'Speaking Test', 'oral', '{speaking,listening}', 40.00, 'Oral examination on daily conversations', NOW() - INTERVAL '210 days', NOW()),
+(18, 7, 'N5 Mock Exam', 'final', '{general,reading,writing,listening}', 100.00, 'Full JLPT N5 simulation exam', NOW() - INTERVAL '210 days', NOW());
 
 -- 7B.11 Course Assessment CLO Mappings
 INSERT INTO course_assessment_clo_mapping (course_assessment_id, clo_id, status)
@@ -741,6 +748,102 @@ SELECT setval('plo_id_seq', (SELECT MAX(id) FROM plo));
 SELECT setval('clo_id_seq', (SELECT MAX(id) FROM clo));
 SELECT setval('course_material_id_seq', (SELECT MAX(id) FROM course_material));
 SELECT setval('course_assessment_id_seq', (SELECT MAX(id) FROM course_assessment));
+
+-- =========================================
+-- SECTION 7C: STUDENT SKILL ASSESSMENTS
+-- =========================================
+-- Placement tests and skill assessments for students before enrollment
+-- This helps determine which class/level is suitable for each student
+
+INSERT INTO replacement_skill_assessment (id, student_id, subject_id, skill, level_id, score, assessment_date, assessment_type, note, assessed_by, created_at, updated_at)
+VALUES
+-- English Placement Tests (subject_id=1)
+-- Student 1 (S001) - Intermediate level, tested for General English
+(1, 1, 1, 'general', 3, 60, CURRENT_DATE - INTERVAL '105 days', 'placement_test', 'Good foundation, recommended for B1 level', 4, NOW() - INTERVAL '105 days', NOW()),
+(2, 1, 1, 'reading', 3, 65, CURRENT_DATE - INTERVAL '105 days', 'placement_test', 'Strong reading comprehension', 4, NOW() - INTERVAL '105 days', NOW()),
+(3, 1, 1, 'listening', 3, 58, CURRENT_DATE - INTERVAL '105 days', 'placement_test', 'Needs improvement in listening', 4, NOW() - INTERVAL '105 days', NOW()),
+
+-- Student 2 (S002) - Beginner, starting from A1
+(4, 2, 1, 'general', 1, 35, CURRENT_DATE - INTERVAL '100 days', 'placement_test', 'Complete beginner, start from A1', 4, NOW() - INTERVAL '100 days', NOW()),
+
+-- Student 3 (S003) - Intermediate, tested for IELTS
+(5, 3, 1, 'general', 3, 62, CURRENT_DATE - INTERVAL '98 days', 'placement_test', 'Ready for IELTS B1 preparation', 6, NOW() - INTERVAL '98 days', NOW()),
+(6, 3, 1, 'speaking', 3, 55, CURRENT_DATE - INTERVAL '98 days', 'placement_test', 'Speaking needs more practice', 6, NOW() - INTERVAL '98 days', NOW()),
+(7, 3, 1, 'writing', 3, 60, CURRENT_DATE - INTERVAL '98 days', 'placement_test', 'Good writing structure', 6, NOW() - INTERVAL '98 days', NOW()),
+
+-- Student 5 (S005) - Advanced level
+(8, 5, 1, 'general', 4, 78, CURRENT_DATE - INTERVAL '85 days', 'placement_test', 'Advanced level, suitable for B2/C1 courses', 6, NOW() - INTERVAL '85 days', NOW()),
+(9, 5, 1, 'reading', 5, 82, CURRENT_DATE - INTERVAL '85 days', 'placement_test', 'Excellent reading comprehension', 6, NOW() - INTERVAL '85 days', NOW()),
+(10, 5, 1, 'listening', 4, 75, CURRENT_DATE - INTERVAL '85 days', 'placement_test', 'Very good listening skills', 6, NOW() - INTERVAL '85 days', NOW()),
+
+-- Student 7 (S007) - Has IELTS certificate
+(11, 7, 1, 'general', 3, 55, CURRENT_DATE - INTERVAL '75 days', 'ielts', 'IELTS overall 5.5', 4, NOW() - INTERVAL '75 days', NOW()),
+(12, 7, 1, 'reading', 3, 60, CURRENT_DATE - INTERVAL '75 days', 'ielts', 'IELTS Reading 6.0', 4, NOW() - INTERVAL '75 days', NOW()),
+(13, 7, 1, 'listening', 3, 55, CURRENT_DATE - INTERVAL '75 days', 'ielts', 'IELTS Listening 5.5', 4, NOW() - INTERVAL '75 days', NOW()),
+(14, 7, 1, 'writing', 3, 50, CURRENT_DATE - INTERVAL '75 days', 'ielts', 'IELTS Writing 5.0', 4, NOW() - INTERVAL '75 days', NOW()),
+(15, 7, 1, 'speaking', 3, 55, CURRENT_DATE - INTERVAL '75 days', 'ielts', 'IELTS Speaking 5.5', 4, NOW() - INTERVAL '75 days', NOW()),
+
+-- Student 10 (S010) - Advanced with TOEIC
+(16, 10, 1, 'general', 4, 80, CURRENT_DATE - INTERVAL '60 days', 'toeic', 'TOEIC 800/990', 6, NOW() - INTERVAL '60 days', NOW()),
+(17, 10, 1, 'reading', 4, 85, CURRENT_DATE - INTERVAL '60 days', 'toeic', 'TOEIC Reading 425/495', 6, NOW() - INTERVAL '60 days', NOW()),
+(18, 10, 1, 'listening', 4, 75, CURRENT_DATE - INTERVAL '60 days', 'toeic', 'TOEIC Listening 375/495', 6, NOW() - INTERVAL '60 days', NOW()),
+
+-- Student 15 (S015) - Advanced learner
+(19, 15, 1, 'general', 5, 85, CURRENT_DATE - INTERVAL '35 days', 'internal_exam', 'Excellent performance in internal test', 6, NOW() - INTERVAL '35 days', NOW()),
+(20, 15, 1, 'speaking', 4, 80, CURRENT_DATE - INTERVAL '35 days', 'internal_exam', 'Fluent speaker', 6, NOW() - INTERVAL '35 days', NOW()),
+
+-- Japanese Placement Tests (subject_id=2)
+-- Student 20 (S020) - Complete beginner in Japanese
+(21, 20, 2, 'general', 7, 20, CURRENT_DATE - INTERVAL '145 days', 'placement_test', 'No prior knowledge, start from N5', 7, NOW() - INTERVAL '145 days', NOW()),
+
+-- Student 24 (S024) - Some Japanese knowledge
+(22, 24, 2, 'general', 7, 45, CURRENT_DATE - INTERVAL '140 days', 'placement_test', 'Knows hiragana, can start N5 course', 7, NOW() - INTERVAL '140 days', NOW()),
+(23, 24, 2, 'reading', 7, 40, CURRENT_DATE - INTERVAL '140 days', 'placement_test', 'Can read hiragana partially', 7, NOW() - INTERVAL '140 days', NOW()),
+
+-- Student 29 (S029) - Has N5 certificate, ready for N4
+(24, 29, 2, 'general', 8, 65, CURRENT_DATE - INTERVAL '50 days', 'jlpt', 'Passed JLPT N5, ready for N4', 7, NOW() - INTERVAL '50 days', NOW()),
+(25, 29, 2, 'reading', 8, 70, CURRENT_DATE - INTERVAL '50 days', 'jlpt', 'Good kanji recognition', 7, NOW() - INTERVAL '50 days', NOW()),
+(26, 29, 2, 'listening', 8, 60, CURRENT_DATE - INTERVAL '50 days', 'jlpt', 'Listening comprehension adequate', 7, NOW() - INTERVAL '50 days', NOW()),
+
+-- Student 34 (S034) - Advanced Japanese learner
+(27, 34, 2, 'general', 9, 72, CURRENT_DATE - INTERVAL '48 days', 'placement_test', 'N3 level, can proceed to N3 prep', 7, NOW() - INTERVAL '48 days', NOW()),
+(28, 34, 2, 'speaking', 9, 68, CURRENT_DATE - INTERVAL '48 days', 'placement_test', 'Good conversational skills', 7, NOW() - INTERVAL '48 days', NOW()),
+(29, 34, 2, 'writing', 9, 70, CURRENT_DATE - INTERVAL '48 days', 'placement_test', 'Can write intermediate kanji', 7, NOW() - INTERVAL '48 days', NOW()),
+
+-- Student 39 (S039) - High level Japanese
+(30, 39, 2, 'general', 10, 78, CURRENT_DATE - INTERVAL '38 days', 'internal_exam', 'Near N2 level', 7, NOW() - INTERVAL '38 days', NOW()),
+(31, 39, 2, 'reading', 10, 80, CURRENT_DATE - INTERVAL '38 days', 'internal_exam', 'Strong reading comprehension', 7, NOW() - INTERVAL '38 days', NOW()),
+
+-- Student 43 (S043) - Self-assessed for conversation course
+(32, 43, 2, 'general', 9, 65, CURRENT_DATE - INTERVAL '30 days', 'self_assessment', 'Student wants to improve speaking', 7, NOW() - INTERVAL '30 days', NOW()),
+(33, 43, 2, 'speaking', 9, 60, CURRENT_DATE - INTERVAL '30 days', 'self_assessment', 'Self-reported intermediate speaking', 7, NOW() - INTERVAL '30 days', NOW()),
+
+-- Additional assessments for other students
+-- Student 11 (S011) - Intermediate English
+(34, 11, 1, 'general', 3, 58, CURRENT_DATE - INTERVAL '55 days', 'placement_test', 'Intermediate level confirmed', 4, NOW() - INTERVAL '55 days', NOW()),
+
+-- Student 14 (S014) - Intermediate with focus on speaking
+(35, 14, 1, 'general', 3, 62, CURRENT_DATE - INTERVAL '40 days', 'placement_test', 'Good overall, weak in speaking', 6, NOW() - INTERVAL '40 days', NOW()),
+(36, 14, 1, 'speaking', 2, 45, CURRENT_DATE - INTERVAL '40 days', 'placement_test', 'Speaking at A2 level, needs improvement', 6, NOW() - INTERVAL '40 days', NOW()),
+
+-- Student 18 (S018) - Retake assessment after initial course
+(37, 18, 1, 'general', 3, 55, CURRENT_DATE - INTERVAL '28 days', 'placement_test', 'Initial assessment B1 level', 4, NOW() - INTERVAL '28 days', NOW()),
+(38, 18, 1, 'general', 3, 68, CURRENT_DATE - INTERVAL '5 days', 'internal_exam', 'Progress check after 3 weeks - improving', 6, NOW() - INTERVAL '5 days', NOW()),
+
+-- Student 21 (S021) - Business English candidate
+(39, 21, 1, 'general', 4, 70, CURRENT_DATE - INTERVAL '22 days', 'placement_test', 'Suitable for Business English B2', 6, NOW() - INTERVAL '22 days', NOW()),
+(40, 21, 1, 'speaking', 4, 72, CURRENT_DATE - INTERVAL '22 days', 'placement_test', 'Good business communication skills', 6, NOW() - INTERVAL '22 days', NOW()),
+
+-- Student 25 (S025) - Conversational English
+(41, 25, 1, 'general', 2, 48, CURRENT_DATE - INTERVAL '15 days', 'placement_test', 'A2 level, suitable for conversation class', 4, NOW() - INTERVAL '15 days', NOW()),
+(42, 25, 1, 'speaking', 2, 42, CURRENT_DATE - INTERVAL '15 days', 'placement_test', 'Needs confidence in speaking', 4, NOW() - INTERVAL '15 days', NOW()),
+
+-- Student 35 (S035) - Japanese N4 level
+(43, 35, 2, 'general', 8, 62, CURRENT_DATE - INTERVAL '47 days', 'placement_test', 'Ready for N4 course', 7, NOW() - INTERVAL '47 days', NOW()),
+(44, 35, 2, 'listening', 8, 58, CURRENT_DATE - INTERVAL '47 days', 'placement_test', 'Listening skills adequate', 7, NOW() - INTERVAL '47 days', NOW());
+
+-- Reset sequence
+SELECT setval('replacement_skill_assessment_id_seq', (SELECT MAX(id) FROM replacement_skill_assessment));
 
 -- =========================================
 -- SECTION 8: CLASSES & SESSIONS
@@ -1315,58 +1418,58 @@ SELECT setval('teacher_request_id_seq', (SELECT MAX(id) FROM teacher_request));
 -- Teacher can customize name/description but maintain link to template for CLO tracking
 
 -- Class 1 (Completed): General English A1 - All assessments completed
-INSERT INTO assessment (id, class_id, course_assessment_id, name, kind, max_score, weight, description, created_by, created_at, updated_at)
+INSERT INTO assessment (id, class_id, course_assessment_id, name, kind, max_score, description, created_by, created_at, updated_at)
 VALUES
 -- Vocabulary Quizzes (linked to course_assessment_id = 1)
-(1, 1, 1, 'Vocabulary Quiz 1', 'quiz', 20.00, 5.00, 'Basic vocabulary test covering greetings and introductions', 1, CURRENT_DATE - INTERVAL '145 days', CURRENT_DATE - INTERVAL '138 days'),
-(2, 1, 1, 'Vocabulary Quiz 2 - Daily Life', 'quiz', 20.00, 5.00, 'Vocabulary test on daily activities and routines', 1, CURRENT_DATE - INTERVAL '125 days', CURRENT_DATE - INTERVAL '118 days'),
-(3, 1, 1, 'Vocabulary Quiz 3 - Food & Shopping', 'quiz', 20.00, 5.00, 'Vocabulary test covering shopping and food', 1, CURRENT_DATE - INTERVAL '105 days', CURRENT_DATE - INTERVAL '98 days'),
+(1, 1, 1, 'Vocabulary Quiz 1', 'quiz', 20.00, 'Basic vocabulary test covering greetings and introductions', 1, CURRENT_DATE - INTERVAL '145 days', CURRENT_DATE - INTERVAL '138 days'),
+(2, 1, 1, 'Vocabulary Quiz 2 - Daily Life', 'quiz', 20.00, 'Vocabulary test on daily activities and routines', 1, CURRENT_DATE - INTERVAL '125 days', CURRENT_DATE - INTERVAL '118 days'),
+(3, 1, 1, 'Vocabulary Quiz 3 - Food & Shopping', 'quiz', 20.00, 'Vocabulary test covering shopping and food', 1, CURRENT_DATE - INTERVAL '105 days', CURRENT_DATE - INTERVAL '98 days'),
 
 -- Grammar Tests (linked to course_assessment_id = 2)
-(4, 1, 2, 'Grammar Test: Present Simple & Present Continuous', 'quiz', 30.00, 8.00, 'Test on present tense forms', 1, CURRENT_DATE - INTERVAL '135 days', CURRENT_DATE - INTERVAL '128 days'),
-(5, 1, 2, 'Grammar Test: Past Tense', 'quiz', 30.00, 8.00, 'Test on past simple and past continuous', 1, CURRENT_DATE - INTERVAL '115 days', CURRENT_DATE - INTERVAL '108 days'),
+(4, 1, 2, 'Grammar Test: Present Simple & Present Continuous', 'quiz', 30.00, 'Test on present tense forms', 1, CURRENT_DATE - INTERVAL '135 days', CURRENT_DATE - INTERVAL '128 days'),
+(5, 1, 2, 'Grammar Test: Past Tense', 'quiz', 30.00, 'Test on past simple and past continuous', 1, CURRENT_DATE - INTERVAL '115 days', CURRENT_DATE - INTERVAL '108 days'),
 
 -- Speaking Tests (linked to course_assessment_id = 3)
-(6, 1, 3, 'Speaking Test: Self Introduction', 'oral', 25.00, 10.00, 'Oral assessment on self-introduction', 1, CURRENT_DATE - INTERVAL '140 days', CURRENT_DATE - INTERVAL '133 days'),
-(7, 1, 3, 'Speaking Test: Daily Conversation', 'oral', 25.00, 10.00, 'Conversational assessment on daily topics', 1, CURRENT_DATE - INTERVAL '100 days', CURRENT_DATE - INTERVAL '93 days'),
+(6, 1, 3, 'Speaking Test: Self Introduction', 'oral', 25.00, 'Oral assessment on self-introduction', 1, CURRENT_DATE - INTERVAL '140 days', CURRENT_DATE - INTERVAL '133 days'),
+(7, 1, 3, 'Speaking Test: Daily Conversation', 'oral', 25.00, 'Conversational assessment on daily topics', 1, CURRENT_DATE - INTERVAL '100 days', CURRENT_DATE - INTERVAL '93 days'),
 
 -- Midterm & Final (linked to course_assessment_id = 4, 5)
-(8, 1, 4, 'Midterm Exam', 'midterm', 100.00, 20.00, 'Comprehensive midterm covering weeks 1-6', 1, CURRENT_DATE - INTERVAL '120 days', CURRENT_DATE - INTERVAL '113 days'),
-(9, 1, 5, 'Final Exam', 'final', 100.00, 25.00, 'Comprehensive final exam covering all material', 1, CURRENT_DATE - INTERVAL '75 days', CURRENT_DATE - INTERVAL '68 days'),
+(8, 1, 4, 'Midterm Exam', 'midterm', 100.00, 'Comprehensive midterm covering weeks 1-6', 1, CURRENT_DATE - INTERVAL '120 days', CURRENT_DATE - INTERVAL '113 days'),
+(9, 1, 5, 'Final Exam', 'final', 100.00, 'Comprehensive final exam covering all material', 1, CURRENT_DATE - INTERVAL '75 days', CURRENT_DATE - INTERVAL '68 days'),
 
 -- Custom Assignments (no course_assessment link - teacher created)
-(10, 1, NULL, 'Writing Assignment: My Family', 'assignment', 20.00, 5.00, 'Short essay about family members', 1, CURRENT_DATE - INTERVAL '130 days', CURRENT_DATE - INTERVAL '123 days'),
-(11, 1, NULL, 'Writing Assignment: My Daily Routine', 'assignment', 20.00, 4.00, 'Essay describing daily routine', 1, CURRENT_DATE - INTERVAL '95 days', CURRENT_DATE - INTERVAL '88 days'),
+(10, 1, NULL, 'Writing Assignment: My Family', 'assignment', 20.00, 'Short essay about family members', 1, CURRENT_DATE - INTERVAL '130 days', CURRENT_DATE - INTERVAL '123 days'),
+(11, 1, NULL, 'Writing Assignment: My Daily Routine', 'assignment', 20.00, 'Essay describing daily routine', 1, CURRENT_DATE - INTERVAL '95 days', CURRENT_DATE - INTERVAL '88 days'),
 
 -- Class 3 (Ongoing): IELTS Foundation B1 - Some assessments completed, some pending
 -- Linked to Course 2 assessments (IDs 7-12)
-(12, 3, 7, 'IELTS Listening Practice Test 1', 'practice', 40.00, 8.00, 'First listening practice test', 2, CURRENT_DATE - INTERVAL '55 days', CURRENT_DATE - INTERVAL '48 days'),
-(13, 3, 8, 'IELTS Reading Practice Test 1', 'practice', 40.00, 8.00, 'First reading practice test', 2, CURRENT_DATE - INTERVAL '50 days', CURRENT_DATE - INTERVAL '43 days'),
-(14, 3, 10, 'Writing Task 1 Assignment', 'assignment', 25.00, 10.00, 'Describe a chart/graph', 2, CURRENT_DATE - INTERVAL '40 days', CURRENT_DATE - INTERVAL '33 days'),
-(15, 3, 9, 'Speaking Part 1 Mock Test', 'oral', 25.00, 10.00, 'IELTS Speaking Part 1 practice', 2, CURRENT_DATE - INTERVAL '35 days', CURRENT_DATE - INTERVAL '28 days'),
-(16, 3, NULL, 'Midterm Exam', 'midterm', 100.00, 20.00, 'IELTS midterm covering all skills', 2, CURRENT_DATE - INTERVAL '25 days', CURRENT_DATE - INTERVAL '18 days'),
+(12, 3, 7, 'IELTS Listening Practice Test 1', 'practice', 40.00, 'First listening practice test', 2, CURRENT_DATE - INTERVAL '55 days', CURRENT_DATE - INTERVAL '48 days'),
+(13, 3, 8, 'IELTS Reading Practice Test 1', 'practice', 40.00, 'First reading practice test', 2, CURRENT_DATE - INTERVAL '50 days', CURRENT_DATE - INTERVAL '43 days'),
+(14, 3, 10, 'Writing Task 1 Assignment', 'assignment', 25.00, 'Describe a chart/graph', 2, CURRENT_DATE - INTERVAL '40 days', CURRENT_DATE - INTERVAL '33 days'),
+(15, 3, 9, 'Speaking Part 1 Mock Test', 'oral', 25.00, 'IELTS Speaking Part 1 practice', 2, CURRENT_DATE - INTERVAL '35 days', CURRENT_DATE - INTERVAL '28 days'),
+(16, 3, NULL, 'Midterm Exam', 'midterm', 100.00, 'IELTS midterm covering all skills', 2, CURRENT_DATE - INTERVAL '25 days', CURRENT_DATE - INTERVAL '18 days'),
 -- Upcoming assessments (created but not graded yet)
-(17, 3, 12, 'IELTS Full Mock Test', 'practice', 100.00, 20.00, 'Complete IELTS mock exam', 2, CURRENT_DATE - INTERVAL '10 days', CURRENT_DATE - INTERVAL '10 days'),
-(18, 3, 12, 'Final Exam', 'final', 100.00, 24.00, 'Comprehensive IELTS final exam', 2, CURRENT_DATE - INTERVAL '5 days', CURRENT_DATE - INTERVAL '5 days'),
+(17, 3, 12, 'IELTS Full Mock Test', 'practice', 100.00, 'Complete IELTS mock exam', 2, CURRENT_DATE - INTERVAL '10 days', CURRENT_DATE - INTERVAL '10 days'),
+(18, 3, 12, 'Final Exam', 'final', 100.00, 'Comprehensive IELTS final exam', 2, CURRENT_DATE - INTERVAL '5 days', CURRENT_DATE - INTERVAL '5 days'),
 
 -- Class 4 (Ongoing): Business English B2 - Some completed (No course_assessment template for this course, all custom)
-(19, 4, NULL, 'Business Vocabulary Quiz', 'quiz', 25.00, 6.00, 'Business terminology test', 3, CURRENT_DATE - INTERVAL '47 days', CURRENT_DATE - INTERVAL '40 days'),
-(20, 4, NULL, 'Presentation Project', 'project', 50.00, 20.00, 'Business presentation on company analysis', 3, CURRENT_DATE - INTERVAL '50 days', CURRENT_DATE - INTERVAL '23 days'),
-(21, 4, NULL, 'Email Writing Assignment', 'assignment', 30.00, 10.00, 'Professional email correspondence', 3, CURRENT_DATE - INTERVAL '35 days', CURRENT_DATE - INTERVAL '28 days'),
-(22, 4, NULL, 'Midterm Exam', 'midterm', 100.00, 20.00, 'Business English midterm', 3, CURRENT_DATE - INTERVAL '20 days', CURRENT_DATE - INTERVAL '13 days'),
+(19, 4, NULL, 'Business Vocabulary Quiz', 'quiz', 25.00, 'Business terminology test', 3, CURRENT_DATE - INTERVAL '47 days', CURRENT_DATE - INTERVAL '40 days'),
+(20, 4, NULL, 'Presentation Project', 'project', 50.00, 'Business presentation on company analysis', 3, CURRENT_DATE - INTERVAL '50 days', CURRENT_DATE - INTERVAL '23 days'),
+(21, 4, NULL, 'Email Writing Assignment', 'assignment', 30.00, 'Professional email correspondence', 3, CURRENT_DATE - INTERVAL '35 days', CURRENT_DATE - INTERVAL '28 days'),
+(22, 4, NULL, 'Midterm Exam', 'midterm', 100.00, 'Business English midterm', 3, CURRENT_DATE - INTERVAL '20 days', CURRENT_DATE - INTERVAL '13 days'),
 -- Upcoming
-(23, 4, NULL, 'Negotiation Role-play', 'oral', 40.00, 15.00, 'Business negotiation simulation', 3, CURRENT_DATE - INTERVAL '5 days', CURRENT_DATE - INTERVAL '5 days'),
-(24, 4, NULL, 'Final Exam', 'final', 100.00, 25.00, 'Business English final exam', 3, CURRENT_DATE - INTERVAL '3 days', CURRENT_DATE - INTERVAL '3 days'),
+(23, 4, NULL, 'Negotiation Role-play', 'oral', 40.00, 'Business negotiation simulation', 3, CURRENT_DATE - INTERVAL '5 days', CURRENT_DATE - INTERVAL '5 days'),
+(24, 4, NULL, 'Final Exam', 'final', 100.00, 'Business English final exam', 3, CURRENT_DATE - INTERVAL '3 days', CURRENT_DATE - INTERVAL '3 days'),
 
 -- Class 5 (Ongoing): Japanese N5 - Early stage, few assessments
 -- Linked to Course 7 assessments (IDs 13-18)
-(25, 5, 13, 'Hiragana Quiz', 'quiz', 30.00, 8.00, 'Hiragana reading and writing test', 10, CURRENT_DATE - INTERVAL '60 days', CURRENT_DATE - INTERVAL '53 days'),
-(26, 5, 14, 'Katakana Quiz', 'quiz', 30.00, 8.00, 'Katakana reading and writing test', 10, CURRENT_DATE - INTERVAL '45 days', CURRENT_DATE - INTERVAL '38 days'),
-(27, 5, 15, 'Basic Kanji Test', 'quiz', 25.00, 7.00, 'First 50 kanji characters', 10, CURRENT_DATE - INTERVAL '30 days', CURRENT_DATE - INTERVAL '23 days'),
-(28, 5, 17, 'Speaking Test: Self Introduction', 'oral', 25.00, 10.00, 'Japanese self-introduction', 10, CURRENT_DATE - INTERVAL '40 days', CURRENT_DATE - INTERVAL '33 days'),
+(25, 5, 13, 'Hiragana Quiz', 'quiz', 30.00, 'Hiragana reading and writing test', 10, CURRENT_DATE - INTERVAL '60 days', CURRENT_DATE - INTERVAL '53 days'),
+(26, 5, 14, 'Katakana Quiz', 'quiz', 30.00, 'Katakana reading and writing test', 10, CURRENT_DATE - INTERVAL '45 days', CURRENT_DATE - INTERVAL '38 days'),
+(27, 5, 15, 'Basic Kanji Test', 'quiz', 25.00, 'First 50 kanji characters', 10, CURRENT_DATE - INTERVAL '30 days', CURRENT_DATE - INTERVAL '23 days'),
+(28, 5, 17, 'Speaking Test: Self Introduction', 'oral', 25.00, 'Japanese self-introduction', 10, CURRENT_DATE - INTERVAL '40 days', CURRENT_DATE - INTERVAL '33 days'),
 -- Upcoming
-(29, 5, 16, 'Midterm Exam', 'midterm', 100.00, 20.00, 'N5 midterm covering grammar and vocabulary', 10, CURRENT_DATE - INTERVAL '7 days', CURRENT_DATE - INTERVAL '7 days'),
-(30, 5, 18, 'Final Exam', 'final', 100.00, 25.00, 'JLPT N5 mock exam', 10, CURRENT_DATE - INTERVAL '5 days', CURRENT_DATE - INTERVAL '5 days');
+(29, 5, 16, 'Midterm Exam', 'midterm', 100.00, 'N5 midterm covering grammar and vocabulary', 10, CURRENT_DATE - INTERVAL '7 days', CURRENT_DATE - INTERVAL '7 days'),
+(30, 5, 18, 'Final Exam', 'final', 100.00, 'JLPT N5 mock exam', 10, CURRENT_DATE - INTERVAL '5 days', CURRENT_DATE - INTERVAL '5 days');
 
 -- Reset sequence
 SELECT setval('assessment_id_seq', (SELECT MAX(id) FROM assessment));
@@ -1554,23 +1657,23 @@ END $$;
 -- =========================================
 
 -- Additional User Accounts for Students (IDs: 81-95)
-INSERT INTO user_account (id, email, phone, facebook_url, full_name, address, password_hash, status, last_login_at, created_at, updated_at)
+INSERT INTO user_account (id, email, phone, facebook_url, full_name, dob, address, password_hash, status, last_login_at, created_at, updated_at)
 VALUES
-(81, 'student056@gmail.com', '+84-922-111-111', NULL, 'Nguyen Van Hung', '290 Trang Thi, Hoan Kiem, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '1 hour', NOW() - INTERVAL '5 days', NOW()),
-(82, 'student057@gmail.com', '+84-922-222-222', NULL, 'Tran Thi Lan', '295 Hang Bac, Hoan Kiem, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '2 hours', NOW() - INTERVAL '5 days', NOW()),
-(83, 'student058@gmail.com', '+84-922-333-333', NULL, 'Le Van Minh', '300 Hang Gai, Hoan Kiem, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '3 hours', NOW() - INTERVAL '5 days', NOW()),
-(84, 'student059@gmail.com', '+84-922-444-444', NULL, 'Pham Thi Nga', '305 Cau Go, Hoan Kiem, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '4 hours', NOW() - INTERVAL '4 days', NOW()),
-(85, 'student060@gmail.com', '+84-922-555-555', NULL, 'Hoang Van Phong', '310 Hang Bong, Hoan Kiem, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '5 hours', NOW() - INTERVAL '4 days', NOW()),
-(86, 'student061@gmail.com', '+84-923-111-111', NULL, 'Vo Thi Quynh', '315 Hang Dao, Hoan Kiem, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '6 hours', NOW() - INTERVAL '4 days', NOW()),
-(87, 'student062@gmail.com', '+84-923-222-222', NULL, 'Dang Van Son', '320 Hang Ngang, Hoan Kiem, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '7 hours', NOW() - INTERVAL '3 days', NOW()),
-(88, 'student063@gmail.com', '+84-923-333-333', NULL, 'Bui Thi Thao', '325 Hang Duong, Hoan Kiem, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '8 hours', NOW() - INTERVAL '3 days', NOW()),
-(89, 'student064@gmail.com', '+84-923-444-444', NULL, 'Do Van Tuan', '330 Hang Ma, Hoan Kiem, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '9 hours', NOW() - INTERVAL '3 days', NOW()),
-(90, 'student065@gmail.com', '+84-923-555-555', NULL, 'Ngo Thi Uyen', '335 Hang Buom, Hoan Kiem, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '10 hours', NOW() - INTERVAL '2 days', NOW()),
-(91, 'student066@gmail.com', '+84-924-111-111', NULL, 'Truong Van Vinh', '340 Hang Chieu, Hoan Kiem, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '11 hours', NOW() - INTERVAL '2 days', NOW()),
-(92, 'student067@gmail.com', '+84-924-222-222', NULL, 'Duong Thi Xuan', '345 Hang Giay, Hoan Kiem, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '12 hours', NOW() - INTERVAL '2 days', NOW()),
-(93, 'student068@gmail.com', '+84-924-333-333', NULL, 'Ly Van Yen', '350 Hang Thiec, Hoan Kiem, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '1 day', NOW() - INTERVAL '1 day', NOW()),
-(94, 'student069@gmail.com', '+84-924-444-444', NULL, 'Mac Thi Anh', '355 Hang Bac, Hoan Kiem, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '1 day', NOW() - INTERVAL '1 day', NOW()),
-(95, 'student070@gmail.com', '+84-924-555-555', NULL, 'Vu Van Binh', '360 Hang Quat, Hoan Kiem, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '1 day', NOW() - INTERVAL '1 day', NOW());
+(81, 'student056@gmail.com', '+84-922-111-111', NULL, 'Nguyen Van Hung', '1998-03-15', '290 Trang Thi, Hoan Kiem, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '1 hour', NOW() - INTERVAL '5 days', NOW()),
+(82, 'student057@gmail.com', '+84-922-222-222', NULL, 'Tran Thi Lan', '2001-07-22', '295 Hang Bac, Hoan Kiem, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '2 hours', NOW() - INTERVAL '5 days', NOW()),
+(83, 'student058@gmail.com', '+84-922-333-333', NULL, 'Le Van Minh', '1999-11-08', '300 Hang Gai, Hoan Kiem, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '3 hours', NOW() - INTERVAL '5 days', NOW()),
+(84, 'student059@gmail.com', '+84-922-444-444', NULL, 'Pham Thi Nga', '2002-04-30', '305 Cau Go, Hoan Kiem, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '4 hours', NOW() - INTERVAL '4 days', NOW()),
+(85, 'student060@gmail.com', '+84-922-555-555', NULL, 'Hoang Van Phong', '1997-09-17', '310 Hang Bong, Hoan Kiem, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '5 hours', NOW() - INTERVAL '4 days', NOW()),
+(86, 'student061@gmail.com', '+84-923-111-111', NULL, 'Vo Thi Quynh', '2000-12-03', '315 Hang Dao, Hoan Kiem, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '6 hours', NOW() - INTERVAL '4 days', NOW()),
+(87, 'student062@gmail.com', '+84-923-222-222', NULL, 'Dang Van Son', '1996-06-25', '320 Hang Ngang, Hoan Kiem, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '7 hours', NOW() - INTERVAL '3 days', NOW()),
+(88, 'student063@gmail.com', '+84-923-333-333', NULL, 'Bui Thi Thao', '2003-02-11', '325 Hang Duong, Hoan Kiem, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '8 hours', NOW() - INTERVAL '3 days', NOW()),
+(89, 'student064@gmail.com', '+84-923-444-444', NULL, 'Do Van Tuan', '1998-10-19', '330 Hang Ma, Hoan Kiem, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '9 hours', NOW() - INTERVAL '3 days', NOW()),
+(90, 'student065@gmail.com', '+84-923-555-555', NULL, 'Ngo Thi Uyen', '2001-05-07', '335 Hang Buom, Hoan Kiem, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '10 hours', NOW() - INTERVAL '2 days', NOW()),
+(91, 'student066@gmail.com', '+84-924-111-111', NULL, 'Truong Van Vinh', '1999-08-14', '340 Hang Chieu, Hoan Kiem, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '11 hours', NOW() - INTERVAL '2 days', NOW()),
+(92, 'student067@gmail.com', '+84-924-222-222', NULL, 'Duong Thi Xuan', '2002-11-29', '345 Hang Giay, Hoan Kiem, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '12 hours', NOW() - INTERVAL '2 days', NOW()),
+(93, 'student068@gmail.com', '+84-924-333-333', NULL, 'Ly Van Yen', '1997-04-06', '350 Hang Thiec, Hoan Kiem, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '1 day', NOW() - INTERVAL '1 day', NOW()),
+(94, 'student069@gmail.com', '+84-924-444-444', NULL, 'Mac Thi Anh', '2000-09-23', '355 Hang Bac, Hoan Kiem, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '1 day', NOW() - INTERVAL '1 day', NOW()),
+(95, 'student070@gmail.com', '+84-924-555-555', NULL, 'Vu Van Binh', '2003-01-18', '360 Hang Quat, Hoan Kiem, Hanoi', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'active', NOW() - INTERVAL '1 day', NOW() - INTERVAL '1 day', NOW());
 
 -- Assign STUDENT role to new users
 INSERT INTO user_role (user_id, role_id)

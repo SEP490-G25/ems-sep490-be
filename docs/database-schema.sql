@@ -48,7 +48,7 @@ DROP TABLE IF EXISTS user_account CASCADE;
 
 -- ========== SECTION 2: ENUM TYPES ==========
 DO $$ BEGIN CREATE TYPE session_status_enum AS ENUM ('planned','cancelled','done'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-DO $$ BEGIN CREATE TYPE session_type_enum   AS ENUM ('class','makeup','exam','other'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE TYPE session_type_enum   AS ENUM ('class','makeup','exam','other', 'teacher_schedule'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN CREATE TYPE attendance_status_enum AS ENUM ('planned','present','absent','late','excused','remote'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN CREATE TYPE enrollment_status_enum AS ENUM ('enrolled','waitlisted','transferred','dropped','completed'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN CREATE TYPE request_status_enum AS ENUM ('pending','waiting_confirm','approved','rejected','cancelled'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
@@ -60,11 +60,10 @@ DO $$ BEGIN CREATE TYPE skill_enum AS ENUM ('general','reading','writing','speak
 DO $$ BEGIN CREATE TYPE teaching_role_enum AS ENUM ('primary','assistant'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN CREATE TYPE branch_status_enum AS ENUM ('active','inactive','closed','planned'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN CREATE TYPE class_status_enum AS ENUM ('draft','scheduled','ongoing','completed','cancelled'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-DO $$ BEGIN CREATE TYPE subject_status_enum AS ENUM ('active','inactive'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE TYPE subject_status_enum AS ENUM ('draft','active','inactive'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN CREATE TYPE assessment_kind_enum AS ENUM ('quiz','midterm','final','assignment','project','oral','practice','other'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN CREATE TYPE teaching_slot_status_enum AS ENUM ('scheduled','on_leave','substituted','completed','cancelled'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN CREATE TYPE homework_status_enum AS ENUM ('completed','incomplete','no_homework'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-
 -- ========== SECTION 3: TABLES (ĐÚNG THỨ TỰ) ==========
 
 -- TIER 1: Independent
@@ -91,6 +90,7 @@ CREATE TABLE user_account (
   phone VARCHAR(50),
   facebook_url VARCHAR(500),
   full_name VARCHAR(255) NOT NULL,
+  dob DATE,
   address TEXT,
   password_hash VARCHAR(255) NOT NULL,
   status VARCHAR(50),
@@ -196,7 +196,7 @@ CREATE TABLE student (
   id BIGSERIAL PRIMARY KEY,
   user_id BIGINT NOT NULL UNIQUE,
   student_code VARCHAR(50) UNIQUE,
-  level VARCHAR(100),
+  level VARCHAR(50),
   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
   updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
   CONSTRAINT fk_student_user FOREIGN KEY(user_id) REFERENCES user_account(id) ON DELETE CASCADE
@@ -216,6 +216,25 @@ CREATE TABLE level (
   updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
   CONSTRAINT fk_level_subject FOREIGN KEY(subject_id) REFERENCES subject(id) ON DELETE CASCADE,
   CONSTRAINT uq_level_subject_code UNIQUE(subject_id,code)
+);
+
+CREATE TABLE replacement_skill_assessment (
+  id BIGSERIAL PRIMARY KEY,
+  student_id BIGINT NOT NULL,
+  skill skill_enum NOT NULL,  -- Sử dụng lại enum: general, reading, writing, speaking, listening
+  level_id BIGINT,  -- Link đến bảng level (ví dụ: A1, A2, B1, B2...)
+  score INTEGER,  -- Điểm số cụ thể (ví dụ: IELTS band score * 10 = 65 cho 6.5)
+  assessment_date DATE NOT NULL,  -- Ngày đánh giá
+  assessment_type VARCHAR(100),  -- Loại đánh giá: 'placement_test', 'ielts', 'toeic', 'internal_exam', 'self_assessment'
+  note TEXT,  -- Ghi chú thêm
+  assessed_by BIGINT,  -- Người đánh giá (teacher/academic staff)
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  
+  CONSTRAINT fk_student_skill_student FOREIGN KEY(student_id) REFERENCES student(id) ON DELETE CASCADE,
+  CONSTRAINT fk_student_skill_level FOREIGN KEY(level_id) REFERENCES level(id) ON DELETE SET NULL,
+  CONSTRAINT fk_student_skill_assessed_by FOREIGN KEY(assessed_by) REFERENCES user_account(id) ON DELETE SET NULL,
+  CONSTRAINT uq_student_skill_assessment UNIQUE(student_id, skill, assessment_date)  -- Một student có thể test lại nhiều lần
 );
 
 CREATE TABLE course (
@@ -337,8 +356,8 @@ CREATE TABLE course_assessment (
   course_id BIGINT NOT NULL,
   name VARCHAR(255) NOT NULL,
   kind assessment_kind_enum NOT NULL,
+  skills skill_enum[] NOT NULL,
   max_score DECIMAL(5,2) NOT NULL,
-  weight DECIMAL(5,2),
   description TEXT,
   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
   updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -475,11 +494,10 @@ CREATE TABLE student_session (
 CREATE TABLE assessment (
   id BIGSERIAL PRIMARY KEY,
   class_id BIGINT NOT NULL,
-  course_assessment_id BIGINT,  -- Link to course template (NULL if custom assessment)
+  course_assessment_id BIGINT,
   name VARCHAR(255) NOT NULL,
   kind assessment_kind_enum NOT NULL,
   max_score DECIMAL(5,2) NOT NULL,
-  weight DECIMAL(5,2),
   description TEXT,
   created_by BIGINT,
   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
