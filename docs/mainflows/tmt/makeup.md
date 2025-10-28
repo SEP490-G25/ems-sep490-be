@@ -29,28 +29,48 @@ Học viên chọn radio button "Học bù cho buổi đã nghỉ"
 Bước 10A: Hệ thống load danh sách buổi đã nghỉ (trong X tuần gần nhất)
 System thực hiện query:
 
-SELECT 
+-- =====================================================
+-- QUERY: Lấy danh sách buổi đã nghỉ (Missed Sessions)
+-- Use Case: Student 14 (S014 - Mac Thi Lan) checks missed sessions
+-- =====================================================
+
+SELECT
     ss.session_id,
     ss.attendance_status,
-    s.session_date,
+    s.date AS session_date,
     s.course_session_id, -- CRITICAL: để match makeup sessions
-    c.class_name,
-    cs.session_title, -- Nội dung buổi học
-    EXTRACT(DAYS FROM (CURRENT_DATE - s.session_date)) / 7.0 AS weeks_ago
+    c.code AS class_code,
+    c.name AS class_name,
+    cs.topic AS session_title, -- Nội dung buổi học
+    cs.student_task,
+    (CURRENT_DATE - s.date) AS days_ago,
+    ROUND((CURRENT_DATE - s.date)::NUMERIC / 7, 1) AS weeks_ago
 FROM student_session ss
 JOIN session s ON ss.session_id = s.id
-JOIN class c ON s.class_id = c.id
-JOIN course_session cs ON s.course_session_id = cs.id
-WHERE ss.student_id = :student_id
+JOIN "class" c ON s.class_id = c.id
+LEFT JOIN course_session cs ON s.course_session_id = cs.id
+WHERE ss.student_id = 14  -- Student 14 (S014)
     AND ss.attendance_status IN ('absent', 'late')
     AND s.status = 'done'
-    AND s.session_date >= (CURRENT_DATE - INTERVAL '4 weeks') -- Policy: 4 tuần
-    AND NOT EXISTS ( 
+    AND s.date >= (CURRENT_DATE - INTERVAL '4 weeks') -- Policy: 4 tuần
+    AND NOT EXISTS (
         SELECT 1 FROM student_request sr
         WHERE sr.target_session_id = ss.session_id
+            AND sr.request_type = 'makeup'
             AND sr.status IN ('pending', 'approved')
     )
-ORDER BY s.session_date DESC;
+ORDER BY s.date DESC;
+
+-- Expected Output (nếu student 14 có absence ở session 53):
+-- session_id: 53
+-- attendance_status: 'absent'
+-- session_date: CURRENT_DATE - 13 days
+-- course_session_id: 14
+-- class_code: 'B1-IELTS-001'
+-- class_name: 'IELTS Foundation B1 - Afternoon'
+-- session_title: 'Listening Section 1 - Forms & Details'
+-- days_ago: 13
+-- weeks_ago: 1.9
 
 
 Bước 11A: Hiển thị danh sách buổi đã nghỉ
@@ -60,12 +80,13 @@ Học viên chọn một buổi học đã nghỉ từ dropdown
 
 Bước 13A: Hệ thống tìm các buổi học bù khả dụng
 System thực hiện query:
+
 -- =====================================================
 -- QUERY TÌM BUỔI HỌC BÙ KHẢ DỤNG (Makeup Session Search)
--- Use Case: Student missed session 58 (Class 3, IELTS B1)
+-- Use Case: Student 14 missed session 53 (Class 3, IELTS B1)
+--           course_session_id = 14 (Listening Section 1)
 -- Find available makeup sessions with same course_session_id
 -- =====================================================
-
 
 WITH target_info AS (
     -- Lấy thông tin buổi học bị vắng
@@ -74,11 +95,12 @@ WITH target_info AS (
         s.class_id,
         c.branch_id,
         c.modality,
-        c.code as target_class_code,
-        s.date as target_date
+        c.code AS target_class_code,
+        c.name AS target_class_name,
+        s.date AS target_date
     FROM session s
-    JOIN class c ON s.class_id = c.id
-    WHERE s.id = 58  -- Session ID bị vắng (thay đổi theo từng trường hợp)
+    JOIN "class" c ON s.class_id = c.id
+    WHERE s.id = 53  -- Session 53: student 14 bị vắng (IELTS B1, course_session_id = 14)
 )
 SELECT
     s.id AS makeup_session_id,
@@ -90,9 +112,9 @@ SELECT
     c.modality,
     b.name AS branch_name,
     -- Tính số chỗ trống
-    c.max_capacity - COALESCE(COUNT(ss.student_id), 0) AS available_slots,
+    c.max_capacity - COALESCE(COUNT(DISTINCT e.student_id), 0) AS available_slots,
     c.max_capacity,
-    COALESCE(COUNT(ss.student_id), 0) AS enrolled_count,
+    COALESCE(COUNT(DISTINCT e.student_id), 0) AS enrolled_count,
     -- Lấy danh sách giáo viên (teacher -> user_account -> full_name)
     STRING_AGG(DISTINCT ua.full_name, ', ' ORDER BY ua.full_name) AS teachers,
     -- Flags quan trọng cho việc sắp xếp ưu tiên
@@ -107,22 +129,26 @@ SELECT
     END AS priority_level,
     -- Thêm thông tin session gốc
     ti.target_class_code,
+    ti.target_class_name,
     ti.target_date,
-    cs.topic AS session_topic
+    cs.topic AS session_topic,
+    cs.student_task
 FROM session s
-JOIN class c ON s.class_id = c.id
+JOIN "class" c ON s.class_id = c.id
 JOIN branch b ON c.branch_id = b.id
 CROSS JOIN target_info ti
 JOIN course_session cs ON s.course_session_id = cs.id
-LEFT JOIN student_session ss ON s.id = ss.session_id
-LEFT JOIN teaching_slot ts ON s.id = ts.session_id
+LEFT JOIN enrollment e ON c.id = e.class_id AND e.status IN ('enrolled', 'waitlisted')
+LEFT JOIN teaching_slot ts ON s.id = ts.session_id AND ts.role = 'primary'
 LEFT JOIN teacher t ON ts.teacher_id = t.id
-LEFT JOIN user_account ua ON t.user_account_id = ua.id  -- FIX: Join đúng qua user_account_id
+LEFT JOIN user_account ua ON t.user_account_id = ua.id
 WHERE
     -- CRITICAL: Cùng nội dung học (course_session_id)
     s.course_session_id = ti.course_session_id
     -- Không phải buổi gốc bị vắng
-    AND s.id != 58
+    AND s.id != 53
+    -- Không phải lớp gốc (cho phép học bù ở lớp khác)
+    AND c.id != ti.class_id
     -- Chỉ lấy buổi đang planned (chưa diễn ra)
     AND s.status = 'planned'
     -- Chỉ lấy buổi trong tương lai
@@ -140,39 +166,32 @@ GROUP BY
     ti.branch_id,
     ti.modality,
     ti.target_class_code,
+    ti.target_class_name,
     ti.target_date,
-    cs.topic
+    cs.topic,
+    cs.student_task
 -- Lọc chỉ lấy class còn chỗ trống
-HAVING COUNT(ss.student_id) < c.max_capacity
+HAVING c.max_capacity > COALESCE(COUNT(DISTINCT e.student_id), 0)
 -- Sắp xếp theo độ ưu tiên
 ORDER BY
     priority_level ASC,      -- Ưu tiên branch + modality trước
     s.date ASC,              -- Sau đó theo ngày gần nhất
-    available_slots DESC;    -- Cuối cùng theo số chỗ trống nhiều nhất
+    available_slots DESC     -- Cuối cùng theo số chỗ trống nhiều nhất
+LIMIT 20;
 
-
-OUTPUT
-[
-  {
-    "makeup_session_id": 68,
-    "makeup_date": "2025-10-27",
-    "days_difference": 1,
-    "class_code": "B2-IELTS-001",
-    "class_name": "IELTS Intermediate B2 - Evening",
-    "modality": "hybrid",
-    "branch_name": "Main Campus",
-    "available_slots": 20,
-    "max_capacity": 20,
-    "enrolled_count": 0,
-    "teachers": "John Smith",
-    "is_same_branch": true,
-    "is_same_modality": false,
-    "priority_level": 2,
-    "target_class_code": "B1-IELTS-001",
-    "target_date": "2025-10-26",
-    "session_topic": "Listening Strategies - Prediction"
-  }
-]
+-- Expected Output:
+-- makeup_session_id: 1000
+-- makeup_date: CURRENT_DATE + 5 days
+-- days_difference: 18 (5 - (-13))
+-- class_code: 'B2-IELTS-001'
+-- class_name: 'IELTS Intermediate B2 - Evening'
+-- modality: 'hybrid'
+-- branch_name: 'Main Campus'
+-- available_slots: 20 (depends on class 4 capacity & enrollments)
+-- is_same_branch: true
+-- is_same_modality: false (target='offline', makeup='hybrid')
+-- priority_level: 2 (same branch only)
+-- session_topic: 'Listening Section 1 - Forms & Details'
 
 Bước 14A: Hiển thị danh sách buổi học bù khả dụng
 
@@ -241,66 +260,86 @@ Case 1: Target session đã diễn ra và status = 'absent'/'excused'?
 Case 2: Target session chưa diễn ra và status = 'planned'?
 Kiểm tra policy: buổi đã nghỉ không quá X tuần
 
-Check duplicate
-SELECT COUNT(*) FROM student_request
-WHERE student_id = :student_id
-    AND target_session_id = :target_id
-    AND makeup_session_id = :makeup_id
+-- =====================================================
+-- VALIDATION QUERIES
+-- =====================================================
+
+-- Check 1: Kiểm tra duplicate request
+SELECT COUNT(*) AS duplicate_count
+FROM student_request
+WHERE student_id = 14             -- Student 14
+    AND target_session_id = 53    -- Session 53 (missed session)
+    AND request_type = 'makeup'
     AND status IN ('pending', 'approved');
--- Expected: 0
+-- Expected: 0 (không có request trùng)
 
-Verify same content
-SELECT 
-    s1.course_session_id = s2.course_session_id AS is_same_content
-FROM session s1, session s2
-WHERE s1.id = :target_id AND s2.id = :makeup_id;
--- Expected: true
+-- Check 2: Verify same content (cùng course_session_id)
+SELECT
+    s1.id AS target_session_id,
+    s1.course_session_id AS target_course_session_id,
+    s2.id AS makeup_session_id,
+    s2.course_session_id AS makeup_course_session_id,
+    s1.course_session_id = s2.course_session_id AS is_same_content,
+    cs.topic AS session_topic
+FROM session s1
+CROSS JOIN session s2
+LEFT JOIN course_session cs ON s1.course_session_id = cs.id
+WHERE s1.id = 53         -- Target session
+    AND s2.id = 1000;    -- Makeup session 1000
+-- Expected: is_same_content = true (both have course_session_id = 14)
 
-Check capacity
-SELECT 
-    c.max_capacity > COUNT(ss.student_id) AS has_capacity
+-- Check 3: Kiểm tra capacity còn chỗ trống
+SELECT
+    s.id AS session_id,
+    c.id AS class_id,
+    c.code AS class_code,
+    c.max_capacity,
+    COUNT(e.student_id) AS enrolled_count,
+    c.max_capacity - COUNT(e.student_id) AS available_slots,
+    c.max_capacity > COUNT(e.student_id) AS has_capacity
 FROM session s
-JOIN class c ON s.class_id = c.id
-LEFT JOIN student_session ss ON s.id = ss.session_id
-WHERE s.id = :makeup_session_id
-GROUP BY c.max_capacity;
--- Expected: true
+JOIN "class" c ON s.class_id = c.id
+LEFT JOIN enrollment e ON c.id = e.class_id AND e.status IN ('enrolled', 'waitlisted')
+WHERE s.id = 1000      -- Makeup session 1000
+GROUP BY s.id, c.id, c.code, c.max_capacity;
+-- Expected: has_capacity = true (còn chỗ trống)
 
 
 Bước 20 (chung): Insert student_request vào database
 System thực hiện INSERT student_request:
-student_id (từ current user)
-target_session_id (buổi gốc - đã nghỉ hoặc sẽ nghỉ)
-makeup_session_id  (buổi học bù đã chọn)
-request_type = 'makeup'
-reason (từ form)
-notes (từ form, optional)
-status = 'pending' 
-submitted_at = NOW()
-submitted_by = student_id
-Metadata: target_session_status (missed/future), selected_modality, selected_branch_id
+
+-- =====================================================
+-- INSERT MAKEUP REQUEST
+-- =====================================================
 
 INSERT INTO student_request (
     student_id,
-    target_session_id,
-    makeup_session_id,
+    current_class_id,        -- Class của target session
+    target_session_id,       -- Buổi gốc (đã nghỉ hoặc sẽ nghỉ)
+    makeup_session_id,       -- Buổi học bù đã chọn
     request_type,
     status,
-    reason,
-    notes,
+    note,                    -- Lý do từ form
     submitted_at,
-    submitted_by
+    submitted_by,            -- User ID của student
+    created_at,
+    updated_at
 ) VALUES (
-    :student_id,
-    :target_session_id,
-    :makeup_session_id,
-    'makeup'::student_request_type_enum,
-    'pending'::request_status_enum,
-    :reason,
-    :notes,
-    NOW(),
-    :current_user_id
+    14,                      -- Student 14 (S014 - Mac Thi Lan)
+    3,                       -- Class 3 (IELTS B1)
+    53,                      -- Session 53 (missed session - course_session_id = 14)
+    1000,                    -- Session 1000 (makeup session - course_session_id = 14, planned)
+    'makeup',                -- Request type
+    'pending',               -- Status
+    'I was sick and could not attend the listening class. I would like to make up this session to catch up with the course content.', -- Reason
+    CURRENT_TIMESTAMP,       -- Submitted at
+    26,                      -- User ID of student 14 (user_account_id = 26)
+    CURRENT_TIMESTAMP,
+    CURRENT_TIMESTAMP
 ) RETURNING id;
+
+-- Expected Output:
+-- id: <new_request_id> (e.g., 4 or higher)
 
 
 Bước 21 (chung): Hệ thống hiển thị thông báo thành công
@@ -336,40 +375,71 @@ Filter by type: "Makeup"
 
 Bước 26: Hệ thống query danh sách pending makeup requests
 System thực hiện query:
-SELECT 
-    sr.id,
-    st.student_name,
-    -- Target session (buổi gốc)
-    s_target.session_date AS target_date,
-    c_target.class_name AS target_class,
+
+-- =====================================================
+-- QUERY: List Pending Makeup Requests (for Academic Affairs)
+-- Use Case: Academic Affairs 1 (user_id = 4) xem pending requests
+-- =====================================================
+
+SELECT
+    sr.id AS request_id,
+    sr.submitted_at,
+    sr.note AS reason,
+    -- Student info
+    st.id AS student_id,
+    st.student_code,
+    ua_student.full_name AS student_name,
+    ua_student.email AS student_email,
+    ua_student.phone AS student_phone,
+    -- Target session (buổi gốc - đã nghỉ)
+    s_target.id AS target_session_id,
+    s_target.date AS target_date,
+    c_target.code AS target_class_code,
+    c_target.name AS target_class_name,
+    cs_target.topic AS target_session_topic,
     ss_target.attendance_status AS target_status,
     -- Makeup session (buổi học bù)
-    s_makeup.session_date AS makeup_date,
-    c_makeup.class_name AS makeup_class,
-    b_makeup.branch_name AS makeup_branch,
-    c_makeup.modality,
-    -- Validation
+    s_makeup.id AS makeup_session_id,
+    s_makeup.date AS makeup_date,
+    c_makeup.code AS makeup_class_code,
+    c_makeup.name AS makeup_class_name,
+    cs_makeup.topic AS makeup_session_topic,
+    b_makeup.name AS makeup_branch_name,
+    c_makeup.modality AS makeup_modality,
+    -- Validation flags
     s_target.course_session_id = s_makeup.course_session_id AS is_same_content,
     b_target.id = b_makeup.id AS is_same_branch,
-    c_makeup.max_capacity - COUNT(ss_makeup.student_id) AS available_slots
+    c_makeup.max_capacity - COUNT(DISTINCT e_makeup.student_id) AS available_slots,
+    c_makeup.max_capacity AS makeup_class_capacity,
+    -- Days difference
+    s_makeup.date - s_target.date AS days_difference
 FROM student_request sr
 JOIN student st ON sr.student_id = st.id
+JOIN user_account ua_student ON st.user_id = ua_student.id
 JOIN session s_target ON sr.target_session_id = s_target.id
-JOIN class c_target ON s_target.class_id = c_target.id
+JOIN "class" c_target ON s_target.class_id = c_target.id
 JOIN branch b_target ON c_target.branch_id = b_target.id
+LEFT JOIN course_session cs_target ON s_target.course_session_id = cs_target.id
+LEFT JOIN student_session ss_target ON sr.target_session_id = ss_target.session_id AND ss_target.student_id = st.id
 JOIN session s_makeup ON sr.makeup_session_id = s_makeup.id
-JOIN class c_makeup ON s_makeup.class_id = c_makeup.id
+JOIN "class" c_makeup ON s_makeup.class_id = c_makeup.id
 JOIN branch b_makeup ON c_makeup.branch_id = b_makeup.id
-LEFT JOIN student_session ss_target ON sr.target_session_id = ss_target.session_id
-LEFT JOIN student_session ss_makeup ON s_makeup.id = ss_makeup.session_id
+LEFT JOIN course_session cs_makeup ON s_makeup.course_session_id = cs_makeup.id
+LEFT JOIN enrollment e_makeup ON c_makeup.id = e_makeup.class_id AND e_makeup.status IN ('enrolled', 'waitlisted')
 WHERE sr.request_type = 'makeup'
     AND sr.status = 'pending'
-    AND (b_target.id IN (SELECT branch_id FROM user_branch WHERE user_id = :Affairs_id)
-         OR b_makeup.id IN (SELECT branch_id FROM user_branch WHERE user_id = :Affairs_id))
-GROUP BY sr.id, st.student_name, s_target.session_date, c_target.class_name, 
-         s_makeup.session_date, c_makeup.class_name, b_makeup.branch_name, 
-         c_makeup.modality, c_makeup.max_capacity, b_target.id, b_makeup.id,
-         s_target.course_session_id, s_makeup.course_session_id, ss_target.attendance_status
+    -- Academic Affairs chỉ xem requests thuộc branches mình quản lý
+    AND (b_target.id IN (SELECT branch_id FROM user_branches WHERE user_id = 4)
+         OR b_makeup.id IN (SELECT branch_id FROM user_branches WHERE user_id = 4))
+GROUP BY
+    sr.id, sr.submitted_at, sr.note,
+    st.id, st.student_code, ua_student.full_name, ua_student.email, ua_student.phone,
+    s_target.id, s_target.date, s_target.course_session_id,
+    c_target.code, c_target.name, cs_target.topic, ss_target.attendance_status,
+    s_makeup.id, s_makeup.date, s_makeup.course_session_id,
+    c_makeup.code, c_makeup.name, c_makeup.modality, c_makeup.max_capacity,
+    cs_makeup.topic, b_makeup.name,
+    b_target.id, b_makeup.id
 ORDER BY sr.submitted_at ASC;
 
 
@@ -379,268 +449,160 @@ Branch_id -> select ra list các request
 Bước 28: Click vào request để xem chi tiết
 Giáo vụ click vào một row hoặc button "View Detail"
 
--- ========================================
--- GET REQUEST DETAIL
--- ========================================
-select
-  sr.id as request_id,
+-- =====================================================
+-- GET MAKEUP REQUEST DETAIL
+-- Use Case: Academic Affairs xem chi tiết request_id = 4
+-- =====================================================
+
+SELECT
+  sr.id AS request_id,
   sr.request_type,
   sr.status,
-  sr.note as reason, 
+  sr.note AS reason,
   sr.submitted_at,
   sr.decided_at,
   -- Student info (detailed)
-  st.id as student_id,
+  st.id AS student_id,
   st.student_code,
-  ua_student.full_name as student_name,
-  ua_student.email as student_email,
-  ua_student.phone as student_phone,
-  st.education_level,
-  st.address as student_address,
-  -- Session info (detailed)
-  s.id as session_id,
-  s.date as session_date, 
-  s.type as session_type,
-  s.status as session_status,
-  -- Class info
-  c.id as class_id,
-  c.code as class_code,
-  c.name as class_name,
-  c.start_date as class_start_date,
-  c.planned_end_date as class_end_date, 
-  c.actual_end_date, 
-  c.max_capacity,
+  st.level AS education_level,
+  ua_student.full_name AS student_name,
+  ua_student.email AS student_email,
+  ua_student.phone AS student_phone,
+  ua_student.address AS student_address,
+  -- Target Session info (buổi đã nghỉ)
+  s_target.id AS target_session_id,
+  s_target.date AS target_session_date,
+  s_target.type AS target_session_type,
+  s_target.status AS target_session_status,
+  c_target.id AS target_class_id,
+  c_target.code AS target_class_code,
+  c_target.name AS target_class_name,
+  cs_target.topic AS target_session_topic,
+  cs_target.student_task AS target_student_task,
+  tst_target.name AS target_time_slot_name,
+  tst_target.start_time AS target_slot_start,
+  tst_target.end_time AS target_slot_end,
+  -- Makeup Session info (buổi học bù)
+  s_makeup.id AS makeup_session_id,
+  s_makeup.date AS makeup_session_date,
+  s_makeup.type AS makeup_session_type,
+  s_makeup.status AS makeup_session_status,
+  c_makeup.id AS makeup_class_id,
+  c_makeup.code AS makeup_class_code,
+  c_makeup.name AS makeup_class_name,
+  c_makeup.modality AS makeup_modality,
+  c_makeup.max_capacity AS makeup_max_capacity,
+  cs_makeup.topic AS makeup_session_topic,
+  cs_makeup.student_task AS makeup_student_task,
+  tst_makeup.name AS makeup_time_slot_name,
+  tst_makeup.start_time AS makeup_slot_start,
+  tst_makeup.end_time AS makeup_slot_end,
   -- Branch info
-  b.name as branch_name,
-  b.phone as branch_phone,
-  b.address as branch_address,
+  b_target.name AS target_branch_name,
+  b_makeup.name AS makeup_branch_name,
   -- Course info
-  co.name as course_name,
-  co.code as course_code,
+  co.name AS course_name,
+  co.code AS course_code,
   co.duration_weeks,
   co.session_per_week,
-  -- Session template info
-  cs.topic as session_title, 
-  cs.student_task,
-  cs.sequence_no,
-  -- Time slot
-  tst.name as time_slot_name,
-  tst.start_time as slot_start,
-  tst.end_time as slot_end,
-  tst.duration_min,
-  -- Room
-  r.name as room_name,
-  r.location as room_location,
-  r.capacity as room_capacity,
-  -- Teachers (aggregated as JSON)
+  -- Makeup teachers (aggregated as JSON)
   JSONB_AGG(
-    distinct JSONB_BUILD_OBJECT(
-      'teacher_id',
-      t.id,
-      'name',
-      ua_teacher.full_name,
-      'email',
-      ua_teacher.email,
-      'role',
-      ts.role, 
-      'skill',
-      ts.skill,
-      'status',
-      ts.status
-    )
-  ) filter (
-    where
-      t.id is not null
-  ) as teachers,
-  -- Absence statistics for this student in this class
+    JSONB_BUILD_OBJECT(
+      'teacher_id', t_makeup.id,
+      'name', ua_teacher_makeup.full_name,
+      'email', ua_teacher_makeup.email,
+      'role', ts_makeup.role,
+      'skill', ts_makeup.skill
+    ) ORDER BY ts_makeup.role
+  ) FILTER (WHERE t_makeup.id IS NOT NULL) AS makeup_teachers,
+  -- Absence statistics for this student in target class
   (
-    select
-      COUNT(*)
-    from
-      student_session ss2
-      join session s2 on ss2.session_id = s2.id
-    where
-      ss2.student_id = st.id
-      and s2.class_id = c.id
-      and ss2.attendance_status in ('absent', 'excused')
-  ) as total_absences,
+    SELECT COUNT(*)
+    FROM student_session ss2
+    JOIN session s2 ON ss2.session_id = s2.id
+    WHERE ss2.student_id = st.id
+      AND s2.class_id = c_target.id
+      AND ss2.attendance_status IN ('absent', 'excused')
+  ) AS total_absences,
   (
-    select
-      COUNT(*)
-    from
-      student_session ss2
-      join session s2 on ss2.session_id = s2.id
-    where
-      ss2.student_id = st.id
-      and s2.class_id = c.id
-  ) as total_sessions,
+    SELECT COUNT(*)
+    FROM student_session ss2
+    JOIN session s2 ON ss2.session_id = s2.id
+    WHERE ss2.student_id = st.id
+      AND s2.class_id = c_target.id
+  ) AS total_sessions,
   -- Absence percentage
   ROUND(
     (
-      select
-        COUNT(*)
-      from
-        student_session ss2
-        join session s2 on ss2.session_id = s2.id
-      where
-        ss2.student_id = st.id
-        and s2.class_id = c.id
-        and ss2.attendance_status in ('absent', 'excused')
+      SELECT COUNT(*)
+      FROM student_session ss2
+      JOIN session s2 ON ss2.session_id = s2.id
+      WHERE ss2.student_id = st.id
+        AND s2.class_id = c_target.id
+        AND ss2.attendance_status IN ('absent', 'excused')
     )::NUMERIC / NULLIF(
       (
-        select
-          COUNT(*)
-        from
-          student_session ss2
-          join session s2 on ss2.session_id = s2.id
-        where
-          ss2.student_id = st.id
-          and s2.class_id = c.id
-      ),
-      0
-    ) * 100,
-    2
-  ) as absence_percentage,
-  -- Lead time calculation
-  (s.date - CURRENT_DATE) as days_until_session,
+        SELECT COUNT(*)
+        FROM student_session ss2
+        JOIN session s2 ON ss2.session_id = s2.id
+        WHERE ss2.student_id = st.id
+          AND s2.class_id = c_target.id
+      ), 0
+    ) * 100, 2
+  ) AS absence_percentage,
+  -- Days until makeup session
+  (s_makeup.date - CURRENT_DATE) AS days_until_makeup_session,
   -- Enrollment info
-  e.enrolled_at, 
-  e.status as enrollment_status,
-  -- Decider info (if decided)
-  decider.full_name as decided_by_name,
-  decider.email as decided_by_email
-from
-  student_request sr
-  join student st on sr.student_id = st.id
-  join user_account ua_student on st.user_id = ua_student.id
-  join session s on sr.target_session_id = s.id
-  join "class" c on s.class_id = c.id 
-  join branch b on c.branch_id = b.id
-  join course co on c.course_id = co.id
-  left join enrollment e on e.student_id = st.id
-  and e.class_id = c.id
-  left join course_session cs on s.course_session_id = cs.id
-  left join time_slot_template tst on s.time_slot_template_id = tst.id
-  left join session_resource sr_res on sr_res.session_id = s.id
-  left join resource r on sr_res.resource_id = r.id
-  left join teaching_slot ts on ts.session_id = s.id
-  left join teacher t on ts.teacher_id = t.id
-  left join user_account ua_teacher on t.user_account_id = ua_teacher.id
-  left join user_account decider on sr.decided_by = decider.id
-where
-  sr.id = 1
-group by
-  sr.id,
-  sr.request_type,
-  sr.status,
-  sr.note,
-  sr.submitted_at,
-  sr.decided_at,
-  st.id,
-  st.student_code,
-  ua_student.full_name,
-  ua_student.email,
-  ua_student.phone,
-  st.education_level,
-  st.address,
-  s.id,
-  s.date,
-  s.type,
-  s.status,
-  c.id,
-  c.code,
-  c.name,
-  c.start_date,
-  c.planned_end_date,
-  c.actual_end_date,
-  c.max_capacity,
-  b.name,
-  b.phone,
-  b.address,
-  co.name,
-  co.code,
-  co.duration_weeks,
-  co.session_per_week,
-  cs.topic,
-  cs.student_task,
-  cs.sequence_no,
-  tst.name,
-  tst.start_time,
-  tst.end_time,
-  tst.duration_min,
-  r.name,
-  r.location,
-  r.capacity,
   e.enrolled_at,
-  e.status,
-  decider.full_name,
-  decider.email;
+  e.status AS enrollment_status,
+  -- Decider info (if decided)
+  decider.full_name AS decided_by_name,
+  decider.email AS decided_by_email
+FROM student_request sr
+JOIN student st ON sr.student_id = st.id
+JOIN user_account ua_student ON st.user_id = ua_student.id
+-- Target session
+JOIN session s_target ON sr.target_session_id = s_target.id
+JOIN "class" c_target ON s_target.class_id = c_target.id
+JOIN branch b_target ON c_target.branch_id = b_target.id
+LEFT JOIN course_session cs_target ON s_target.course_session_id = cs_target.id
+LEFT JOIN time_slot_template tst_target ON s_target.time_slot_template_id = tst_target.id
+-- Makeup session
+JOIN session s_makeup ON sr.makeup_session_id = s_makeup.id
+JOIN "class" c_makeup ON s_makeup.class_id = c_makeup.id
+JOIN branch b_makeup ON c_makeup.branch_id = b_makeup.id
+LEFT JOIN course_session cs_makeup ON s_makeup.course_session_id = cs_makeup.id
+LEFT JOIN time_slot_template tst_makeup ON s_makeup.time_slot_template_id = tst_makeup.id
+-- Course info (from target class)
+JOIN course co ON c_target.course_id = co.id
+-- Enrollment
+LEFT JOIN enrollment e ON e.student_id = st.id AND e.class_id = c_target.id
+-- Makeup session teachers
+LEFT JOIN teaching_slot ts_makeup ON ts_makeup.session_id = s_makeup.id
+LEFT JOIN teacher t_makeup ON ts_makeup.teacher_id = t_makeup.id
+LEFT JOIN user_account ua_teacher_makeup ON t_makeup.user_account_id = ua_teacher_makeup.id
+-- Decider
+LEFT JOIN user_account decider ON sr.decided_by = decider.id
+WHERE sr.id = 4  -- Request ID = 4
+GROUP BY
+  sr.id, sr.request_type, sr.status, sr.note, sr.submitted_at, sr.decided_at,
+  st.id, st.student_code, st.level,
+  ua_student.full_name, ua_student.email, ua_student.phone, ua_student.address,
+  s_target.id, s_target.date, s_target.type, s_target.status,
+  c_target.id, c_target.code, c_target.name,
+  cs_target.topic, cs_target.student_task,
+  tst_target.name, tst_target.start_time, tst_target.end_time,
+  s_makeup.id, s_makeup.date, s_makeup.type, s_makeup.status,
+  c_makeup.id, c_makeup.code, c_makeup.name, c_makeup.modality, c_makeup.max_capacity,
+  cs_makeup.topic, cs_makeup.student_task,
+  tst_makeup.name, tst_makeup.start_time, tst_makeup.end_time,
+  b_target.name, b_makeup.name,
+  co.name, co.code, co.duration_weeks, co.session_per_week,
+  e.enrolled_at, e.status,
+  decider.full_name, decider.email;
 
 
-OUTPUT:
-[
-  {
-    "request_id": 1,
-    "request_type": "absence",
-    "status": "approved",
-    "reason": "Family emergency",
-    "submitted_at": "2025-10-12 03:39:48.986989+00",
-    "decided_at": "2025-10-13 03:39:48.986989+00",
-    "student_id": 14,
-    "student_code": "S014",
-    "student_name": "Mac Thi Lan",
-    "student_email": "student014@gmail.com",
-    "student_phone": "+84-913-444-444",
-    "education_level": "Working Professional",
-    "student_address": "Hanoi",
-    "session_id": 53,
-    "session_date": "2025-10-14",
-    "session_type": "class",
-    "session_status": "done",
-    "class_id": 3,
-    "class_code": "B1-IELTS-001",
-    "class_name": "IELTS Foundation B1 - Afternoon",
-    "class_start_date": "2025-09-07",
-    "class_end_date": "2025-12-28",
-    "actual_end_date": null,
-    "max_capacity": 18,
-    "branch_name": "Main Campus",
-    "branch_phone": "+84-24-3123-4567",
-    "branch_address": "123 Nguyen Trai Street, Thanh Xuan District",
-    "course_name": "IELTS Foundation (B1)",
-    "course_code": "ENG-B1-IELTS-V1",
-    "duration_weeks": 16,
-    "session_per_week": 3,
-    "session_title": "Listening Section 1 - Forms & Details",
-    "student_task": "Practice form completion, note-taking",
-    "sequence_no": 2,
-    "time_slot_name": "Afternoon Slot 1",
-    "slot_start": "13:00:00",
-    "slot_end": "14:30:00",
-    "duration_min": 90,
-    "room_name": "Room 201",
-    "room_location": "Floor 2",
-    "room_capacity": 15,
-    "teachers": [
-      {
-        "name": "Emily Davis",
-        "role": "primary",
-        "email": "teacher.emily@elc-hanoi.edu.vn",
-        "skill": "reading",
-        "status": "completed",
-        "teacher_id": 4
-      }
-    ],
-    "total_absences": 1,
-    "total_sessions": 7,
-    "absence_percentage": "14.29",
-    "days_until_session": -13,
-    "enrolled_at": "2025-09-02 03:39:48.986989+00",
-    "enrollment_status": "enrolled",
-    "decided_by_name": "Pham Thi Academic",
-    "decided_by_email": "academic1@elc-hanoi.edu.vn"
-  }
-]
+-- Expected output sẽ bao gồm đầy đủ thông tin của cả target session và makeup session
 
 Bước 29: Hệ thống hiển thị chi tiết request
 
@@ -664,40 +626,55 @@ Giáo vụ confirm
 Bước 34: Thực hiện transaction approve
 System thực hiện BEGIN TRANSACTION:
 
+-- =====================================================
+-- APPROVE MAKEUP REQUEST TRANSACTION
+-- Use Case: Academic Affairs 1 (user_id = 4) approve request_id = 4
+-- =====================================================
+
 BEGIN;
 
--- Step 1: Update request
+-- Step 1: Update request status to approved
 UPDATE student_request
 SET status = 'approved',
-    decided_by = :Affairs_id,
-    decided_at = NOW()
-WHERE id = :request_id AND status = 'pending';
+    decided_by = 4,           -- Academic Affairs 1 (user_id = 4)
+    decided_at = CURRENT_TIMESTAMP,
+    updated_at = CURRENT_TIMESTAMP
+WHERE id = 5                  -- Request ID = 5
+    AND status = 'pending';   -- Chỉ approve nếu đang pending
 
--- Step 2: Update target session to 'excused'
+-- Step 2: Update target session attendance to 'excused'
 UPDATE student_session
 SET attendance_status = 'excused',
-    notes = 'Approved for makeup: ' || :makeup_session_id
-WHERE student_id = :student_id 
-    AND session_id = :target_session_id;
+    note = COALESCE(note || E'\n', '') || 'Excused - Approved for makeup session 1000 on ' || CURRENT_DATE::TEXT,
+    recorded_at = CURRENT_TIMESTAMP
+WHERE student_id = 14         -- Student 14
+    AND session_id = 53;      -- Target session 53
 
--- Step 3: Create makeup student_session
+-- Step 3: Create makeup student_session record
 INSERT INTO student_session (
     student_id,
     session_id,
+    is_makeup,
     attendance_status,
-    is_makeup,             
-    target_session_id,    -- Reference back
-    notes
+    note
 ) VALUES (
-    :student_id,
-    :makeup_session_id,
-    'planned',
-    TRUE,                   -- CRITICAL!
-    :target_session_id,
-    'Makeup for session: ' || :target_session_id
-);
+    14,                       -- Student 14
+    1000,                     -- Makeup session 1000 (Class 4, course_session_id = 14)
+    TRUE,                     -- CRITICAL: is_makeup = true
+    'planned',                -- Status
+    'Makeup for missed session 53 (Listening Section 1 - Forms & Details)'
+)
+ON CONFLICT (student_id, session_id) DO UPDATE
+SET is_makeup = TRUE,
+    note = EXCLUDED.note,
+    attendance_status = EXCLUDED.attendance_status;
 
 COMMIT;
+
+-- Verify results:
+-- 1. student_request.status = 'approved'
+-- 2. student_session(14, 53).attendance_status = 'excused'
+-- 3. student_session(14, 1000).is_makeup = TRUE, attendance_status = 'planned'
 
 
 Bước 35: Gửi email thông báo cho học viên (approved)

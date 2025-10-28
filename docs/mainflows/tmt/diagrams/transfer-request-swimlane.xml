@@ -5,22 +5,18 @@
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
         
-        <!-- Swimlanes -->
-        <mxCell id="student-lane" value="STUDENT" style="swimlane;startSize=40;fillColor=#E1F5FE;strokeColor=#01579B;fontStyle=1;fontSize=14;" parent="1" vertex="1">
+        <mxCell id="student-lane" value="STUDENT" style="swimlane;startSize=40;horizontal=1;fillColor=#E1F5FE;strokeColor=#01579B;fontStyle=1;fontSize=14;" parent="1" vertex="1">
           <mxGeometry x="40" y="40" width="360" height="3500" as="geometry" />
         </mxCell>
         
-        <mxCell id="system-lane" value="SYSTEM" style="swimlane;startSize=40;fillColor=#F3E5F5;strokeColor=#4A148C;fontStyle=1;fontSize=14;" parent="1" vertex="1">
+        <mxCell id="system-lane" value="SYSTEM" style="swimlane;startSize=40;horizontal=1;fillColor=#F3E5F5;strokeColor=#4A148C;fontStyle=1;fontSize=14;" parent="1" vertex="1">
           <mxGeometry x="400" y="40" width="400" height="3500" as="geometry" />
         </mxCell>
         
-        <mxCell id="academic-lane" value="ACADEMIC STAFF" style="swimlane;startSize=40;fillColor=#FFF3E0;strokeColor=#E65100;fontStyle=1;fontSize=14;" parent="1" vertex="1">
+        <mxCell id="academic-lane" value="ACADEMIC STAFF" style="swimlane;startSize=40;horizontal=1;fillColor=#FFF3E0;strokeColor=#E65100;fontStyle=1;fontSize=14;" parent="1" vertex="1">
           <mxGeometry x="800" y="40" width="360" height="3500" as="geometry" />
         </mxCell>
         
-        <!-- PHASE 1: STUDENT SUBMIT TRANSFER REQUEST -->
-        
-        <!-- Start Event -->
         <mxCell id="start" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#4CAF50;strokeColor=#2E7D32;" parent="student-lane" vertex="1">
           <mxGeometry x="150" y="60" width="60" height="60" as="geometry" />
         </mxCell>
@@ -28,7 +24,6 @@
           <mxGeometry x="130" y="125" width="100" height="30" as="geometry" />
         </mxCell>
         
-        <!-- Screen 1: My Classes -->
         <mxCell id="s1-my-classes" value="📱 UI Screen 1:&lt;br&gt;&lt;b&gt;My Classes&lt;/b&gt;&lt;br&gt;View lớp đang học" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFEB3B;strokeColor=#F57F17;fontSize=11;" parent="student-lane" vertex="1">
           <mxGeometry x="80" y="175" width="200" height="70" as="geometry" />
         </mxCell>
@@ -36,7 +31,6 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         
-        <!-- Action: Click Chuyển Lớp -->
         <mxCell id="s1-action" value="🖱️ Click&lt;br&gt;&lt;b&gt;'Xin Chuyển Lớp'&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFEB3B;strokeColor=#F57F17;fontSize=11;" parent="student-lane" vertex="1">
           <mxGeometry x="80" y="270" width="200" height="50" as="geometry" />
         </mxCell>
@@ -44,15 +38,13 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         
-        <!-- System: Load Current Enrollment -->
         <mxCell id="sys1-load-enrollment" value="⚙️ Query:&lt;br&gt;&lt;b&gt;Load Current Enrollment&lt;/b&gt;&lt;br&gt;FROM enrollment, class, course&lt;br&gt;WHERE student_id + class_id" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#CE93D8;strokeColor=#6A1B9A;fontSize=10;align=left;" parent="system-lane" vertex="1">
           <mxGeometry x="50" y="260" width="300" height="70" as="geometry" />
         </mxCell>
         <mxCell id="arrow-sys1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;dashed=1;" parent="1" source="s1-action" target="sys1-load-enrollment" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        
-        <!-- Screen 2: Select Course -->
+
         <mxCell id="s2-select-course" value="📱 UI Screen 2:&lt;br&gt;&lt;b&gt;Select Target Course&lt;/b&gt;&lt;br&gt;Filter: Subject, Level, Modality&lt;br&gt;(Cho phép đổi course khác)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFEB3B;strokeColor=#F57F17;fontSize=11;" parent="student-lane" vertex="1">
           <mxGeometry x="80" y="360" width="200" height="80" as="geometry" />
         </mxCell>
@@ -60,7 +52,6 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         
-        <!-- System: Load Available Courses -->
         <mxCell id="sys2-load-courses" value="⚙️ Query:&lt;br&gt;&lt;b&gt;Load Available Courses&lt;/b&gt;&lt;br&gt;FROM course, subject, level&lt;br&gt;WHERE course != current&lt;br&gt;AND has active_classes&lt;br&gt;GROUP BY course" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#CE93D8;strokeColor=#6A1B9A;fontSize=10;align=left;" parent="system-lane" vertex="1">
           <mxGeometry x="50" y="350" width="300" height="100" as="geometry" />
         </mxCell>
@@ -68,7 +59,6 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         
-        <!-- Action: Select Course -->
         <mxCell id="s2-action" value="🖱️ Select&lt;br&gt;&lt;b&gt;Target Course&lt;/b&gt;&lt;br&gt;(VD: ENG A2 → ENG B1)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFEB3B;strokeColor=#F57F17;fontSize=11;" parent="student-lane" vertex="1">
           <mxGeometry x="80" y="470" width="200" height="60" as="geometry" />
         </mxCell>
@@ -76,7 +66,6 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         
-        <!-- Screen 3: Select Class -->
         <mxCell id="s3-select-class" value="📱 UI Screen 3:&lt;br&gt;&lt;b&gt;Select Target Class&lt;/b&gt;&lt;br&gt;Filter: Schedule, Time, Modality&lt;br&gt;⚠️ Show Gap + Conflict warnings" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFEB3B;strokeColor=#F57F17;fontSize=11;" parent="student-lane" vertex="1">
           <mxGeometry x="80" y="560" width="200" height="80" as="geometry" />
         </mxCell>
@@ -84,7 +73,6 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         
-        <!-- System: Load Available Classes -->
         <mxCell id="sys3-load-classes" value="⚙️ Query Complex:&lt;br&gt;&lt;b&gt;Load Available Classes&lt;/b&gt;&lt;br&gt;FROM class, session, enrollment&lt;br&gt;WHERE course_id = target&lt;br&gt;AND status IN ('scheduled','ongoing')&lt;br&gt;AND capacity &gt; enrolled&lt;br&gt;GROUP BY class" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#CE93D8;strokeColor=#6A1B9A;fontSize=10;align=left;" parent="system-lane" vertex="1">
           <mxGeometry x="50" y="550" width="300" height="120" as="geometry" />
         </mxCell>
@@ -92,7 +80,6 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         
-        <!-- System: Content Gap Detection -->
         <mxCell id="sys3-gap-detection" value="⚙️ Validation:&lt;br&gt;&lt;b&gt;Content Gap Detection&lt;/b&gt;&lt;br&gt;WITH current_remaining AS (...)&lt;br&gt;WITH target_completed AS (...)&lt;br&gt;SELECT course_session gap&lt;br&gt;WHERE target done BUT current not" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BA68C8;strokeColor=#6A1B9A;fontSize=10;align=left;fontStyle=1;" parent="system-lane" vertex="1">
           <mxGeometry x="50" y="690" width="300" height="100" as="geometry" />
         </mxCell>
@@ -100,7 +87,6 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         
-        <!-- System: Schedule Conflict Check -->
         <mxCell id="sys3-conflict-check" value="⚙️ Validation:&lt;br&gt;&lt;b&gt;Schedule Conflict Check&lt;/b&gt;&lt;br&gt;SELECT COUNT(*) FROM enrollment&lt;br&gt;WHERE student other classes&lt;br&gt;AND session OVERLAPS target" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BA68C8;strokeColor=#6A1B9A;fontSize=10;align=left;fontStyle=1;" parent="system-lane" vertex="1">
           <mxGeometry x="50" y="810" width="300" height="90" as="geometry" />
         </mxCell>
@@ -108,7 +94,6 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         
-        <!-- Display Warnings -->
         <mxCell id="s3-warnings" value="⚠️ Display Warnings:&lt;br&gt;❌ Content Gap: 3 buổi&lt;br&gt;⚠️ Schedule Conflict: 2 buổi&lt;br&gt;✅ Capacity: 25/30 (OK)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF59D;strokeColor=#F57F17;fontSize=10;align=left;" parent="student-lane" vertex="1">
           <mxGeometry x="80" y="660" width="200" height="80" as="geometry" />
         </mxCell>
@@ -116,7 +101,6 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         
-        <!-- Action: Select Class -->
         <mxCell id="s3-action" value="🖱️ Select&lt;br&gt;&lt;b&gt;Target Class&lt;/b&gt;&lt;br&gt;(Review warnings)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFEB3B;strokeColor=#F57F17;fontSize=11;" parent="student-lane" vertex="1">
           <mxGeometry x="80" y="770" width="200" height="60" as="geometry" />
         </mxCell>
@@ -124,15 +108,13 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         
-        <!-- Screen 4: Confirm & Submit -->
-        <mxCell id="s4-confirm" value="📱 UI Screen 4:&lt;br&gt;&lt;b&gt;Confirm & Submit&lt;/b&gt;&lt;br&gt;Compare: From ↔ To&lt;br&gt;☑️ Check warning boxes&lt;br&gt;📅 Select effective_date&lt;br&gt;✍️ Enter reason" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFEB3B;strokeColor=#F57F17;fontSize=11;align=left;" parent="student-lane" vertex="1">
+        <mxCell id="s4-confirm" value="📱 UI Screen 4:&lt;br&gt;&lt;b&gt;Confirm &amp; Submit&lt;/b&gt;&lt;br&gt;Compare: From ↔ To&lt;br&gt;☑️ Check warning boxes&lt;br&gt;📅 Select effective_date&lt;br&gt;✍️ Enter reason" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFEB3B;strokeColor=#F57F17;fontSize=11;align=left;" parent="student-lane" vertex="1">
           <mxGeometry x="80" y="920" width="200" height="110" as="geometry" />
         </mxCell>
         <mxCell id="arrow-s4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="student-lane" source="s3-action" target="s4-confirm" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         
-        <!-- Action: Submit Request -->
         <mxCell id="s4-action" value="🖱️ Click&lt;br&gt;&lt;b&gt;'Gửi Yêu Cầu'&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#4CAF50;strokeColor=#2E7D32;fontColor=#FFFFFF;fontSize=11;fontStyle=1;" parent="student-lane" vertex="1">
           <mxGeometry x="80" y="1060" width="200" height="50" as="geometry" />
         </mxCell>
@@ -140,15 +122,13 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         
-        <!-- System: INSERT student_request -->
         <mxCell id="sys4-insert-request" value="💾 DB Transaction:&lt;br&gt;&lt;b&gt;INSERT student_request&lt;/b&gt;&lt;br&gt;⭐ status = 'pending'&lt;br&gt;submitted_by = NULL (student tự tạo)&lt;br&gt;request_type = 'transfer'&lt;br&gt;current_class_id, target_class_id&lt;br&gt;effective_date, reason" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#90CAF9;strokeColor=#01579B;fontSize=10;align=left;fontStyle=1;" parent="system-lane" vertex="1">
           <mxGeometry x="50" y="1040" width="300" height="120" as="geometry" />
         </mxCell>
-        <mxCell id="arrow-sys4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="s4-action" target="sys4-insert-request" edge="1">
+        <parameter name="oldString">        <mxCell id="arrow-sys4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="s4-action" target="sys4-insert-request" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         
-        <!-- System: Send Email to Academic Staff -->
         <mxCell id="sys4-email-academic" value="📧 Async Email:&lt;br&gt;&lt;b&gt;To: Academic Staff&lt;/b&gt;&lt;br&gt;Subject: Yêu cầu chuyển lớp mới&lt;br&gt;Body: Student [Name] yêu cầu&lt;br&gt;chuyển từ [SE1801] → [SE1802]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#CE93D8;strokeColor=#6A1B9A;fontSize=10;align=left;" parent="system-lane" vertex="1">
           <mxGeometry x="50" y="1180" width="300" height="90" as="geometry" />
         </mxCell>

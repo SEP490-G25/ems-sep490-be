@@ -1,0 +1,375 @@
+<mxfile host="app.diagrams.net">
+  <diagram id="transfer-request-swimlane" name="Student Transfer Request Flow">
+    <mxGraphModel dx="1434" dy="844" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="3600" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <mxCell id="swimlane-student" value="STUDENT" style="swimlane;startSize=40;horizontal=1;fillColor=#E1F5FE;strokeColor=#01579B;fontStyle=1;fontSize=14;" parent="1" vertex="1">
+          <mxGeometry x="40" y="40" width="360" height="3500" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="start" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#4CAF50;strokeColor=#2E7D32;" parent="swimlane-student" vertex="1">
+          <mxGeometry x="150" y="60" width="60" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="s1-login" value="📱 Login &amp; View&#xa;My Classes" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFEB3B;strokeColor=#F57F17;fontSize=11;" parent="swimlane-student" vertex="1">
+          <mxGeometry x="80" y="150" width="200" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="s2-click-transfer" value="🖱️ Click&#xa;&quot;Xin Chuyển Lớp&quot;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFEB3B;strokeColor=#F57F17;fontSize=11;" parent="swimlane-student" vertex="1">
+          <mxGeometry x="80" y="240" width="200" height="50" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="s3-select-course" value="📱 Select Target Course&#xa;(Same or Different)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFEB3B;strokeColor=#F57F17;fontSize=11;" parent="swimlane-student" vertex="1">
+          <mxGeometry x="80" y="400" width="200" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="s4-select-class" value="📱 Select Target Class&#xa;⚠️ View Warnings" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFEB3B;strokeColor=#F57F17;fontSize=11;" parent="swimlane-student" vertex="1">
+          <mxGeometry x="80" y="640" width="200" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="s5-confirm" value="📱 Confirm &amp; Submit&#xa;Enter reason, date" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFEB3B;strokeColor=#F57F17;fontSize=11;" parent="swimlane-student" vertex="1">
+          <mxGeometry x="80" y="800" width="200" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="s6-submit" value="🖱️ Click&#xa;&quot;Gửi Yêu Cầu&quot;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#4CAF50;strokeColor=#2E7D32;fontColor=#FFFFFF;fontSize=11;fontStyle=1;" parent="swimlane-student" vertex="1">
+          <mxGeometry x="80" y="890" width="200" height="50" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="s7-success" value="✅ Success Toast:&#xa;Request Created" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#2E7D32;fontSize=11;" parent="swimlane-student" vertex="1">
+          <mxGeometry x="80" y="1070" width="200" height="50" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="s8-email-approved" value="📧 Receive Email&#xa;(Approved)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#2E7D32;fontSize=11;" parent="swimlane-student" vertex="1">
+          <mxGeometry x="80" y="2380" width="200" height="50" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="s9-email-rejected" value="📧 Receive Email&#xa;(Rejected)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFCDD2;strokeColor=#C62828;fontSize=11;" parent="swimlane-student" vertex="1">
+          <mxGeometry x="80" y="2900" width="200" height="50" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="s10-view-result" value="📱 View Request&#xa;Status" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFEB3B;strokeColor=#F57F17;fontSize=11;" parent="swimlane-student" vertex="1">
+          <mxGeometry x="80" y="3000" width="200" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="end" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F44336;strokeColor=#C62828;" parent="swimlane-student" vertex="1">
+          <mxGeometry x="150" y="3100" width="60" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="swimlane-system" value="SYSTEM" style="swimlane;startSize=40;horizontal=1;fillColor=#F3E5F5;strokeColor=#4A148C;fontStyle=1;fontSize=14;" parent="1" vertex="1">
+          <mxGeometry x="400" y="40" width="400" height="3500" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="sys1-load-enrollment" value="⚙️ Query:&#xa;Load Current Enrollment" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#CE93D8;strokeColor=#6A1B9A;fontSize=10;" parent="swimlane-system" vertex="1">
+          <mxGeometry x="50" y="230" width="300" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="sys2-load-courses" value="⚙️ Query:&#xa;Load Available Courses" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#CE93D8;strokeColor=#6A1B9A;fontSize=10;" parent="swimlane-system" vertex="1">
+          <mxGeometry x="50" y="390" width="300" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="sys3-load-classes" value="⚙️ Query:&#xa;Load Available Classes" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#CE93D8;strokeColor=#6A1B9A;fontSize=10;" parent="swimlane-system" vertex="1">
+          <mxGeometry x="50" y="490" width="300" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="sys4-gap-detection" value="⚙️ Validation:&#xa;Content Gap Detection" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BA68C8;strokeColor=#6A1B9A;fontSize=10;fontStyle=1;" parent="swimlane-system" vertex="1">
+          <mxGeometry x="50" y="570" width="300" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="sys5-conflict-check" value="⚙️ Validation:&#xa;Schedule Conflict Check" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BA68C8;strokeColor=#6A1B9A;fontSize=10;fontStyle=1;" parent="swimlane-system" vertex="1">
+          <mxGeometry x="50" y="650" width="300" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="sys6-validate-form" value="⚙️ Validation:&#xa;Form + Business Rules" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BA68C8;strokeColor=#6A1B9A;fontSize=10;fontStyle=1;" parent="swimlane-system" vertex="1">
+          <mxGeometry x="50" y="810" width="300" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="sys7-insert-request" value="💾 DB Transaction:&#xa;INSERT student_request&#xa;status=pending" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#90CAF9;strokeColor=#01579B;fontSize=10;fontStyle=1;" parent="swimlane-system" vertex="1">
+          <mxGeometry x="50" y="950" width="300" height="70" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="sys8-email-academic" value="📧 Async Email:&#xa;To Academic Staff" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#CE93D8;strokeColor=#6A1B9A;fontSize=10;" parent="swimlane-system" vertex="1">
+          <mxGeometry x="50" y="1060" width="300" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="sys9-load-request" value="⚙️ Query:&#xa;Load Request Detail" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#CE93D8;strokeColor=#6A1B9A;fontSize=10;" parent="swimlane-system" vertex="1">
+          <mxGeometry x="50" y="1380" width="300" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="sys10-revalidate" value="⚙️ Re-Validation:&#xa;Gap + Conflict + Capacity" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BA68C8;strokeColor=#6A1B9A;fontSize=10;fontStyle=1;" parent="swimlane-system" vertex="1">
+          <mxGeometry x="50" y="1460" width="300" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="sys11-transaction-start" value="💾 BEGIN TRANSACTION" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF9800;strokeColor=#E65100;fontColor=#FFFFFF;fontSize=12;fontStyle=1;" parent="swimlane-system" vertex="1">
+          <mxGeometry x="50" y="1720" width="300" height="40" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="sys12-step1" value="Step 1: UPDATE student_request&#xa;status=approved" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#90CAF9;strokeColor=#01579B;fontSize=10;fontStyle=1;" parent="swimlane-system" vertex="1">
+          <mxGeometry x="50" y="1780" width="300" height="50" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="sys13-step2" value="Step 2: UPDATE enrollment (old)&#xa;status=transferred" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#90CAF9;strokeColor=#01579B;fontSize=10;fontStyle=1;" parent="swimlane-system" vertex="1">
+          <mxGeometry x="50" y="1850" width="300" height="50" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="sys14-step3" value="Step 3: UPDATE student_session (old)&#xa;attendance=excused" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#90CAF9;strokeColor=#01579B;fontSize=10;fontStyle=1;" parent="swimlane-system" vertex="1">
+          <mxGeometry x="50" y="1920" width="300" height="50" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="sys15-step4" value="Step 4: INSERT enrollment (new)&#xa;status=enrolled" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#90CAF9;strokeColor=#01579B;fontSize=10;fontStyle=1;" parent="swimlane-system" vertex="1">
+          <mxGeometry x="50" y="1990" width="300" height="50" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="sys16-step5" value="Step 5: INSERT student_session (new)&#xa;FOR ALL future sessions" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#90CAF9;strokeColor=#01579B;fontSize=10;fontStyle=1;" parent="swimlane-system" vertex="1">
+          <mxGeometry x="50" y="2060" width="300" height="50" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="sys17-step6" value="Step 6: INSERT audit_log" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#90CAF9;strokeColor=#01579B;fontSize=10;fontStyle=1;" parent="swimlane-system" vertex="1">
+          <mxGeometry x="50" y="2130" width="300" height="40" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="sys18-commit" value="✅ COMMIT TRANSACTION" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#4CAF50;strokeColor=#2E7D32;fontColor=#FFFFFF;fontSize=12;fontStyle=1;" parent="swimlane-system" vertex="1">
+          <mxGeometry x="50" y="2190" width="300" height="40" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="sys19-email-student" value="📧 Email 1: To Student&#xa;(Approved)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#CE93D8;strokeColor=#6A1B9A;fontSize=10;" parent="swimlane-system" vertex="1">
+          <mxGeometry x="50" y="2250" width="300" height="50" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="sys20-email-old-teacher" value="📧 Email 2: To Old Teacher" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#CE93D8;strokeColor=#6A1B9A;fontSize=10;" parent="swimlane-system" vertex="1">
+          <mxGeometry x="50" y="2320" width="300" height="40" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="sys21-email-new-teacher" value="📧 Email 3: To New Teacher" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#CE93D8;strokeColor=#6A1B9A;fontSize=10;" parent="swimlane-system" vertex="1">
+          <mxGeometry x="50" y="2380" width="300" height="40" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="sys22-reject" value="💾 DB Transaction:&#xa;UPDATE student_request&#xa;status=rejected" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#90CAF9;strokeColor=#01579B;fontSize=10;fontStyle=1;" parent="swimlane-system" vertex="1">
+          <mxGeometry x="50" y="2760" width="300" height="70" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="sys23-email-rejected" value="📧 Email: To Student&#xa;(Rejected)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#CE93D8;strokeColor=#6A1B9A;fontSize=10;" parent="swimlane-system" vertex="1">
+          <mxGeometry x="50" y="2850" width="300" height="50" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="swimlane-academic" value="ACADEMIC STAFF" style="swimlane;startSize=40;horizontal=1;fillColor=#FFF3E0;strokeColor=#E65100;fontStyle=1;fontSize=14;" parent="1" vertex="1">
+          <mxGeometry x="800" y="40" width="360" height="3500" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="a1-email-notify" value="📧 Receive Email&#xa;Notification" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#E65100;fontSize=11;" parent="swimlane-academic" vertex="1">
+          <mxGeometry x="80" y="1070" width="200" height="50" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="a2-login" value="📱 Login &amp; View&#xa;Pending Requests" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#E65100;fontSize=11;" parent="swimlane-academic" vertex="1">
+          <mxGeometry x="80" y="1150" width="200" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="a3-click-review" value="🖱️ Click&#xa;&quot;Review&quot;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#E65100;fontSize=11;" parent="swimlane-academic" vertex="1">
+          <mxGeometry x="80" y="1240" width="200" height="50" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="a4-review-detail" value="📱 Review Detail&#xa;Check Gap, Conflict, Reason" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#E65100;fontSize=11;" parent="swimlane-academic" vertex="1">
+          <mxGeometry x="80" y="1380" width="200" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="a5-decision" value="🔀 Decision:&#xa;Approve or Reject?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFF59D;strokeColor=#F57F17;fontSize=11;fontStyle=1;" parent="swimlane-academic" vertex="1">
+          <mxGeometry x="90" y="1560" width="180" height="100" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="a6-approve" value="🖱️ Click&#xa;&quot;Approve &amp; Execute&quot;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#4CAF50;strokeColor=#2E7D32;fontColor=#FFFFFF;fontSize=11;fontStyle=1;" parent="swimlane-academic" vertex="1">
+          <mxGeometry x="80" y="1720" width="200" height="50" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="a7-success-approve" value="✅ Success Toast:&#xa;Transfer Approved" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#2E7D32;fontSize=11;" parent="swimlane-academic" vertex="1">
+          <mxGeometry x="80" y="2250" width="200" height="50" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="a8-reject" value="🖱️ Select Reject&#xa;Enter rejection_reason" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EF5350;strokeColor=#C62828;fontColor=#FFFFFF;fontSize=11;fontStyle=1;" parent="swimlane-academic" vertex="1">
+          <mxGeometry x="80" y="2630" width="200" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="a9-success-reject" value="✅ Success Toast:&#xa;Request Rejected" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFCDD2;strokeColor=#C62828;fontSize=11;" parent="swimlane-academic" vertex="1">
+          <mxGeometry x="80" y="2850" width="200" height="50" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="start" target="s1-login" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="s1-login" target="s2-click-transfer" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;dashed=1;" parent="1" source="s2-click-transfer" target="sys1-load-enrollment" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="sys1-load-enrollment" target="s3-select-course" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;dashed=1;" parent="1" source="s3-select-course" target="sys2-load-courses" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="sys2-load-courses" target="sys3-load-classes" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="sys3-load-classes" target="sys4-gap-detection" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="sys4-gap-detection" target="sys5-conflict-check" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="sys5-conflict-check" target="s4-select-class" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="s4-select-class" target="s5-confirm" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;dashed=1;" parent="1" source="s5-confirm" target="sys6-validate-form" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="s5-confirm" target="s6-submit" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="s6-submit" target="sys7-insert-request" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow14" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;dashed=1;" parent="1" source="sys7-insert-request" target="s7-success" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow15" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;dashed=1;" parent="1" source="sys7-insert-request" target="sys8-email-academic" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow16" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;dashed=1;" parent="1" source="sys8-email-academic" target="a1-email-notify" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="a1-email-notify" target="a2-login" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow18" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="a2-login" target="a3-click-review" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow19" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;dashed=1;" parent="1" source="a3-click-review" target="sys9-load-request" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow20" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="sys9-load-request" target="a4-review-detail" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow21" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="sys9-load-request" target="sys10-revalidate" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow22" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="a4-review-detail" target="a5-decision" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow23" value="Approve" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontStyle=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" source="a5-decision" target="a6-approve" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow24" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="a6-approve" target="sys11-transaction-start" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow25" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="sys11-transaction-start" target="sys12-step1" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow26" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="sys12-step1" target="sys13-step2" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow27" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="sys13-step2" target="sys14-step3" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow28" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="sys14-step3" target="sys15-step4" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow29" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="sys15-step4" target="sys16-step5" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow30" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="sys16-step5" target="sys17-step6" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow31" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="sys17-step6" target="sys18-commit" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow32" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;dashed=1;" parent="1" source="sys18-commit" target="sys19-email-student" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow33" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;dashed=1;" parent="1" source="sys18-commit" target="a7-success-approve" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow34" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;dashed=1;" parent="1" source="sys19-email-student" target="sys20-email-old-teacher" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow35" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;dashed=1;" parent="1" source="sys20-email-old-teacher" target="sys21-email-new-teacher" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow36" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;dashed=1;" parent="1" source="sys19-email-student" target="s8-email-approved" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow37" value="Reject" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontStyle=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" source="a5-decision" target="a8-reject" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow38" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="a8-reject" target="sys22-reject" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow39" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;dashed=1;" parent="1" source="sys22-reject" target="sys23-email-rejected" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow40" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;dashed=1;" parent="1" source="sys22-reject" target="a9-success-reject" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow41" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;dashed=1;" parent="1" source="sys23-email-rejected" target="s9-email-rejected" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow42" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="s8-email-approved" target="s10-view-result" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow43" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="s9-email-rejected" target="s10-view-result" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow44" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" parent="1" source="s10-view-result" target="end" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -14,36 +14,48 @@ System thực hiện query:
 Query student_request WHERE student_id = :id
 ORDER BY submitted_at DESC
 
--- Load all requests của student
 SELECT 
-    sr.id,
+    sr.id AS request_id,
     sr.request_type,
     sr.status,
-    sr.reason,
-    sr.notes,
+    sr.note AS reason,
     sr.submitted_at,
     sr.decided_at,
-    sr.rejection_reason,
-    s.session_date,
-    s.start_time,
-    s.end_time,
-    c.name as class_name,
-    c.class_code,
-    decider.full_name as decided_by_name
-FROM student_request sr
-JOIN session s ON sr.target_session_id = s.id
-JOIN class c ON s.class_id = c.id
-LEFT JOIN user_account decider ON sr.decided_by = decider.id
-WHERE sr.student_id = :student_id
+    sr.decided_by,
+    decider.full_name AS decided_by_name,
+    -- Thông tin session (nếu có target_session_id)
+    s.id AS session_id,
+    s.date AS session_date,
+    s.type AS session_type,
+    s.status AS session_status,
+    tst.name AS time_slot_name,
+    tst.start_time,
+    tst.end_time,
+    -- Thông tin class
+    c.id AS class_id,
+    c.code AS class_code,
+    c.name AS class_name,
+    -- Thông tin student
+    st.student_code,
+    u.full_name AS student_name
+FROM public.student_request sr
+JOIN public.student st ON sr.student_id = st.id
+JOIN public.user_account u ON st.user_id = u.id
+LEFT JOIN public.session s ON sr.target_session_id = s.id
+LEFT JOIN public.time_slot_template tst ON s.time_slot_template_id = tst.id
+LEFT JOIN public.class c ON sr.current_class_id = c.id
+LEFT JOIN public.user_account decider ON sr.decided_by = decider.id
+WHERE sr.student_id = 14  -- Student ID có sẵn trong seed data
 ORDER BY sr.submitted_at DESC;
+
+
 
 
 Bước 4: Hệ thống hiển thị trang My Requests
 Hiển thị danh sách các request đã gửi và nhận được
 Hiển thị button "Tạo Request Mới" (+ Create Request)
 
-Bước 5: Click button "Tạo Request Mới"
-Học viên click vào button "Tạo Request Mới"
+Bước 5: Học viên click vào button "Tạo Request Mới"
 
 Bước 6: Hệ thống hiển thị modal form tạo request
 System hiển thị form với các trường:
@@ -60,81 +72,39 @@ Học viên chọn loại request = "Absence" (Xin nghỉ)
 Bước 8: Chọn ngày
 Học viên chọn ngày cần xin nghỉ từ date picker
 
-Bước 9: Hệ thống load danh sách lớp theo ngày
-System thực hiện query:
-SELECT DISTINCT class FROM enrollment e
-JOIN session s ON s.class_id = e.class_id
-WHERE e.student_id = :id
-AND s.session_date = :selected_date
-AND s.status = 'planned'
-Enable dropdown "Chọn lớp"
-
--- Query classes có session vào ngày đã chọn
-SELECT DISTINCT
-    c.id as class_id,
-    c.class_code,
-    c.name as class_name,
-    subj.name as subject_name,
-    COUNT(s.id) as session_count_on_date
-FROM enrollment e
-JOIN class c ON e.class_id = c.id
-JOIN session s ON s.class_id = c.id
-JOIN course co ON c.course_id = co.id
-JOIN subject subj ON co.subject_id = subj.id
-WHERE e.student_id = :student_id
-    AND e.status = 'enrolled'
-    AND s.session_date = :selected_date
-    AND s.status = 'planned'
-GROUP BY c.id, c.class_code, c.name, subj.name
-ORDER BY c.name;
-
+Bước 9: Hệ thống load danh sách lớp theo ngày và student_id
 
 Bước 10: Chọn lớp
 Học viên chọn lớp từ dropdown
 
 Bước 11: Hệ thống load danh sách session trong ngày đó của lớp đã chọn
-System thực hiện query:
-SELECT session FROM student_session ss
-JOIN session s ON ss.session_id = s.session_id
-WHERE ss.student_id = :id
-AND s.class_id = :selected_class_id
-AND s.session_date = :selected_date
-AND ss.attendance_status = 'planned'
-Enable dropdown "Chọn session"
-Hiển thị danh sách session với thông tin: Time slot, Room, Teacher
+SELECT DISTINCT
+    c.id AS class_id,
+    c.code AS class_code,
+    c.name AS class_name,
+    subj.name AS subject_name,
+    subj.code AS subject_code,
+    COUNT(s.id) AS session_count_on_date,
+    -- Thêm thông tin sessions trong ngày đó
+    STRING_AGG(
+        tst.name || ' (' || tst.start_time::TEXT || '-' || tst.end_time::TEXT || ')',
+        ', '
+        ORDER BY tst.start_time
+    ) AS sessions_detail
+FROM public.enrollment e
+JOIN public.class c ON e.class_id = c.id
+JOIN public.session s ON s.class_id = c.id
+JOIN public.course co ON c.course_id = co.id
+JOIN public.subject subj ON co.subject_id = subj.id
+LEFT JOIN public.time_slot_template tst ON s.time_slot_template_id = tst.id
+WHERE e.student_id = 14  -- Student đã enroll trong class
+    AND e.status = 'enrolled'
+    AND s.date = CURRENT_DATE + INTERVAL '1 day'  -- Ngày đã chọn
+    AND s.status = 'planned'  -- Chỉ lấy sessions chưa diễn ra
+GROUP BY c.id, c.code, c.name, subj.name, subj.code
+ORDER BY c.name;
 
--- Query sessions của class trong ngày đã chọn
-SELECT 
-    s.id as session_id,
-    s.session_date,
-    s.start_time,
-    s.end_time,
-    s.session_type,
-    ss.attendance_status,
-    tst.name as time_slot_name,
-    r.name as room_name,
-    r.location as room_location,
-    STRING_AGG(DISTINCT ua.full_name, ', ') as teacher_names,
-    cs.title as session_title,
-    cs.topics as session_topics
-FROM student_session ss
-JOIN session s ON ss.session_id = s.id
-JOIN class c ON s.class_id = c.id
-LEFT JOIN time_slot_template tst ON c.time_slot_template_id = tst.id
-LEFT JOIN session_resource sr ON sr.session_id = s.id
-LEFT JOIN resource r ON sr.resource_id = r.id
-LEFT JOIN teaching_slot ts ON ts.session_id = s.id
-LEFT JOIN teacher t ON ts.teacher_id = t.id
-LEFT JOIN user_account ua ON t.user_account_id = ua.id
-LEFT JOIN course_session cs ON s.course_session_id = cs.id
-WHERE ss.student_id = :student_id
-    AND c.id = :selected_class_id
-    AND s.session_date = :selected_date
-    AND ss.attendance_status = 'planned'
-    AND s.status = 'planned'
-GROUP BY s.id, s.session_date, s.start_time, s.end_time, s.session_type,
-         ss.attendance_status, tst.name, r.name, r.location, cs.title, cs.topics
-ORDER BY s.start_time;
+
 
 
 Bước 12: Chọn session
@@ -158,116 +128,207 @@ Lý do tối thiểu 10 ký tự
 Cảnh báo lead time (nếu nghỉ gấp)
 
 Bước 16: Backend validation
-System kiểm tra:
-Student có enrolled trong class này không?
-Session có tồn tại không?
-Session date >= TODAY?
-Có yêu cầu trùng lặp cho session này không? (status = pending)
-Kiểm tra số buổi nghỉ tối đa cho class này
-
--- 1. Kiểm tra student có enrolled trong class này không
-SELECT COUNT(*) as is_enrolled
-FROM enrollment e
-JOIN session s ON e.class_id = s.class_id
-WHERE e.student_id = :student_id
-    AND s.id = :target_session_id
-    AND e.status = 'enrolled';
-
--- 2. Kiểm tra session có tồn tại và hợp lệ
-SELECT 
-    s.id,
-    s.session_date,
-    s.status,
-    c.id as class_id,
-    c.name as class_name
-FROM session s
-JOIN class c ON s.class_id = c.id
-WHERE s.id = :target_session_id
-    AND s.status = 'planned'
-    AND s.session_date >= CURRENT_DATE;
-
--- 3. Kiểm tra duplicate request (đã có request pending cho session này chưa)
-SELECT COUNT(*) as duplicate_count
-FROM student_request
-WHERE student_id = :student_id
-    AND target_session_id = :target_session_id
-    AND request_type = 'absence'
-    AND status IN ('pending', 'waiting_confirm');
-
--- 4. Kiểm tra số buổi đã nghỉ (max absences check)
-SELECT 
-    COUNT(*) FILTER (WHERE ss.attendance_status IN ('absent', 'excused')) as total_absences,
-    COUNT(*) as total_sessions,
-    COUNT(*) FILTER (WHERE s.status = 'done') as completed_sessions,
-    ROUND(
-        COUNT(*) FILTER (WHERE ss.attendance_status IN ('absent', 'excused'))::NUMERIC / 
-        NULLIF(COUNT(*) FILTER (WHERE s.status = 'done'), 0) * 100, 
-        2
-    ) as absence_percentage
-FROM student_session ss
-JOIN session s ON ss.session_id = s.id
-WHERE ss.student_id = :student_id
-    AND s.class_id = (
-        SELECT class_id FROM session WHERE id = :target_session_id
-    );
-
--- 5. Business rule: Check nếu vượt quá 20% (hoặc policy khác)
--- Giả sử policy: không được nghỉ quá 20% tổng số buổi
-SELECT 
-    CASE 
-        WHEN absence_percentage >= 20.0 THEN FALSE
-        ELSE TRUE
-    END as can_request_absence
-FROM (
+WITH validation_data AS (
     SELECT 
-        ROUND(
-            COUNT(*) FILTER (WHERE ss.attendance_status IN ('absent', 'excused'))::NUMERIC / 
-            NULLIF(COUNT(*), 0) * 100, 
-            2
-        ) as absence_percentage
-    FROM student_session ss
-    JOIN session s ON ss.session_id = s.id
-    WHERE ss.student_id = :student_id
-        AND s.class_id = (SELECT class_id FROM session WHERE id = :target_session_id)
-) sub;
+        s.id AS session_id,
+        s.class_id,
+        s.date AS session_date,
+        s.status AS session_status,
+        s.type AS session_type,
+        c.code AS class_code,
+        c.name AS class_name,
+        e.id AS enrollment_id,
+        e.status AS enrollment_status,
+        tst.name AS time_slot_name,
+        tst.start_time,
+        tst.end_time
+    FROM public.session s
+    JOIN public.class c ON s.class_id = c.id
+    LEFT JOIN public.enrollment e ON c.id = e.class_id AND e.student_id = 14
+    LEFT JOIN public.time_slot_template tst ON s.time_slot_template_id = tst.id
+    WHERE s.id = 59
+),
+enrollment_check AS (
+    SELECT 
+        vd.*,
+        CASE 
+            WHEN vd.enrollment_id IS NOT NULL AND vd.enrollment_status = 'enrolled' THEN TRUE
+            ELSE FALSE
+        END AS is_enrolled,
+        CASE 
+            WHEN vd.enrollment_id IS NULL THEN 'Student không enrolled trong class này'
+            WHEN vd.enrollment_status != 'enrolled' THEN 'Enrollment status không hợp lệ: ' || vd.enrollment_status
+            ELSE NULL
+        END AS enrollment_error
+    FROM validation_data vd
+),
+session_check AS (
+    SELECT 
+        ec.*,
+        CASE 
+            WHEN ec.session_id IS NULL THEN FALSE
+            WHEN ec.session_status != 'planned' THEN FALSE
+            WHEN ec.session_date < CURRENT_DATE THEN FALSE
+            ELSE TRUE
+        END AS is_session_valid,
+        CASE 
+            WHEN ec.session_id IS NULL THEN 'Session không tồn tại'
+            WHEN ec.session_status != 'planned' THEN 'Session status không hợp lệ: ' || ec.session_status
+            WHEN ec.session_date < CURRENT_DATE THEN 'Session đã qua (date: ' || ec.session_date::TEXT || ')'
+            ELSE NULL
+        END AS session_error
+    FROM enrollment_check ec
+),
+duplicate_check AS (
+    SELECT 
+        sc.*,
+        (
+            SELECT COUNT(*) 
+            FROM public.student_request sr
+            WHERE sr.student_id = 14
+                AND sr.target_session_id = 59
+                AND sr.request_type = 'absence'
+                AND sr.status IN ('pending', 'approved')
+        ) AS duplicate_count,
+        CASE 
+            WHEN (
+                SELECT COUNT(*) 
+                FROM public.student_request sr
+                WHERE sr.student_id = 14
+                    AND sr.target_session_id = 59
+                    AND sr.request_type = 'absence'
+                    AND sr.status IN ('pending', 'approved')
+            ) > 0 THEN 'Đã có absence request cho session này (duplicate)'
+            ELSE NULL
+        END AS duplicate_error
+    FROM session_check sc
+),
+absence_stats AS (
+    SELECT 
+        dc.*,
+        -- Tổng số buổi đã nghỉ (trong tất cả sessions đã done)
+        (
+            SELECT COUNT(*) FILTER (WHERE ss.attendance_status IN ('absent', 'excused'))
+            FROM public.student_session ss
+            JOIN public.session s ON ss.session_id = s.id
+            WHERE ss.student_id = 14
+                AND s.class_id = dc.class_id
+                AND s.status = 'done'
+        ) AS total_absences,
+        -- Tổng số buổi đã hoàn thành
+        (
+            SELECT COUNT(*) 
+            FROM public.student_session ss
+            JOIN public.session s ON ss.session_id = s.id
+            WHERE ss.student_id = 14
+                AND s.class_id = dc.class_id
+                AND s.status = 'done'
+        ) AS completed_sessions,
+        -- Tổng số buổi học của class (bao gồm planned và done)
+        (
+            SELECT COUNT(*) 
+            FROM public.session s
+            WHERE s.class_id = dc.class_id
+                AND s.status IN ('planned', 'done')
+        ) AS total_sessions
+    FROM duplicate_check dc
+),
+absence_percentage_check AS (
+    SELECT 
+        ast.*,
+        -- Absence percentage hiện tại (so với completed sessions)
+        CASE 
+            WHEN ast.completed_sessions > 0 
+            THEN ROUND((ast.total_absences::NUMERIC / ast.completed_sessions) * 100, 2)
+            ELSE 0
+        END AS absence_percentage,
+        -- Absence percentage sau khi approve request này
+        CASE 
+            WHEN ast.completed_sessions > 0 
+            THEN ROUND(((ast.total_absences + 1)::NUMERIC / ast.completed_sessions) * 100, 2)
+            ELSE 0
+        END AS absence_percentage_after_request
+    FROM absence_stats ast
+)
+-- Final output: Validation result (BỎ absence policy check)
+SELECT 
+    apc.session_id,
+    apc.class_id,
+    apc.class_code,
+    apc.class_name,
+    apc.session_date,
+    apc.time_slot_name,
+    apc.start_time,
+    apc.end_time,
+    apc.is_enrolled,
+    apc.is_session_valid,
+    apc.duplicate_count,
+    -- Thống kê absences (chỉ để hiển thị, không block request)
+    apc.total_absences,
+    apc.completed_sessions,
+    apc.total_sessions,
+    apc.absence_percentage,
+    apc.absence_percentage_after_request,
+    -- Overall validation (CHỈ check: enrolled, session valid, no duplicate)
+    CASE 
+        WHEN apc.is_enrolled AND apc.is_session_valid AND apc.duplicate_count = 0
+        THEN TRUE
+        ELSE FALSE
+    END AS is_valid,
+    -- Error messages (BỎ absence policy error)
+    ARRAY_REMOVE(ARRAY[
+        apc.enrollment_error,
+        apc.session_error,
+        apc.duplicate_error
+    ], NULL) AS validation_errors,
+    -- Success/Error message
+    CASE 
+        WHEN apc.is_enrolled AND apc.is_session_valid AND apc.duplicate_count = 0
+        THEN 'Validation passed. Student có thể tạo absence request cho session này.'
+        ELSE 'Validation failed. Không thể tạo absence request.'
+    END AS validation_message
+FROM absence_percentage_check apc;
 
 
 Bước 17: Insert student_request vào database
-System thực hiện INSERT student_request với các thông tin:
-student_id (từ current user)
-target_session_id (từ session đã chọn)
-request_type = 'absence'
-reason (từ form)
-notes (từ form, optional)
-status = 'pending' 
-submitted_at = NOW()
-submitted_by = student_id
-
--- Insert absence request
-INSERT INTO student_request (
+INSERT INTO public.student_request (
     student_id,
+    current_class_id,
     target_session_id,
     request_type,
-    reason,
-    notes,
+    note,
     status,
     submitted_at,
-    submitted_by
+    submitted_by,
+    created_at,
+    updated_at
 ) VALUES (
-    :student_id,
-    :target_session_id,
-    'absence',
-    :reason,
-    :notes,
-    'pending',
-    NOW(),
-    :student_id
+    14,                                          -- student_id
+    3,                                           -- current_class_id (class chứa session 59)
+    59,                                          -- target_session_id
+    'absence'::student_request_type_enum,       -- request_type
+    'Có việc gia đình khẩn cấp. Em xin phép nghỉ buổi học này.',  -- note
+    'pending'::request_status_enum,             -- status
+    CURRENT_TIMESTAMP,                          -- submitted_at
+    14,                                          -- submitted_by
+    CURRENT_TIMESTAMP,                          -- created_at
+    CURRENT_TIMESTAMP                           -- updated_at
 )
-RETURNING id, submitted_at;
+RETURNING 
+    id AS request_id,
+    student_id,
+    current_class_id,
+    target_session_id,
+    request_type,
+    note,
+    status,
+    submitted_at,
+    submitted_by;
 
 
-Bước 18: Hệ thống hiển thị thông báo thành công
-Hiển thị success notification: "Yêu cầu đã được gửi thành công"
+
+
+Bước 18: Hiển thị success notification: "Yêu cầu đã được gửi thành công"
 Đóng modal
 Refresh danh sách requests trong tab "Requests tôi đã gửi"
 
@@ -289,252 +350,292 @@ PHẦN 2: GIÁO VỤ XỬ LÝ YÊU CẦU
 Bước 21: Academic Affairs nhận email thông báo
 Giáo vụ nhận email thông báo có yêu cầu mới
 
-Bước 22: Login hệ thống và vào menu "Pending Requests"
-Giáo vụ đăng nhập và truy cập phần "Request Management" hoặc "Pending Requests"
+Bước 22: Login hệ thống và vào menu request -> filter "Pending"
 
 Bước 23: Hệ thống query danh sách pending requests
-System thực hiện query:
-SELECT * FROM student_request sr
-JOIN student st ON sr.student_id = st.student_id
-JOIN session s ON sr.target_session_id = s.session_id
-JOIN class c ON s.class_id = c.class_id
-WHERE sr.status = 'pending'
-AND sr.request_type = 'absence'
-AND c.branch_id IN (SELECT branch_id FROM user_branches WHERE user_id = :Affairs_id)
-ORDER BY sr.submitted_at ASC
-
--- Load pending absence requests cho Academic Affairs
 SELECT 
-    sr.id as request_id,
+    sr.id AS request_id,
     sr.request_type,
     sr.status,
-    sr.reason,
-    sr.notes,
+    sr.note,
     sr.submitted_at,
     -- Student info
     st.student_code,
-    ua_student.full_name as student_name,
-    ua_student.email as student_email,
-    ua_student.phone as student_phone,
+    ua_student.full_name AS student_name,
+    ua_student.email AS student_email,
+    ua_student.phone AS student_phone,
     -- Session info
-    s.id as session_id,
-    s.session_date,
-    s.start_time,
-    s.end_time,
-    s.session_type,
+    s.id AS session_id,
+    s.date AS session_date,
+    s.type AS session_type,
+    s.status AS session_status,
+    tst.start_time,
+    tst.end_time,
+    tst.name AS time_slot_name,
     -- Class info
-    c.id as class_id,
-    c.class_code,
-    c.name as class_name,
+    c.id AS class_id,
+    c.code AS class_code,
+    c.name AS class_name,
     c.branch_id,
-    b.name as branch_name,
-    -- Teacher info
-    STRING_AGG(DISTINCT ua_teacher.full_name, ', ') as teacher_names,
-    -- Time slot info
-    tst.name as time_slot_name,
-    -- Room info
-    r.name as room_name,
+    b.name AS branch_name,
     -- Course info
-    co.name as course_name,
-    cs.title as session_title
-FROM student_request sr
-JOIN student st ON sr.student_id = st.id
-JOIN user_account ua_student ON st.user_id = ua_student.id
-JOIN session s ON sr.target_session_id = s.id
-JOIN class c ON s.class_id = c.id
-JOIN branch b ON c.branch_id = b.id
-JOIN course co ON c.course_id = co.id
-LEFT JOIN course_session cs ON s.course_session_id = cs.id
-LEFT JOIN time_slot_template tst ON c.time_slot_template_id = tst.id
-LEFT JOIN session_resource sr_res ON sr_res.session_id = s.id
-LEFT JOIN resource r ON sr_res.resource_id = r.id
-LEFT JOIN teaching_slot ts ON ts.session_id = s.id
-LEFT JOIN teacher t ON ts.teacher_id = t.id
-LEFT JOIN user_account ua_teacher ON t.user_account_id = ua_teacher.id
+    co.name AS course_name,
+    cs.topic AS session_topic,  -- Sửa từ cs.title → cs.topic
+    cs.sequence_no AS session_sequence,
+    -- Room/Resource info
+    STRING_AGG(DISTINCT r.name, ', ') AS room_names,
+    -- Teacher info
+    STRING_AGG(DISTINCT ua_teacher.full_name, ', ') AS teacher_names
+FROM public.student_request sr
+JOIN public.student st ON sr.student_id = st.id
+JOIN public.user_account ua_student ON st.user_id = ua_student.id
+JOIN public.session s ON sr.target_session_id = s.id
+JOIN public.class c ON sr.current_class_id = c.id
+JOIN public.branch b ON c.branch_id = b.id
+JOIN public.course co ON c.course_id = co.id
+LEFT JOIN public.course_session cs ON s.course_session_id = cs.id
+LEFT JOIN public.time_slot_template tst ON s.time_slot_template_id = tst.id
+LEFT JOIN public.session_resource sr_res ON sr_res.session_id = s.id
+LEFT JOIN public.resource r ON sr_res.resource_id = r.id
+LEFT JOIN public.teaching_slot ts ON ts.session_id = s.id
+LEFT JOIN public.teacher t ON ts.teacher_id = t.id
+LEFT JOIN public.user_account ua_teacher ON t.user_account_id = ua_teacher.id
 WHERE sr.status = 'pending'
     AND sr.request_type = 'absence'
     AND c.branch_id IN (
-        -- Academic Affairs chỉ thấy requests thuộc branches họ quản lý
         SELECT branch_id 
-        FROM user_branches 
-        WHERE user_id = :Affairs_user_id
+        FROM public.user_branches 
+        WHERE user_id = 4  -- Academic Affairs 1
     )
-GROUP BY sr.id, sr.request_type, sr.status, sr.reason, sr.notes, sr.submitted_at,
-         st.student_code, ua_student.full_name, ua_student.email, ua_student.phone,
-         s.id, s.session_date, s.start_time, s.end_time, s.session_type,
-         c.id, c.class_code, c.name, c.branch_id, b.name,
-         tst.name, r.name, co.name, cs.title
+GROUP BY 
+    sr.id, sr.request_type, sr.status, sr.note, sr.submitted_at,
+    st.student_code, ua_student.full_name, ua_student.email, ua_student.phone,
+    s.id, s.date, s.type, s.status,
+    c.id, c.code, c.name, c.branch_id, b.name,
+    tst.start_time, tst.end_time, tst.name,
+    co.name, cs.topic, cs.sequence_no
 ORDER BY sr.submitted_at ASC;
 
 
 Bước 24: Hệ thống hiển thị danh sách pending requests
-Hiển thị table với các cột:
-Student Name
-Class Name
-Session Date & Time
-Request Type
-Reason (preview)
-Submitted Date
-Action buttons
 
-Bước 25: Click vào request để xem chi tiết
-Giáo vụ click vào một row hoặc button "View Detail"
-
-Bước 26: Hệ thống hiển thị chi tiết request
-System hiển thị modal/page với đầy đủ thông tin:
-Student Information: Name, Student Code, Email, Phone
-Session Information: Class Name, Session Date, Time Slot, Room, Teacher
-Request Details: Request Type, Reason, Notes, Submitted Date
-Absence Statistics: Số buổi đã nghỉ / Tổng số buổi của lớp (X/Y)
-Action buttons: Approve, Reject
-
--- Get full detail of a specific request
+Bước 25: Giáo vụ click vào một row hoặc button "View Detail"
 SELECT 
-    sr.id as request_id,
+    sr.id AS request_id,
     sr.request_type,
     sr.status,
-    sr.reason,
-    sr.notes,
+    sr.note,
     sr.submitted_at,
     sr.decided_at,
-    sr.rejection_reason,
-    -- Student info (detailed)
-    st.id as student_id,
+    sr.decided_by,
+    sr.effective_date,  -- Cho makeup request
+    -- Student info
+    st.id AS student_id,
     st.student_code,
-    ua_student.full_name as student_name,
-    ua_student.email as student_email,
-    ua_student.phone as student_phone,
-    st.education_level,
-    st.address as student_address,
-    -- Session info (detailed)
-    s.id as session_id,
-    s.session_date,
-    s.start_time,
-    s.end_time,
-    s.session_type,
-    s.status as session_status,
+    st.level AS education_level,
+    ua_student.full_name AS student_name,
+    ua_student.email AS student_email,
+    ua_student.phone AS student_phone,
+    ua_student.address AS student_address,
+    ua_student.dob AS student_dob,
+    ua_student.gender AS student_gender,
+    -- Session info (NULL cho makeup request)
+    s.id AS session_id,
+    s.date AS session_date,
+    s.type AS session_type,
+    s.status AS session_status,
+    -- Time slot info (NULL cho makeup request)
+    tst.name AS time_slot_name,
+    tst.start_time AS slot_start,
+    tst.end_time AS slot_end,
+    tst.duration_min,
     -- Class info
-    c.id as class_id,
-    c.class_code,
-    c.name as class_name,
-    c.start_date as class_start_date,
-    c.end_date as class_end_date,
+    c.id AS class_id,
+    c.code AS class_code,
+    c.name AS class_name,
+    c.start_date AS class_start_date,
+    c.planned_end_date AS class_planned_end_date,
+    c.actual_end_date AS class_actual_end_date,
     c.max_capacity,
+    c.modality,
+    c.schedule_days,
     -- Branch info
-    b.name as branch_name,
-    b.phone as branch_phone,
-    b.address as branch_address,
+    b.id AS branch_id,
+    b.name AS branch_name,
+    b.phone AS branch_phone,
+    b.address AS branch_address,
     -- Course info
-    co.name as course_name,
-    co.code as course_code,
+    co.name AS course_name,
+    co.code AS course_code,
     co.duration_weeks,
     co.session_per_week,
-    -- Session template info
-    cs.title as session_title,
-    cs.topics as session_topics,
-    cs.learning_objectives,
-    cs.sequence_no,
-    -- Time slot
-    tst.name as time_slot_name,
-    tst.start_time as slot_start,
-    tst.end_time as slot_end,
-    -- Room
-    r.name as room_name,
-    r.location as room_location,
-    r.capacity as room_capacity,
-    -- Teachers
+    co.description AS course_description,
+    -- Session template info (NULL cho makeup request)
+    cs.topic AS session_topic,
+    cs.sequence_no AS session_sequence,
+    cs.student_task,
+    -- Room/Resource info (NULL cho makeup request)
+    STRING_AGG(DISTINCT r.name || ' (' || r.resource_type || ')', ', ') AS resources,
+    -- Teachers (NULL cho makeup request nếu chưa assign session)
     JSONB_AGG(
         DISTINCT JSONB_BUILD_OBJECT(
             'teacher_id', t.id,
             'name', ua_teacher.full_name,
             'email', ua_teacher.email,
-            'role', ts.teaching_role,
-            'skill', ts.skill
+            'phone', ua_teacher.phone,
+            'role', ts.role,
+            'skill', ts.skill,
+            'status', ts.status
         )
-    ) FILTER (WHERE t.id IS NOT NULL) as teachers,
-    -- Absence statistics for this student in this class
+    ) FILTER (WHERE t.id IS NOT NULL) AS teachers,
+    -- Absence statistics
     (
         SELECT COUNT(*) 
-        FROM student_session ss2 
-        JOIN session s2 ON ss2.session_id = s2.id
+        FROM public.student_session ss2 
+        JOIN public.session s2 ON ss2.session_id = s2.id
         WHERE ss2.student_id = st.id 
             AND s2.class_id = c.id
             AND ss2.attendance_status IN ('absent', 'excused')
-    ) as total_absences,
+            AND s2.status = 'done'
+    ) AS total_absences,
     (
         SELECT COUNT(*) 
-        FROM student_session ss2 
-        JOIN session s2 ON ss2.session_id = s2.id
+        FROM public.student_session ss2 
+        JOIN public.session s2 ON ss2.session_id = s2.id
         WHERE ss2.student_id = st.id 
             AND s2.class_id = c.id
-    ) as total_sessions,
-    -- Lead time calculation
-    (s.session_date - CURRENT_DATE) as days_until_session,
+            AND s2.status = 'done'
+    ) AS completed_sessions,
+    (
+        SELECT COUNT(*) 
+        FROM public.session s2
+        WHERE s2.class_id = c.id
+            AND s2.status IN ('planned', 'done')
+    ) AS total_class_sessions,
+    -- Absence percentage
+    CASE 
+        WHEN (
+            SELECT COUNT(*) 
+            FROM public.student_session ss2 
+            JOIN public.session s2 ON ss2.session_id = s2.id
+            WHERE ss2.student_id = st.id 
+                AND s2.class_id = c.id
+                AND s2.status = 'done'
+        ) > 0
+        THEN ROUND(
+            (
+                SELECT COUNT(*) 
+                FROM public.student_session ss2 
+                JOIN public.session s2 ON ss2.session_id = s2.id
+                WHERE ss2.student_id = st.id 
+                    AND s2.class_id = c.id
+                    AND ss2.attendance_status IN ('absent', 'excused')
+                    AND s2.status = 'done'
+            )::NUMERIC / (
+                SELECT COUNT(*) 
+                FROM public.student_session ss2 
+                JOIN public.session s2 ON ss2.session_id = s2.id
+                WHERE ss2.student_id = st.id 
+                    AND s2.class_id = c.id
+                    AND s2.status = 'done'
+            ) * 100, 2
+        )
+        ELSE 0
+    END AS absence_percentage,
+    -- Lead time (NULL cho makeup request)
+    (s.date - CURRENT_DATE) AS days_until_session,
     -- Enrollment info
-    e.enrollment_date,
-    e.status as enrollment_status,
-    -- Decider info (if decided)
-    decider.full_name as decided_by_name
-FROM student_request sr
-JOIN student st ON sr.student_id = st.id
-JOIN user_account ua_student ON st.user_id = ua_student.id
-JOIN session s ON sr.target_session_id = s.id
-JOIN class c ON s.class_id = c.id
-JOIN branch b ON c.branch_id = b.id
-JOIN course co ON c.course_id = co.id
-LEFT JOIN enrollment e ON e.student_id = st.id AND e.class_id = c.id
-LEFT JOIN course_session cs ON s.course_session_id = cs.id
-LEFT JOIN time_slot_template tst ON c.time_slot_template_id = tst.id
-LEFT JOIN session_resource sr_res ON sr_res.session_id = s.id
-LEFT JOIN resource r ON sr_res.resource_id = r.id
-LEFT JOIN teaching_slot ts ON ts.session_id = s.id
-LEFT JOIN teacher t ON ts.teacher_id = t.id
-LEFT JOIN user_account ua_teacher ON t.user_account_id = ua_teacher.id
-LEFT JOIN user_account decider ON sr.decided_by = decider.id
-WHERE sr.id = :request_id
-GROUP BY sr.id, sr.request_type, sr.status, sr.reason, sr.notes, sr.submitted_at,
-         sr.decided_at, sr.rejection_reason,
-         st.id, st.student_code, ua_student.full_name, ua_student.email, 
-         ua_student.phone, st.education_level, st.address,
-         s.id, s.session_date, s.start_time, s.end_time, s.session_type, s.status,
-         c.id, c.class_code, c.name, c.start_date, c.end_date, c.max_capacity,
-         b.name, b.phone, b.address,
-         co.name, co.code, co.duration_weeks, co.session_per_week,
-         cs.title, cs.topics, cs.learning_objectives, cs.sequence_no,
-         tst.name, tst.start_time, tst.end_time,
-         r.name, r.location, r.capacity,
-         e.enrollment_date, e.status,
-         decider.full_name;
+    e.enrolled_at,
+    e.status AS enrollment_status,
+    -- Decider info
+    decider.full_name AS decided_by_name,
+    decider.email AS decided_by_email,
+    -- Request type specific message
+    CASE 
+        WHEN sr.request_type = 'absence' AND s.id IS NOT NULL 
+        THEN 'Học sinh xin nghỉ buổi học ngày ' || s.date::TEXT
+        WHEN sr.request_type = 'makeup' 
+        THEN 'Học sinh xin học bù (chưa chọn session cụ thể)'
+        WHEN sr.request_type = 'transfer'
+        THEN 'Học sinh xin chuyển lớp'
+        WHEN sr.request_type = 'reschedule'
+        THEN 'Học sinh xin dời lịch học'
+        ELSE 'Request khác'
+    END AS request_summary
+FROM public.student_request sr
+JOIN public.student st ON sr.student_id = st.id
+JOIN public.user_account ua_student ON st.user_id = ua_student.id
+LEFT JOIN public.session s ON sr.target_session_id = s.id  -- LEFT JOIN vì makeup có thể NULL
+JOIN public.class c ON sr.current_class_id = c.id
+JOIN public.branch b ON c.branch_id = b.id
+JOIN public.course co ON c.course_id = co.id
+LEFT JOIN public.enrollment e ON e.student_id = st.id AND e.class_id = c.id
+LEFT JOIN public.course_session cs ON s.course_session_id = cs.id
+LEFT JOIN public.time_slot_template tst ON s.time_slot_template_id = tst.id
+LEFT JOIN public.session_resource sr_res ON sr_res.session_id = s.id
+LEFT JOIN public.resource r ON sr_res.resource_id = r.id
+LEFT JOIN public.teaching_slot ts ON ts.session_id = s.id
+LEFT JOIN public.teacher t ON ts.teacher_id = t.id
+LEFT JOIN public.user_account ua_teacher ON t.user_account_id = ua_teacher.id
+LEFT JOIN public.user_account decider ON sr.decided_by = decider.id
+WHERE sr.id = 4 
+GROUP BY 
+    sr.id, sr.request_type, sr.status, sr.note, sr.submitted_at, sr.decided_at, sr.decided_by, sr.effective_date,
+    st.id, st.student_code, st.level,
+    ua_student.full_name, ua_student.email, ua_student.phone, ua_student.address, ua_student.dob, ua_student.gender,
+    s.id, s.date, s.type, s.status,
+    c.id, c.code, c.name, c.start_date, c.planned_end_date, c.actual_end_date, c.max_capacity, c.modality, c.schedule_days,
+    b.id, b.name, b.phone, b.address,
+    co.name, co.code, co.duration_weeks, co.session_per_week, co.description,
+    cs.topic, cs.sequence_no, cs.student_task,
+    tst.name, tst.start_time, tst.end_time, tst.duration_min,
+    e.enrolled_at, e.status,
+    decider.full_name, decider.email;
 
 
 OUTPUT từ query:
 
 [
   {
-    "request_id": 1,
+    "request_id": 4,
     "request_type": "absence",
-    "status": "approved",
-    "reason": "Family emergency",
-    "submitted_at": "2025-10-12 03:39:48.986989+00",
-    "decided_at": "2025-10-13 03:39:48.986989+00",
+    "status": "pending",
+    "note": "Có việc gia đình khẩn cấp. Em xin phép nghỉ buổi học này.",
+    "submitted_at": "2025-10-27 16:44:01.620431+00",
+    "decided_at": null,
+    "decided_by": null,
+    "effective_date": null,
     "student_id": 14,
     "student_code": "S014",
+    "education_level": "Intermediate",
     "student_name": "Mac Thi Lan",
     "student_email": "student014@gmail.com",
     "student_phone": "+84-913-444-444",
-    "education_level": "Working Professional",
-    "student_address": "Hanoi",
-    "session_id": 53,
-    "session_date": "2025-10-14",
+    "student_address": "80 Tay Son, Dong Da, Hanoi",
+    "student_dob": "2002-03-21",
+    "student_gender": null,
+    "session_id": 59,
+    "session_date": "2025-10-28",
     "session_type": "class",
-    "session_status": "done",
+    "session_status": "planned",
+    "time_slot_name": "Afternoon Slot 1",
+    "slot_start": "13:00:00",
+    "slot_end": "14:30:00",
+    "duration_min": 90,
     "class_id": 3,
     "class_code": "B1-IELTS-001",
     "class_name": "IELTS Foundation B1 - Afternoon",
     "class_start_date": "2025-09-07",
-    "class_end_date": "2025-12-28",
-    "actual_end_date": null,
+    "class_planned_end_date": "2025-12-28",
+    "class_actual_end_date": null,
     "max_capacity": 18,
+    "modality": "offline",
+    "schedule_days": [
+      2,
+      4,
+      6
+    ],
+    "branch_id": 1,
     "branch_name": "Main Campus",
     "branch_phone": "+84-24-3123-4567",
     "branch_address": "123 Nguyen Trai Street, Thanh Xuan District",
@@ -542,34 +643,41 @@ OUTPUT từ query:
     "course_code": "ENG-B1-IELTS-V1",
     "duration_weeks": 16,
     "session_per_week": 3,
-    "session_title": "Listening Section 1 - Forms & Details",
-    "student_task": "Practice form completion, note-taking",
-    "sequence_no": 2,
-    "time_slot_name": "Afternoon Slot 1",
-    "slot_start": "13:00:00",
-    "slot_end": "14:30:00",
-    "duration_min": 90,
-    "room_name": "Room 201",
-    "room_location": "Floor 2",
-    "room_capacity": 15,
+    "course_description": "IELTS preparation for intermediate learners targeting band 5.0-6.0",
+    "session_topic": "Listening Strategies - Keywords",
+    "session_sequence": 8,
+    "student_task": "Identify keywords and paraphrasing",
+    "resources": "Room 201 (room)",
     "teachers": [
       {
         "name": "Emily Davis",
         "role": "primary",
         "email": "teacher.emily@elc-hanoi.edu.vn",
+        "phone": "+84-903-444-444",
         "skill": "reading",
-        "status": "completed",
+        "status": "scheduled",
         "teacher_id": 4
+      },
+      {
+        "name": "Le Thi Mai",
+        "role": "assistant",
+        "email": "teacher.mai@elc-hanoi.edu.vn",
+        "phone": "+84-903-777-777",
+        "skill": "general",
+        "status": "scheduled",
+        "teacher_id": 7
       }
     ],
     "total_absences": 1,
-    "total_sessions": 7,
+    "completed_sessions": 7,
+    "total_class_sessions": 25,
     "absence_percentage": "14.29",
-    "days_until_session": -13,
-    "enrolled_at": "2025-09-02 03:39:48.986989+00",
+    "days_until_session": 1,
+    "enrolled_at": "2025-09-02 16:04:33.027916+00",
     "enrollment_status": "enrolled",
-    "decided_by_name": "Pham Thi Academic",
-    "decided_by_email": "academic1@elc-hanoi.edu.vn"
+    "decided_by_name": null,
+    "decided_by_email": null,
+    "request_summary": "Học sinh xin nghỉ buổi học ngày 2025-10-28"
   }
 ]
 
@@ -593,45 +701,32 @@ System hiển thị confirmation dialog: "Bạn có chắc chắn muốn phê du
 Giáo vụ confirm
 
 Bước 31: Thực hiện transaction approve
-System thực hiện BEGIN TRANSACTION:
-UPDATE student_request SET:
-status = 'approved' 
-decided_by = :Affairs_id
-decided_at = NOW()
-approval_note = :note (nếu có)
-UPDATE student_session SET:
-attendance_status = 'excused' 
-WHERE student_id = :student_id AND session_id = :session_id
-COMMIT
-
--- BEGIN TRANSACTION
 BEGIN;
 
 -- 1. Update student_request status to approved
-UPDATE student_request
+UPDATE public.student_request
 SET 
-    status = 'approved',
-    decided_by = :Affairs_user_id,
-    decided_at = NOW(),
-    approval_note = :approval_note  -- optional
-WHERE id = :request_id
+    status = 'approved'::request_status_enum,
+    decided_by = 4,  -- Academic Affairs user_id
+    decided_at = CURRENT_TIMESTAMP,
+    updated_at = CURRENT_TIMESTAMP
+WHERE id = 4
     AND status = 'pending'
-RETURNING id, student_id, target_session_id;
+RETURNING id, student_id, target_session_id, status, decided_at;
 
 -- 2. Update student_session attendance to excused
-UPDATE student_session
+UPDATE public.student_session
 SET 
-    attendance_status = 'excused',
-    notes = COALESCE(notes || E'\n', '') || 'Approved absence request ' || :request_id
-WHERE student_id = (SELECT student_id FROM student_request WHERE id = :request_id)
-    AND session_id = (SELECT target_session_id FROM student_request WHERE id = :request_id)
+    attendance_status = 'excused'::attendance_status_enum,
+    note = COALESCE(note || E'\n', '') || 'Approved absence request #4 on ' || CURRENT_TIMESTAMP::DATE::TEXT
+WHERE student_id = 14
+    AND session_id = 59
     AND attendance_status = 'planned'
-RETURNING student_id, session_id, attendance_status;
+RETURNING student_id, session_id, attendance_status, note;
 
--- COMMIT
 COMMIT;
 
--- Nếu có lỗi, ROLLBACK sẽ tự động chạy
+
 
 
 Bước 32: Gửi email thông báo cho học viên (approved)

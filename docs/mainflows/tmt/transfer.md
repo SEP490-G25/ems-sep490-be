@@ -46,20 +46,25 @@ Học viên chọn: Giữ nguyên hoặc Chuyển course khác
 Bước 14: Hệ thống load danh sách target classes
 System query classes khả dụng:
 
+-- =====================================================
+-- QUERY: Load Target Classes for Transfer
+-- Use Case: Student 15 (in Class 3 - IELTS B1) tìm class để chuyển đến
+-- =====================================================
+
 WITH current_class_info AS (
     SELECT course_id, id AS current_class_id, branch_id AS current_branch_id
-    FROM class
-    WHERE id = :selected_current_class_id
+    FROM "class"
+    WHERE id = 3  -- Class 3 (current class of student 15)
 ),
 enrollment_counts AS (
-    SELECT 
+    SELECT
         c.id AS class_id,
         COUNT(DISTINCT e.student_id) AS enrolled_count
-    FROM class c
+    FROM "class" c
     LEFT JOIN enrollment e ON c.id = e.class_id AND e.status = 'enrolled'
     GROUP BY c.id
 )
-SELECT 
+SELECT
     c.id AS class_id,
     c.code,
     c.name,
@@ -69,37 +74,45 @@ SELECT
     c.schedule_days,
     c.max_capacity,
     c.status,
+    co.name AS course_name,
     b.id AS branch_id,
     b.name AS branch_name,
     b.address,
     -- Capacity info
     COALESCE(ec.enrolled_count, 0) AS enrolled_count,
     c.max_capacity - COALESCE(ec.enrolled_count, 0) AS available_slots,
-    -- Teachers
+    -- Teachers (aggregated)
     STRING_AGG(DISTINCT ua.full_name, ', ') AS teachers,
     -- Priority flag
-    CASE 
-        WHEN b.id = cci.current_branch_id THEN 1 
-        ELSE 2 
+    CASE
+        WHEN b.id = cci.current_branch_id THEN 1
+        ELSE 2
     END AS priority_score,
-    CASE 
-        WHEN b.id = cci.current_branch_id THEN true 
-        ELSE false 
+    CASE
+        WHEN b.id = cci.current_branch_id THEN true
+        ELSE false
     END AS is_same_branch
-FROM class c
+FROM "class" c
 JOIN branch b ON c.branch_id = b.id
+JOIN course co ON c.course_id = co.id
 CROSS JOIN current_class_info cci
 LEFT JOIN enrollment_counts ec ON c.id = ec.class_id
-LEFT JOIN session s ON s.class_id = c.id
-LEFT JOIN teaching_slot ts ON s.id = ts.session_id
+LEFT JOIN session s ON s.class_id = c.id AND s.status = 'planned'
+LEFT JOIN teaching_slot ts ON s.id = ts.session_id AND ts.role = 'primary'
 LEFT JOIN teacher t ON ts.teacher_id = t.id
 LEFT JOIN user_account ua ON t.user_account_id = ua.id
-WHERE c.course_id = cci.course_id -- Same course
-  AND c.id != cci.current_class_id -- Exclude current
+WHERE c.course_id = cci.course_id  -- Same course (course_id = 2: IELTS B1)
+  AND c.id != cci.current_class_id -- Exclude current (not class 3)
   AND c.status IN ('scheduled', 'ongoing')
   AND COALESCE(ec.enrolled_count, 0) < c.max_capacity -- Has capacity
-GROUP BY c.id, b.id, cci.current_branch_id, ec.enrolled_count
+GROUP BY c.id, b.id, b.name, b.address, co.name, cci.current_branch_id, ec.enrolled_count
 ORDER BY priority_score ASC, c.start_date ASC;
+
+-- Expected Output (2 classes khả dụng):
+-- class_id: 16, code: 'B1-IELTS-002', name: 'IELTS Foundation B1 - Morning Online'
+--   modality: 'online', status: 'ongoing', available_slots: ~18, is_same_branch: true, priority_score: 1
+-- class_id: 17, code: 'B1-IELTS-003', name: 'IELTS Foundation B1 - Evening Offline'
+--   modality: 'offline', status: 'scheduled', available_slots: ~18, is_same_branch: true, priority_score: 1
 
 
 Bước 15: Thực hiện Content Gap Detection (background)
@@ -109,41 +122,54 @@ Completed sessions của target class (course_session_ids đã học)
 Tính Gap = Target completed MINUS Current not studied
 Identify missing content, count số buổi gap
 
+-- =====================================================
+-- QUERY: Content Gap Detection
+-- Use Case: Student 15 transfers từ Class 3 sang Class 16
+-- Check xem Class 16 đã học những sessions nào mà Class 3 chưa học
+-- =====================================================
+
 WITH current_remaining_sessions AS (
     -- Sessions còn lại của lớp hiện tại (chưa học)
     SELECT DISTINCT s.course_session_id
     FROM session s
-    WHERE s.class_id = :current_class_id
+    WHERE s.class_id = 3          -- Current class (Class 3)
       AND s.status = 'planned'
       AND s.date >= CURRENT_DATE
+),
+current_completed_sessions AS (
+    -- Sessions đã hoàn thành của lớp hiện tại
+    SELECT DISTINCT s.course_session_id
+    FROM session s
+    WHERE s.class_id = 3          -- Current class (Class 3)
+      AND s.status = 'done'
+      AND s.date < CURRENT_DATE
 ),
 target_completed_sessions AS (
     -- Sessions đã hoàn thành của lớp đích
     SELECT DISTINCT s.course_session_id
     FROM session s
-    WHERE s.class_id = :target_class_id
+    WHERE s.class_id = 16         -- Target class (Class 16)
       AND s.status = 'done'
       AND s.date < CURRENT_DATE
 ),
 gap_sessions AS (
-    -- Gap = Target đã học MINUS Current chưa học
+    -- Gap = Target đã học MINUS (Current đã học + Current sẽ học)
     SELECT tcs.course_session_id
     FROM target_completed_sessions tcs
     WHERE tcs.course_session_id NOT IN (
-        -- Các sessions mà current đã học hoặc sẽ học
-        SELECT s.course_session_id
-        FROM session s
-        WHERE s.class_id = :current_class_id
-          AND (s.status = 'done' OR s.course_session_id IN (
-              SELECT course_session_id FROM current_remaining_sessions
-          ))
+        -- Các sessions mà current đã học
+        SELECT course_session_id FROM current_completed_sessions
+        UNION
+        -- Các sessions mà current sẽ học
+        SELECT course_session_id FROM current_remaining_sessions
     )
 )
-SELECT 
+SELECT
     gs.course_session_id,
     cs.sequence_no,
     cs.topic,
-    cs.skill_set, -- Array type
+    cs.student_task,
+    cs.skill_set,
     cp.phase_number,
     cp.name AS phase_name,
     COUNT(*) OVER() AS total_gap_count
@@ -151,6 +177,10 @@ FROM gap_sessions gs
 JOIN course_session cs ON gs.course_session_id = cs.id
 JOIN course_phase cp ON cs.phase_id = cp.id
 ORDER BY cs.sequence_no;
+
+-- Expected Output: Tùy thuộc vào tiến độ của Class 3 vs Class 16
+-- Nếu Class 16 đi trước hơn → có gap
+-- Nếu Class 16 đi chậm hơn hoặc ngang bằng → không có gap
 
 
 Bước 16: Thực hiện Schedule Conflict Check (background)
@@ -207,6 +237,11 @@ request_type='transfer', status='pending'
 effective_date, reason, notes
 submitted_at=NOW(), submitted_by=NULL
 
+-- =====================================================
+-- INSERT TRANSFER REQUEST
+-- Use Case: Student 15 request chuyển từ Class 3 sang Class 16
+-- =====================================================
+
 INSERT INTO student_request (
     student_id,
     current_class_id,
@@ -214,26 +249,28 @@ INSERT INTO student_request (
     request_type,
     status,
     effective_date,
-    reason,
-    notes,
+    note,                  -- Lý do + notes
     submitted_at,
-    submitted_by,
+    submitted_by,          -- User ID of student
     created_at,
-    created_by
+    updated_at
 ) VALUES (
-    :current_student_id,
-    :selected_current_class_id,
-    :selected_target_class_id,
-    'transfer'::student_request_type_enum,
-    'pending'::request_status_enum,
-    :effective_date,
-    :reason_text,
-    :notes_text,
-    NOW(),
-    NULL, -- Student tự tạo, không có submitted_by
-    NOW(),
-    :current_user_id
+    15,                    -- Student 15 (S015)
+    3,                     -- Class 3 (B1-IELTS-001 - current class)
+    16,                    -- Class 16 (B1-IELTS-002 - target class)
+    'transfer',            -- Request type
+    'pending',             -- Status
+    CURRENT_DATE + INTERVAL '7 days',  -- Effective date (1 tuần sau)
+    'I would like to transfer to the morning class due to my new work schedule. The afternoon class conflicts with my office hours.', -- Reason
+    CURRENT_TIMESTAMP,     -- Submitted at
+    40,                    -- User ID of student 15 (user_account_id = 40)
+    CURRENT_TIMESTAMP,
+    CURRENT_TIMESTAMP
 ) RETURNING id, submitted_at;
+
+-- Expected Output:
+-- id: <new_request_id> (e.g., 5 or higher)
+-- submitted_at: CURRENT_TIMESTAMP
 
 
 Bước 25: Success message + Refresh list
@@ -386,102 +423,108 @@ Step 6: INSERT audit_log → track all changes
 
 COMMIT
 
+-- =====================================================
+-- APPROVE TRANSFER REQUEST TRANSACTION
+-- Use Case: Academic Affairs approve student 15 transfer từ Class 3 sang Class 16
+-- =====================================================
+
 -- ===== BEGIN TRANSACTION =====
 BEGIN;
 
--- Step 1: UPDATE student_request
+-- Step 1: UPDATE student_request status
 UPDATE student_request
-SET 
-    status = 'approved'::request_status_enum,
-    decided_by = :current_Affairs_user_id,
-    decided_at = NOW(),
-    updated_at = NOW(),
-    updated_by = :current_Affairs_user_id
-WHERE id = :request_id 
+SET
+    status = 'approved',
+    decided_by = 4,              -- Academic Affairs 1 (user_id = 4)
+    decided_at = CURRENT_TIMESTAMP,
+    updated_at = CURRENT_TIMESTAMP
+WHERE id = 5                     -- Request ID (giả sử = 5)
   AND status = 'pending';
 -- Expected: 1 row updated
 
--- Step 2: UPDATE enrollment (old class) → status = 'transferred'
+-- Step 2: UPDATE old enrollment → status = 'transferred'
 UPDATE enrollment
-SET 
-    status = 'transferred'::enrollment_status_enum,
-    ended_at = :effective_date - INTERVAL '1 day',
-    transfer_reason = (SELECT reason FROM student_request WHERE id = :request_id),
-    updated_at = NOW(),
-    updated_by = :current_Affairs_user_id
-WHERE student_id = :student_id
-  AND class_id = :current_class_id
+SET
+    status = 'transferred',
+    left_at = CURRENT_DATE + INTERVAL '6 days',  -- effective_date - 1 day
+    updated_at = CURRENT_TIMESTAMP
+WHERE student_id = 15            -- Student 15
+  AND class_id = 3               -- Old class (Class 3)
   AND status = 'enrolled';
 -- Expected: 1 row updated
 
 -- Step 3: UPDATE student_session (old class) → attendance = 'excused'
+-- Mark all future sessions of old class as excused
 UPDATE student_session
-SET 
-    attendance_status = 'excused'::attendance_status_enum,
-    note = CONCAT(
-        COALESCE(note, ''), 
-        E'\nTransferred to class ', 
-        (SELECT code FROM class WHERE id = :target_class_id),
-        ' on ', 
-        :effective_date::TEXT
-    ),
-    updated_at = NOW()
-WHERE student_id = :student_id
+SET
+    attendance_status = 'excused',
+    note = COALESCE(note || E'\n', '') || 'Transferred to B1-IELTS-002 on ' || (CURRENT_DATE + INTERVAL '7 days')::TEXT,
+    recorded_at = CURRENT_TIMESTAMP
+WHERE student_id = 15            -- Student 15
   AND session_id IN (
-      SELECT s.id 
+      SELECT s.id
       FROM session s
-      WHERE s.class_id = :current_class_id
-        AND s.date >= :effective_date
-        AND s.status IN ('planned', 'scheduled')
+      WHERE s.class_id = 3       -- Old class
+        AND s.date >= CURRENT_DATE + INTERVAL '7 days'  -- From effective_date
+        AND s.status = 'planned'
   );
--- Expected: X rows updated (số sessions còn lại)
+-- Expected: ~15-20 rows updated (remaining sessions)
 
--- Step 4: INSERT enrollment (new class)
+-- Step 4: INSERT new enrollment (target class)
+-- Using ON CONFLICT to handle cases where enrollment already exists (e.g., from previous failed transaction)
 INSERT INTO enrollment (
     class_id,
     student_id,
     status,
     enrolled_at,
-    transferred_from_class_id, -- Reference back ⭐
+    join_session_id,        -- First session student will attend
     created_at,
-    created_by
+    updated_at
 ) VALUES (
-    :target_class_id,
-    :student_id,
-    'enrolled'::enrollment_status_enum,
-    NOW(),
-    :current_class_id, -- ⭐ Reference to old class
-    NOW(),
-    :current_Affairs_user_id
-);
--- Expected: 1 row inserted
+    16,                      -- Target class (Class 16)
+    15,                      -- Student 15
+    'enrolled',              -- Status
+    CURRENT_TIMESTAMP,       -- Enrolled at
+    (SELECT MIN(id) FROM session WHERE class_id = 16 AND date >= CURRENT_DATE + INTERVAL '7 days' AND status = 'planned'),  -- First session
+    CURRENT_TIMESTAMP,
+    CURRENT_TIMESTAMP
+)
+ON CONFLICT (class_id, student_id)
+DO UPDATE SET
+    status = 'enrolled',
+    enrolled_at = CURRENT_TIMESTAMP,
+    join_session_id = EXCLUDED.join_session_id,
+    updated_at = CURRENT_TIMESTAMP;
+-- Expected: 1 row inserted or updated
 
--- Step 5: INSERT student_session (new class) - Bulk insert
+-- Step 5: INSERT student_session (new class) - Bulk insert future sessions
 INSERT INTO student_session (
     student_id,
     session_id,
-    is_makeup, -- false for transfer
-    attendance_status,
-    created_at
+    is_makeup,
+    attendance_status
 )
-SELECT 
-    :student_id,
-    s.id,
-    false, -- not a makeup session
-    'planned'::attendance_status_enum,
-    NOW()
+SELECT
+    15,                      -- Student 15
+    s.id,                    -- Session ID
+    false,                   -- Not a makeup session
+    'planned'                -- Status
 FROM session s
-WHERE s.class_id = :target_class_id
-  AND s.date >= :effective_date
-  AND s.status IN ('planned', 'scheduled')
+WHERE s.class_id = 16        -- Target class (Class 16)
+  AND s.date >= CURRENT_DATE + INTERVAL '7 days'  -- From effective_date
+  AND s.status = 'planned'
 ON CONFLICT (student_id, session_id) DO NOTHING;
--- Expected: Y rows inserted (số sessions future của target class)
-
--- Step 6: INSERT audit_log (optional - nếu có table audit_log)
--- INSERT INTO audit_log (...) VALUES (...);
+-- Expected: ~20-25 rows inserted (future sessions of Class 16)
 
 -- ===== COMMIT TRANSACTION =====
 COMMIT;
+
+-- Verify results:
+-- 1. student_request(id=5).status = 'approved'
+-- 2. enrollment(student_id=15, class_id=3).status = 'transferred'
+-- 3. enrollment(student_id=15, class_id=16).status = 'enrolled'
+-- 4. student_session(15, sessions of class 3 after effective_date).attendance_status = 'excused'
+-- 5. student_session(15, sessions of class 16 after effective_date).attendance_status = 'planned'
 
 
 Bước 42: Verification sau transaction
@@ -503,9 +546,219 @@ Request status: Approved, Show: Decided by, Date, Approval note
 Bước 47: Học viên kiểm tra "My Classes"
 Lớp cũ: Status="Transferred", Badge: "Đã chuyển lớp"
 Lớp mới: Status="Enrolled", Badge: "New"
+
+-- =====================================================
+-- QUERY: Load Student's Classes (My Classes)
+-- Use Case: Student 15 xem danh sách classes sau khi transfer được approve
+-- =====================================================
+
+SELECT
+    e.id AS enrollment_id,
+    e.class_id,
+    e.status AS enrollment_status,
+    e.enrolled_at,
+    e.left_at,
+    e.join_session_id,
+    e.left_session_id,
+    -- Class info
+    c.code AS class_code,
+    c.name AS class_name,
+    c.modality,
+    c.status AS class_status,
+    c.start_date,
+    c.planned_end_date,
+    c.schedule_days,
+    c.max_capacity,
+    -- Course info
+    co.id AS course_id,
+    co.name AS course_name,
+    co.code AS course_code,
+    sub.name AS subject_name,
+    lv.code AS level_code,
+    -- Branch info
+    b.id AS branch_id,
+    b.name AS branch_name,
+    b.address AS branch_address,
+    -- Progress calculation
+    (SELECT COUNT(*) FROM session s WHERE s.class_id = c.id AND s.status = 'done') AS completed_sessions,
+    (SELECT COUNT(*) FROM session s WHERE s.class_id = c.id) AS total_sessions,
+    ROUND(
+        (SELECT COUNT(*) FROM session s WHERE s.class_id = c.id AND s.status = 'done')::NUMERIC /
+        NULLIF((SELECT COUNT(*) FROM session s WHERE s.class_id = c.id), 0) * 100,
+        1
+    ) AS progress_percentage,
+    -- Teachers (aggregated)
+    STRING_AGG(DISTINCT ua_teacher.full_name, ', ') AS teachers,
+    -- Badge logic
+    CASE
+        WHEN e.status = 'transferred' THEN 'Đã chuyển lớp'
+        WHEN e.status = 'enrolled' AND e.enrolled_at >= CURRENT_DATE - INTERVAL '7 days' THEN 'New'
+        WHEN e.status = 'enrolled' THEN 'Active'
+        WHEN e.status = 'completed' THEN 'Completed'
+        WHEN e.status = 'dropped' THEN 'Dropped'
+        ELSE NULL
+    END AS badge,
+    -- New enrollment check (for "New" badge after transfer)
+    CASE
+        WHEN e.status = 'enrolled' AND EXISTS (
+            SELECT 1 FROM student_request sr
+            WHERE sr.student_id = 15
+              AND sr.target_class_id = c.id
+              AND sr.request_type = 'transfer'
+              AND sr.status = 'approved'
+              AND sr.decided_at >= CURRENT_DATE - INTERVAL '7 days'
+        ) THEN true
+        ELSE false
+    END AS is_new_transfer
+FROM enrollment e
+JOIN "class" c ON e.class_id = c.id
+JOIN branch b ON c.branch_id = b.id
+JOIN course co ON c.course_id = co.id
+JOIN level lv ON co.level_id = lv.id
+JOIN subject sub ON lv.subject_id = sub.id
+-- Teachers via teaching_slot and session
+LEFT JOIN session s_teacher ON s_teacher.class_id = c.id
+LEFT JOIN teaching_slot ts ON ts.session_id = s_teacher.id AND ts.role = 'primary'
+LEFT JOIN teacher t ON ts.teacher_id = t.id
+LEFT JOIN user_account ua_teacher ON t.user_account_id = ua_teacher.id
+WHERE e.student_id = 15  -- Student 15 (S015)
+GROUP BY
+    e.id, e.class_id, e.status, e.enrolled_at, e.left_at, e.join_session_id, e.left_session_id,
+    c.id, c.code, c.name, c.modality, c.status, c.start_date, c.planned_end_date, c.schedule_days, c.max_capacity,
+    co.id, co.name, co.code, sub.name, lv.code,
+    b.id, b.name, b.address
+ORDER BY
+    CASE e.status
+        WHEN 'enrolled' THEN 1
+        WHEN 'transferred' THEN 2
+        WHEN 'completed' THEN 3
+        WHEN 'dropped' THEN 4
+        ELSE 5
+    END,
+    e.enrolled_at DESC;
+
+-- Expected Output for Student 15 after transfer:
+-- Row 1: Class 16 (B1-IELTS-002), status='enrolled', badge='New', is_new_transfer=true
+-- Row 2: Class 3 (B1-IELTS-001), status='transferred', badge='Đã chuyển lớp', left_at=effective_date-1
+
+
 Bước 48: Học viên kiểm tra "My Schedule"
 Sessions lớp cũ (từ effective_date): Status="Excused", Note="Transferred to [New]"
 Sessions lớp mới (từ effective_date): Status="Planned", Badge: "Lớp mới"
+
+-- =====================================================
+-- QUERY: Load Student's Schedule (My Schedule)
+-- Use Case: Student 15 xem lịch học sau khi transfer được approve
+-- =====================================================
+
+SELECT
+    ss.session_id,
+    ss.attendance_status,
+    ss.is_makeup,
+    ss.note AS student_note,
+    ss.homework_status,
+    ss.recorded_at,
+    -- Session info
+    s.date AS session_date,
+    s.type AS session_type,
+    s.status AS session_status,
+    s.teacher_note,
+    -- Class info
+    c.id AS class_id,
+    c.code AS class_code,
+    c.name AS class_name,
+    c.modality,
+    -- Course session info (topic, tasks)
+    cs.id AS course_session_id,
+    cs.sequence_no,
+    cs.topic AS session_title,
+    cs.student_task,
+    cs.skill_set,
+    -- Time slot
+    tst.start_time,
+    tst.end_time,
+    -- Branch
+    b.name AS branch_name,
+    b.address AS branch_address,
+    -- Teachers (aggregated for this session)
+    JSONB_AGG(
+        JSONB_BUILD_OBJECT(
+            'teacher_id', t.id,
+            'teacher_code', t.employee_code,
+            'teacher_name', ua_teacher.full_name,
+            'role', ts.role,
+            'skill', ts.skill
+        ) ORDER BY ts.role
+    ) FILTER (WHERE t.id IS NOT NULL) AS teachers,
+    -- Resource info (room or virtual)
+    JSONB_AGG(
+        DISTINCT JSONB_BUILD_OBJECT(
+            'resource_id', r.id,
+            'resource_type', sr.resource_type,
+            'resource_name', r.name,
+            'meeting_url', CASE WHEN sr.resource_type = 'virtual' THEN r.meeting_url ELSE NULL END,
+            'location', CASE WHEN sr.resource_type = 'room' THEN r.location ELSE NULL END
+        )
+    ) FILTER (WHERE r.id IS NOT NULL) AS resources,
+    -- Badge logic for UI
+    CASE
+        WHEN ss.attendance_status = 'excused' AND ss.note ILIKE '%Transferred%' THEN 'Transferred'
+        WHEN ss.attendance_status = 'planned' AND EXISTS (
+            SELECT 1 FROM enrollment e
+            WHERE e.student_id = 15
+              AND e.class_id = c.id
+              AND e.status = 'enrolled'
+              AND e.enrolled_at >= CURRENT_DATE - INTERVAL '7 days'
+        ) THEN 'Lớp mới'
+        WHEN ss.is_makeup THEN 'Makeup'
+        WHEN ss.attendance_status = 'present' THEN 'Attended'
+        WHEN ss.attendance_status = 'absent' THEN 'Absent'
+        WHEN ss.attendance_status = 'late' THEN 'Late'
+        WHEN ss.attendance_status = 'planned' THEN 'Upcoming'
+        ELSE NULL
+    END AS badge,
+    -- Calculate days until session
+    s.date - CURRENT_DATE AS days_until,
+    -- Enrollment info (to determine if this is transferred class)
+    e.status AS enrollment_status
+FROM student_session ss
+JOIN session s ON ss.session_id = s.id
+JOIN "class" c ON s.class_id = c.id
+JOIN branch b ON c.branch_id = b.id
+JOIN enrollment e ON e.class_id = c.id AND e.student_id = ss.student_id
+LEFT JOIN course_session cs ON s.course_session_id = cs.id
+LEFT JOIN time_slot_template tst ON s.time_slot_template_id = tst.id
+-- Teachers
+LEFT JOIN teaching_slot ts ON ts.session_id = s.id
+LEFT JOIN teacher t ON ts.teacher_id = t.id
+LEFT JOIN user_account ua_teacher ON t.user_account_id = ua_teacher.id
+-- Resources
+LEFT JOIN session_resource sr ON sr.session_id = s.id
+LEFT JOIN resource r ON sr.resource_id = r.id AND sr.resource_type = r.resource_type
+WHERE ss.student_id = 15  -- Student 15 (S015)
+  AND s.date >= CURRENT_DATE - INTERVAL '7 days'  -- Show recent past + all future
+GROUP BY
+    ss.session_id, ss.attendance_status, ss.is_makeup, ss.note, ss.homework_status, ss.recorded_at,
+    s.id, s.date, s.type, s.status, s.teacher_note,
+    c.id, c.code, c.name, c.modality,
+    cs.id, cs.sequence_no, cs.topic, cs.student_task, cs.skill_set,
+    tst.start_time, tst.end_time,
+    b.name, b.address,
+    e.status
+ORDER BY s.date ASC, tst.start_time ASC;
+
+-- Expected Output for Student 15 after transfer:
+-- Sessions from Class 3 (old class) with date >= effective_date:
+--   - attendance_status = 'excused'
+--   - note contains "Transferred to B1-IELTS-002"
+--   - badge = 'Transferred'
+--   - enrollment_status = 'transferred'
+-- Sessions from Class 16 (new class) with date >= effective_date:
+--   - attendance_status = 'planned'
+--   - badge = 'Lớp mới' (if enrollment is recent)
+--   - enrollment_status = 'enrolled'
+
+
 Bước 49: Teachers nhận email và update tracking
 Old teacher biết student rời đi, New teacher chuẩn bị welcome
 

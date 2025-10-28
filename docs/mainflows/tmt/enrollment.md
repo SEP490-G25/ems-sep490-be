@@ -1,57 +1,190 @@
 
 STUDENT ENROLLMENT
 GIAI ĐOẠN 1: KHỞI TẠO & XEM DANH SÁCH (Initialization)
-Step 1: [Academic Affairs] Vào Chi Tiết Lớp
-Giáo vụ truy cập vào trang chi tiết lớp học (Class Detail page)
+Step 1: [Academic Affairs] truy cập vào trang chi tiết lớp học (Class Detail page)
 Tại đây hiển thị thông tin lớp và danh sách học viên đã được ghi danh
+SELECT 
+    e.id AS enrollment_id,
+    e.status AS enrollment_status,
+    e.enrolled_at,
+    s.id AS student_id,
+    s.student_code,
+    u.facebook_url,
+    u.dob,
+    s.level,
+    u.full_name,
+    u.email,
+    u.phone,
+    u.address,
+    u.status AS account_status
+FROM enrollment e
+INNER JOIN student s ON e.student_id = s.id
+INNER JOIN user_account u ON s.user_id = u.id
+WHERE e.class_id = 3  -- Thay bằng :classId trong ứng dụng
+  AND e.status IN ('enrolled', 'waitlisted')  -- Chỉ lấy students đang active
+ORDER BY e.enrolled_at ASC, u.full_name ASC;
+
+
+OUTPUT:
+[
+  {
+    "enrollment_id": 26,
+    "enrollment_status": "enrolled",
+    "enrolled_at": "2025-09-02 15:17:35.132044+00",
+    "student_id": 26,
+    "student_code": "S026",
+    "facebook_url": null,
+    "dob": "2001-07-15",
+    "level": "Beginner",
+    "full_name": "Bach Thi Uyen",
+    "email": "student026@gmail.com",
+    "phone": "+84-916-111-111",
+    "address": "140 Khuc Thua Du, Thanh Xuan, Hanoi",
+    "account_status": "active"
+  },
+  {
+    "enrollment_id": 27,
+    "enrollment_status": "enrolled",
+    "enrolled_at": "2025-09-02 15:17:35.132044+00",
+    "student_id": 27,
+    "student_code": "S027",
+    "facebook_url": null,
+    "dob": "1996-03-22",
+    "level": "Beginner",
+    "full_name": "Chu Van Vinh",
+    "email": "student027@gmail.com",
+    "phone": "+84-916-222-222",
+    "address": "145 Nguy Nhu Kon Tum, Thanh Xuan, Hanoi",
+    "account_status": "active"
+  },
+  …
+]
+
 
 Step 2: [Academic Affairs] Click "Ghi danh học viên"
 Giáo vụ nhấn nút "Ghi danh học viên" để bắt đầu quy trình enrollment
 
-Step 3: [System] Kiểm tra class status (scheduled/ongoing)
-Hệ thống kiểm tra trạng thái lớp học
-Chỉ cho phép ghi danh nếu lớp ở trạng thái "scheduled" hoặc "ongoing"
-Không cho phép ghi danh nếu lớp đã "completed" hoặc "cancelled"
+Step 3: UI ngay từ lúc fetch class detail ra là đã lấy class_status để disable button đối với các lớp không phải là ongoing hoặc là scheduled
 
-Step 4: [System] Load danh sách students khả dụng (chưa enroll trong lớp)
-Hệ thống load danh sách tất cả học viên thuộc chi nhánh (branch)
-Lọc ra những học viên chưa được ghi danh vào lớp này
+Step 4: [System] load danh sách tất cả học viên thuộc chi nhánh (branch)
+Lọc ra những học viên chưa được ghi danh vào lớp nào
 Danh sách này sẽ là nguồn để giáo vụ chọn
-
-WITH class_info AS (
-    SELECT branch_id FROM class WHERE id = 2
-),
-enrolled_students AS (
-    -- Lấy danh sách students đã enroll vào lớp này
-    SELECT student_id
-    FROM enrollment
-    WHERE class_id = 2
-      AND status NOT IN ('dropped', 'transferred')
+WITH enrolled_students AS (
+    -- Lấy danh sách students đã enroll vào BẤT KỲ lớp nào đang active
+    SELECT DISTINCT e.student_id
+    FROM enrollment e
+    INNER JOIN class c ON e.class_id = c.id
+    WHERE e.status IN ('enrolled', 'waitlisted')  -- Đang học hoặc đang chờ
+      AND c.status IN ('scheduled', 'ongoing')    -- Lớp đang chạy hoặc sắp chạy
 )
 SELECT DISTINCT
     s.id AS student_id,
+    s.student_code,
+    u.id AS user_id,
     u.full_name,
     u.email,
     u.phone,
-    s.student_code,
-    s.education_level,
-    s.created_at
+    u.dob,
+    u.gender,
+    u.address,
+    u.facebook_url,
+    u.status AS account_status,
+    u.last_login_at,
+    s.created_at AS student_created_at,
+    -- Thông tin placement test/skill assessment (aggregate các skills)
+    MAX(CASE WHEN rsa.skill = 'listening' THEN rsa.score END) AS listening_score,
+    MAX(CASE WHEN rsa.skill = 'reading' THEN rsa.score END) AS reading_score,
+    MAX(CASE WHEN rsa.skill = 'writing' THEN rsa.score END) AS writing_score,
+    MAX(CASE WHEN rsa.skill = 'speaking' THEN rsa.score END) AS speaking_score,
+    MAX(CASE WHEN rsa.skill = 'general' THEN rsa.score END) AS general_score,
+    MAX(CASE WHEN rsa.skill = 'listening' THEN rsa.level_id END) AS listening_level_id,
+    MAX(CASE WHEN rsa.skill = 'reading' THEN rsa.level_id END) AS reading_level_id,
+    MAX(CASE WHEN rsa.skill = 'writing' THEN rsa.level_id END) AS writing_level_id,
+    MAX(CASE WHEN rsa.skill = 'speaking' THEN rsa.level_id END) AS speaking_level_id,
+    MAX(CASE WHEN rsa.skill = 'general' THEN rsa.level_id END) AS general_level_id,
+    MAX(rsa.assessment_date) AS latest_assessment_date,
+    MAX(rsa.assessment_type) AS assessment_type,
+    MAX(rsa.assessed_by) AS assessed_by
 FROM student s
 INNER JOIN user_account u ON s.user_id = u.id
 -- Kiểm tra student thuộc branch của class (qua user_branches)
 INNER JOIN user_branches ub ON u.id = ub.user_id
-INNER JOIN class_info ci ON ub.branch_id = ci.branch_id
--- Loại trừ students đã enroll
+-- LEFT JOIN để lấy thông tin replacement_skill_assessment (có thể không có)
+LEFT JOIN replacement_skill_assessment rsa ON s.id = rsa.student_id
+-- Loại trừ students đã enroll vào bất kỳ lớp active nào
 WHERE s.id NOT IN (SELECT student_id FROM enrolled_students)
   AND u.status = 'active'  -- Chỉ lấy user active
-ORDER BY u.full_name;
+GROUP BY s.id, s.student_code, u.id, u.full_name, u.email, u.phone, u.dob, 
+         u.gender, u.address, u.facebook_url, u.status, u.last_login_at, s.created_at
+ORDER BY 
+    latest_assessment_date DESC NULLS LAST,  -- Ưu tiên students có placement test mới nhất
+    u.full_name ASC;
 
 
--- Kết quả: Danh sách students khả dụng để chọn
+OUTPUT:
+
+[
+  {
+    "student_id": 68,
+    "student_code": "S068",
+    "user_id": 93,
+    "full_name": "Ly Van Yen",
+    "email": "student068@gmail.com",
+    "phone": "+84-924-333-333",
+    "dob": "1997-04-06",
+    "gender": null,
+    "address": "350 Hang Thiec, Hoan Kiem, Hanoi",
+    "facebook_url": null,
+    "account_status": "active",
+    "last_login_at": "2025-10-26 15:30:32.84771+00",
+    "student_created_at": "2025-10-26 15:30:32.84771+00",
+    "listening_score": null,
+    "reading_score": null,
+    "writing_score": null,
+    "speaking_score": null,
+    "general_score": 32,
+    "listening_level_id": null,
+    "reading_level_id": null,
+    "writing_level_id": null,
+    "speaking_level_id": null,
+    "general_level_id": 1,
+    "latest_assessment_date": "2025-10-26",
+    "assessment_type": "placement_test",
+    "assessed_by": 4
+  },
+  {
+    "student_id": 69,
+    "student_code": "S069",
+    "user_id": 94,
+    "full_name": "Mac Thi Anh",
+    "email": "student069@gmail.com",
+    "phone": "+84-924-444-444",
+    "dob": "2000-09-23",
+    "gender": null,
+    "address": "355 Hang Bac, Hoan Kiem, Hanoi",
+    "facebook_url": null,
+    "account_status": "active",
+    "last_login_at": "2025-10-26 15:30:32.84771+00",
+    "student_created_at": "2025-10-26 15:30:32.84771+00",
+    "listening_score": null,
+    "reading_score": null,
+    "writing_score": null,
+    "speaking_score": null,
+    "general_score": 58,
+    "listening_level_id": null,
+    "reading_level_id": null,
+    "writing_level_id": null,
+    "speaking_level_id": null,
+    "general_level_id": 3,
+    "latest_assessment_date": "2025-10-26",
+    "assessment_type": "placement_test",
+    "assessed_by": 6
+  },
+ …
+]
 
 
-Step 5: [Academic Affairs] Xem danh sách students khả dụng
-Giáo vụ xem danh sách học viên có thể ghi danh
+Step 5: [Academic Affairs] xem danh sách học viên có thể ghi danh
 Danh sách hiển thị thông tin: họ tên, email, số điện thoại, v.v.
 
 Step 6: [System] Hiển thị 3 options
@@ -65,12 +198,8 @@ Giáo vụ quyết định chọn một trong 3 phương thức
 
 GIAI ĐOẠN 2A: OPTION A - CHỌN HỌC VIÊN CÓ SẴN
 Step 8A: [Academic Affairs] OPTION A: Chọn student có sẵn từ danh sách
-Giáo vụ chọn phương thức "Chọn từ danh sách có sẵn"
 
-
-
-Step 9A: [System] Enable checkboxes để chọn students
-Hệ thống hiển thị checkbox bên cạnh mỗi học viên trong danh sách
+Step 9A: [System] hiển thị checkbox bên cạnh mỗi học viên trong danh sách
 Giáo vụ có thể chọn một hoặc nhiều học viên
 
 Step 10A: Nhảy đến Step 20 (Chọn students từ DS đã update)
@@ -85,12 +214,11 @@ Hệ thống mở form nhập thông tin học viên mới
 Form bao gồm: Họ tên, email, số điện thoại, ngày sinh, địa chỉ, v.v.
 
 Step 10B: [Academic Affairs] Điền form thông tin student
-Giáo vụ điền đầy đủ thông tin học viên mới vào form
 
 Step 11B: [Academic Affairs] Click "Lưu và Thêm vào DS"
-Giáo vụ nhấn nút "Lưu và Thêm vào Danh Sách"
 
 Step 12B: [System] Validate input
+(hệ thống tự động gọi api)
 Hệ thống validate thông tin:
 Email unique (không trùng trong hệ thống)
 Phone format (đúng định dạng số điện thoại)
@@ -115,67 +243,124 @@ FROM student
 WHERE student_code = :studentCode;
 
 
-Step 13B: [System] CREATE: 1. user_account, 2. student record
-Hệ thống tạo tài khoản user_account (nếu email chưa tồn tại)
-Tạo bản ghi student record liên kết với user_account
+Step 13B: [System] tạo bản ghi student record liên kết với user_account
 Gán role STUDENT cho user
 
-INSERT INTO user_account (
-    email,
-    phone,
-    full_name,
-    password_hash,
-    status,
-    created_at,
-    updated_at
-) VALUES (
-    'testuser001@gmail.com',
-    '+84-925-111-111',
-    'Nguyen Van Test 1',
-    '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6',  -- password: "password123"
-    'active',
-    CURRENT_TIMESTAMP,
-    CURRENT_TIMESTAMP
+WITH new_user AS (
+    INSERT INTO user_account (
+        email,
+        phone,
+        full_name,
+        dob,
+        gender,
+        address,
+        password_hash,
+        status,
+        created_at,
+        updated_at
+    ) VALUES (
+        'testuser999@gmail.com',
+        '+84-999-888-777',
+        'Tran Thi Test 999',
+        '2006-08-20'::DATE,
+        'female',
+        'Ho Chi Minh City, Vietnam',
+        '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6',
+        'active',
+        CURRENT_TIMESTAMP,
+        CURRENT_TIMESTAMP
+    )
+    ON CONFLICT (email) DO NOTHING
+    RETURNING id, email, full_name, phone
+),
+new_role AS (
+    INSERT INTO user_role (user_id, role_id)
+    SELECT 
+        nu.id, 
+        r.id
+    FROM new_user nu
+    CROSS JOIN (SELECT id FROM role WHERE code = 'STUDENT') r
+    ON CONFLICT (user_id, role_id) DO NOTHING
+    RETURNING user_id
+),
+new_branch_assignment AS (
+    INSERT INTO user_branches (user_id, branch_id, assigned_at, assigned_by)
+    SELECT 
+        nu.id,
+        1,
+        CURRENT_TIMESTAMP,
+        4
+    FROM new_user nu
+    ON CONFLICT (user_id, branch_id) DO NOTHING
+    RETURNING user_id, branch_id
+),
+new_student AS (
+    INSERT INTO student (
+        user_id,
+        student_code,
+        level,
+        created_at,
+        updated_at
+    )
+    SELECT 
+        nu.id,
+        'S999',
+        'High School',
+        CURRENT_TIMESTAMP,
+        CURRENT_TIMESTAMP
+    FROM new_user nu
+    ON CONFLICT (user_id) DO NOTHING
+    RETURNING id AS student_id, user_id, student_code
+),
+new_assessments AS (
+    INSERT INTO replacement_skill_assessment (
+        student_id,
+        skill,
+        level_id,
+        score,
+        assessment_date,
+        assessment_type,
+        note,
+        assessed_by,
+        created_at,
+        updated_at
+    )
+    SELECT 
+        ns.student_id,
+        skill_data.skill,
+        skill_data.level_id,
+        skill_data.score,
+        CURRENT_DATE,
+        'placement_test',
+        skill_data.note,
+        4,
+        CURRENT_TIMESTAMP,
+        CURRENT_TIMESTAMP
+    FROM new_student ns
+    CROSS JOIN (
+        VALUES 
+            ('general'::skill_enum, 2, 48, 'A2 level - Elementary'),
+            ('listening'::skill_enum, 2, 45, 'Basic listening skills'),
+            ('reading'::skill_enum, 2, 50, 'Good reading comprehension'),
+            ('writing'::skill_enum, 2, 42, 'Writing needs practice'),
+            ('speaking'::skill_enum, 2, 46, 'Basic conversation ability')
+    ) AS skill_data(skill, level_id, score, note)
+    RETURNING student_id, skill, score
 )
-RETURNING id;
--- Expected: Returns user_id (e.g., 96)
-
-
--- Step 2: Assign STUDENT role (giả sử user_id = 96)
-INSERT INTO user_role (user_id, role_id)
-VALUES (
-    96,  -- user_id từ bước 1
-    (SELECT id FROM role WHERE code = 'STUDENT')
-);
-
-
--- Step 3: Assign to Branch 1 (Main Campus)
-INSERT INTO user_branches (user_id, branch_id, assigned_at, assigned_by)
-VALUES (
-    96,  -- user_id từ bước 1
-    1,   -- Branch 1 (Main Campus)
-    CURRENT_TIMESTAMP,
-    4    -- Assigned by Academic Affairs 1 (user_id = 4)
-);
-
-
--- Step 4: Create student record
-INSERT INTO student (
-    user_id,
-    student_code,
-    education_level,
-    address,
-    created_at,
-    updated_at
-) VALUES (
-    96,     -- user_id từ bước 1
-    'S071',  -- Student code (tiếp theo từ S070)
-    'Undergraduate',
-    'Hanoi, Vietnam',
-    CURRENT_TIMESTAMP,
-    CURRENT_TIMESTAMP
-)
-RETURNING id;
+SELECT 
+    ns.student_id,
+    ns.user_id,
+    ns.student_code,
+    nu.email,
+    nu.full_name,
+    nu.phone,
+    nba.branch_id,
+    COUNT(na.skill) AS assessment_count
+FROM new_student ns
+JOIN new_user nu ON ns.user_id = nu.id
+JOIN new_branch_assignment nba ON ns.user_id = nba.user_id
+LEFT JOIN new_assessments na ON ns.student_id = na.student_id
+GROUP BY ns.student_id, ns.user_id, ns.student_code, nu.email, nu.full_name, nu.phone, nba.branch_id;
 
 
 Step 14B: [System] Thêm student mới vào DS khả dụng
@@ -237,57 +422,9 @@ Step 13C: [Academic Affairs] Click "Import vào DS"
 Giáo vụ xác nhận import các bản ghi valid vào hệ thống
 
 Step 14C: [System] Batch CREATE: user_account + student cho valid records
-Hệ thống thực hiện tạo hàng loạt:
-Tạo user_account cho các email mới
-Tạo student record cho từng học viên valid
-Gán role STUDENT
+Cũng như tạo lẻ student nhưng backend chạy vòng lặp để thực hiện tạo hàng loạt
 
--- Batch insert user_accounts (sử dụng VALUES multiple rows)
-WITH new_users AS (
-    INSERT INTO user_account (email, phone, full_name, password_hash, status, created_at, updated_at)
-    VALUES 
-        (:email1, :phone1, :fullName1, :passwordHash1, 'active', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-        (:email2, :phone2, :fullName2, :passwordHash2, 'active', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-        (:email3, :phone3, :fullName3, :passwordHash3, 'active', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-        -- ... more rows
-    RETURNING id, email
-)
-SELECT * FROM new_users;
-
--- Sau đó batch insert user_role
-INSERT INTO user_role (user_id, role_id)
-SELECT nu.id, r.id
-FROM new_users nu
-CROSS JOIN (SELECT id FROM role WHERE code = 'STUDENT') r;
-
--- Batch insert user_branches
-INSERT INTO user_branches (user_id, branch_id, assigned_at, assigned_by)
-SELECT nu.id, :branchId, CURRENT_TIMESTAMP, :currentUserId
-FROM new_users nu;
-
--- Batch insert students
-WITH user_mapping AS (
-    SELECT id, email FROM user_account WHERE email = ANY(:emailArray)
-)
-INSERT INTO student (user_id, student_code, education_level, address, created_at, updated_at)
-SELECT 
-    um.id,
-    csv.student_code,
-    csv.education_level,
-    csv.address,
-    CURRENT_TIMESTAMP,
-    CURRENT_TIMESTAMP
-FROM (VALUES 
-    (:email1, :studentCode1, :educationLevel1, :address1),
-    (:email2, :studentCode2, :educationLevel2, :address2)
-    -- ... more rows
-) AS csv(email, student_code, education_level, address)
-INNER JOIN user_mapping um ON csv.email = um.email
-RETURNING id AS student_id;
-
-
-Step 15C: [System] Update DS khả dụng với students mới
-Hệ thống cập nhật danh sách khả dụng với các học viên vừa import
+Step 15C: [System] cập nhật danh sách khả dụng với các học viên vừa import
 Refresh danh sách để hiển thị đầy đủ
 
 Step 16C: Chuyển đến Step 20 (Chọn students từ DS đã update)
@@ -303,37 +440,6 @@ Giáo vụ nhấn nút "Ghi danh vào lớp" để xác nhận
 
 Step 22: [System] Lấy danh sách students được chọn
 Hệ thống lấy danh sách tất cả học viên đã được tick checkbox
-WITH class_info AS (
-    SELECT branch_id FROM class WHERE id = 2
-),
-enrolled_students AS (
-    -- Lấy danh sách students đã enroll vào lớp này
-    SELECT student_id
-    FROM enrollment
-    WHERE class_id = 2
-      AND status NOT IN ('dropped', 'transferred')
-)
-SELECT DISTINCT
-    s.id AS student_id,
-    u.full_name,
-    u.email,
-    u.phone,
-    s.student_code,
-    s.education_level,
-    s.created_at
-FROM student s
-INNER JOIN user_account u ON s.user_id = u.id
--- Kiểm tra student thuộc branch của class (qua user_branches)
-INNER JOIN user_branches ub ON u.id = ub.user_id
-INNER JOIN class_info ci ON ub.branch_id = ci.branch_id
--- Loại trừ students đã enroll
-WHERE s.id NOT IN (SELECT student_id FROM enrolled_students)
-  AND u.status = 'active'  -- Chỉ lấy user active
-ORDER BY u.full_name;
-
-
--- Kết quả: Danh sách students khả dụng để chọn
-
 
 Step 23: [System] Kiểm tra capacity
 Hệ thống kiểm tra sức chứa lớp học:
@@ -342,23 +448,81 @@ So sánh với max_capacity (sức chứa tối đa)
 Nếu (enrolled_count + selected) < max_capacity → OK
 Nếu (enrolled_count + selected) ≥ max_capacity → Warning
 
--- Query để check capacity
+WITH selected_students AS (
+    SELECT UNNEST(ARRAY[51, 52, 53, 54, 55]) AS student_id
+),
+class_info AS (
+    SELECT 
+        c.id,
+        c.code,
+        c.name,
+        c.max_capacity,
+        c.status,
+        COUNT(e.id) FILTER (WHERE e.status = 'enrolled') AS current_enrolled
+    FROM public.class c
+    LEFT JOIN public.enrollment e ON c.id = e.class_id
+    WHERE c.id = 3
+    GROUP BY c.id, c.code, c.name, c.max_capacity, c.status
+),
+capacity_analysis AS (
+    SELECT 
+        ci.id AS class_id,
+        ci.code AS class_code,
+        ci.name AS class_name,
+        ci.max_capacity,
+        ci.current_enrolled,
+        (SELECT COUNT(*) FROM selected_students) AS selected_count,
+        ci.max_capacity - ci.current_enrolled AS available_slots,
+        (ci.current_enrolled + (SELECT COUNT(*) FROM selected_students)) AS total_after_enrollment,
+        CASE 
+            WHEN (ci.current_enrolled + (SELECT COUNT(*) FROM selected_students)) <= ci.max_capacity 
+            THEN TRUE 
+            ELSE FALSE 
+        END AS can_enroll_all,
+        CASE 
+            WHEN (ci.current_enrolled + (SELECT COUNT(*) FROM selected_students)) <= ci.max_capacity 
+            THEN (SELECT COUNT(*) FROM selected_students)  -- Tất cả được enroll
+            ELSE GREATEST(ci.max_capacity - ci.current_enrolled, 0)  -- Số lượng có thể enroll
+        END AS enrollable_count,
+        CASE 
+            WHEN (ci.current_enrolled + (SELECT COUNT(*) FROM selected_students)) <= ci.max_capacity 
+            THEN 0
+            ELSE (ci.current_enrolled + (SELECT COUNT(*) FROM selected_students)) - ci.max_capacity
+        END AS waitlist_count
+    FROM class_info ci
+)
 SELECT 
-    c.id,
-    c.max_capacity,
-    c.enrolled_count,
-    c.max_capacity - c.enrolled_count AS remaining_capacity,
-    :selectedCount AS selected_count,
-    (c.enrolled_count + :selectedCount) AS total_after_enrollment,
+    ca.class_id,
+    ca.class_code,
+    ca.class_name,
+    ca.max_capacity,
+    ca.current_enrolled,
+    ca.selected_count,
+    ca.available_slots,
+    ca.total_after_enrollment,
+    ca.can_enroll_all,
+    ca.enrollable_count,
+    ca.waitlist_count,
     CASE 
-        WHEN (c.enrolled_count + :selectedCount) <= c.max_capacity THEN true
-        ELSE false
-    END AS capacity_ok
-FROM class c
-WHERE c.id = :classId;
+        WHEN ca.can_enroll_all THEN 
+            'CÓ THỂ ENROLL: Tất cả ' || ca.selected_count || ' học sinh có thể được ghi danh vào lớp.'
+        WHEN ca.available_slots > 0 THEN 
+            'ENROLL PARTIAL: Chỉ có thể ghi danh ' || ca.enrollable_count || ' học sinh. ' || 
+            ca.waitlist_count || ' học sinh sẽ vào danh sách chờ (waitlist).'
+        WHEN ca.available_slots = 0 THEN 
+            'LỚP ĐÃ FULL: Không thể ghi danh thêm. Tất cả ' || ca.selected_count || 
+            ' học sinh sẽ vào danh sách chờ (waitlist).'
+        ELSE 
+            'LỖI: Không thể xác định capacity.'
+    END AS capacity_message,
+    CASE 
+        WHEN ca.can_enroll_all THEN 'success'
+        WHEN ca.available_slots > 0 THEN 'warning'
+        ELSE 'error'
+    END AS status_code
+FROM capacity_analysis ca;
 
--- Nếu capacity_ok = false → Hiển thị warning
--- Nếu capacity_ok = true → Tiếp tục
+
 
 
 Step 24: [Academic Affairs] Capacity OK?
@@ -385,47 +549,137 @@ Xem học viên đã có lớp nào trùng lịch không
 So sánh schedule_days và time_slot của lớp hiện tại với các lớp khác mà học viên đã đăng ký
 Nếu có conflict → Warning (nhưng vẫn cho phép ghi danh nếu giáo vụ xác nhận)
 
--- Query để check conflict lịch học cho từng student
--- Kiểm tra xem student đã enroll vào lớp nào trùng lịch không
-
-WITH target_class AS (
-    SELECT 
-        id,
-        schedule_days,  -- Array of smallint (2=Mon, 3=Tue, etc.)
-        time_slot_id
-    FROM class
-    WHERE id = :classId
+WITH selected_students AS (
+    SELECT UNNEST(ARRAY[51, 52, 53, 54, 55]) AS student_id
 ),
-student_classes AS (
-    -- Lấy tất cả lớp mà các students đang enroll
-    SELECT DISTINCT
+target_class_info AS (
+    -- Lấy thông tin lịch học của class muốn enroll (từ sessions)
+    SELECT 
+        c.id,
+        c.code,
+        c.name,
+        c.schedule_days,
+        MIN(tst.start_time) AS earliest_start_time,
+        MAX(tst.end_time) AS latest_end_time,
+        STRING_AGG(DISTINCT tst.name, ', ') AS time_slots
+    FROM public.class c
+    LEFT JOIN public.session s ON c.id = s.class_id
+    LEFT JOIN public.time_slot_template tst ON s.time_slot_template_id = tst.id
+    WHERE c.id = 3
+    GROUP BY c.id, c.code, c.name, c.schedule_days
+),
+existing_enrollments AS (
+    -- Lấy tất cả enrollments hiện tại của selected students
+    SELECT 
         e.student_id,
-        c.id AS class_id,
+        e.class_id,
+        c.code AS class_code,
         c.name AS class_name,
         c.schedule_days,
-        c.time_slot_id
-    FROM enrollment e
-    INNER JOIN class c ON e.class_id = c.id
-    WHERE e.student_id = ANY(:selectedStudentIds)
-      AND e.status = 'enrolled'
+        MIN(tst.start_time) AS earliest_start_time,
+        MAX(tst.end_time) AS latest_end_time,
+        STRING_AGG(DISTINCT tst.name, ', ') AS time_slots
+    FROM public.enrollment e
+    JOIN public.class c ON e.class_id = c.id
+    LEFT JOIN public.session s ON c.id = s.class_id
+    LEFT JOIN public.time_slot_template tst ON s.time_slot_template_id = tst.id
+    WHERE e.student_id IN (SELECT student_id FROM selected_students)
+      AND e.status IN ('enrolled', 'waitlisted')
       AND c.status IN ('scheduled', 'ongoing')
+    GROUP BY e.student_id, e.class_id, c.code, c.name, c.schedule_days
 ),
-conflicts AS (
+conflict_detection AS (
+    -- Phát hiện conflicts: trùng ngày và trùng giờ
     SELECT 
-        sc.student_id,
-        sc.class_name,
-        s.full_name AS student_name
-    FROM student_classes sc
-    CROSS JOIN target_class tc
-    INNER JOIN student s ON sc.student_id = s.id
-    INNER JOIN user_account u ON s.user_id = u.id
-    WHERE sc.time_slot_id = tc.time_slot_id  -- Cùng time slot
-      AND sc.schedule_days && tc.schedule_days  -- Array overlap (PostgreSQL operator)
+        ee.student_id,
+        s.student_code,
+        u.full_name,
+        ee.class_id AS conflicting_class_id,
+        ee.class_code AS conflicting_class_code,
+        ee.class_name AS conflicting_class_name,
+        ee.schedule_days AS conflicting_schedule_days,
+        ee.time_slots AS conflicting_time_slots,
+        ee.earliest_start_time AS conflicting_start_time,
+        ee.latest_end_time AS conflicting_end_time,
+        tci.code AS target_class_code,
+        tci.name AS target_class_name,
+        tci.schedule_days AS target_schedule_days,
+        tci.time_slots AS target_time_slots,
+        tci.earliest_start_time AS target_start_time,
+        tci.latest_end_time AS target_end_time,
+        -- Kiểm tra trùng ngày
+        CASE 
+            WHEN ee.schedule_days && tci.schedule_days THEN TRUE
+            ELSE FALSE 
+        END AS has_day_overlap,
+        -- Kiểm tra trùng giờ
+        CASE 
+            WHEN (ee.earliest_start_time < tci.latest_end_time AND tci.earliest_start_time < ee.latest_end_time) THEN TRUE
+            ELSE FALSE 
+        END AS has_time_overlap
+    FROM existing_enrollments ee
+    CROSS JOIN target_class_info tci
+    JOIN public.student s ON ee.student_id = s.id
+    JOIN public.user_account u ON s.user_id = u.id
+    WHERE ee.schedule_days && tci.schedule_days  -- Có ngày trùng
+      AND (ee.earliest_start_time < tci.latest_end_time AND tci.earliest_start_time < ee.latest_end_time)  -- Giờ trùng
+),
+students_with_conflicts AS (
+    -- Tổng hợp conflicts cho mỗi student
+    SELECT 
+        student_id,
+        student_code,
+        full_name,
+        COUNT(*) AS conflict_count,
+        STRING_AGG(
+            conflicting_class_code || ' (' || conflicting_class_name || ') - Days: ' || 
+            conflicting_schedule_days::TEXT || ', Times: ' || conflicting_time_slots,
+            '; '
+            ORDER BY conflicting_class_code
+        ) AS conflict_details
+    FROM conflict_detection
+    GROUP BY student_id, student_code, full_name
+),
+students_no_conflicts AS (
+    -- Students không có conflict
+    SELECT 
+        ss.student_id,
+        s.student_code,
+        u.full_name
+    FROM selected_students ss
+    JOIN public.student s ON ss.student_id = s.id
+    JOIN public.user_account u ON s.user_id = u.id
+    WHERE ss.student_id NOT IN (SELECT student_id FROM students_with_conflicts)
 )
-SELECT * FROM conflicts;
+-- Final output: Kết quả kiểm tra conflict
+SELECT 
+    'CONFLICT' AS status,
+    swc.student_id,
+    swc.student_code,
+    swc.full_name,
+    swc.conflict_count,
+    swc.conflict_details,
+    'WARNING: Học sinh này có lịch học trùng với lớp khác. Bạn có muốn tiếp tục ghi danh?' AS message,
+    'warning' AS severity
+FROM students_with_conflicts swc
 
--- Nếu có kết quả → Warning về conflict (nhưng vẫn cho phép override)
--- Nếu không có kết quả → OK, không có conflict
+UNION ALL
+
+SELECT 
+    'NO_CONFLICT' AS status,
+    snc.student_id,
+    snc.student_code,
+    snc.full_name,
+    0 AS conflict_count,
+    NULL AS conflict_details,
+    'OK: Không có xung đột lịch học.' AS message,
+    'success' AS severity
+FROM students_no_conflicts snc
+
+ORDER BY status DESC, student_id;
+
+
+
 
 
 GIAI ĐOẠN 4: XỬ LÝ TRANSACTION (Database Transaction)
@@ -439,33 +693,6 @@ Hệ thống tạo bản ghi enrollment cho từng học viên:
 enrollment (class_id, student_id, enrolled_at, status='enrolled')
 Cập nhật enrolled_count của lớp học
 
--- Batch insert enrollments
-INSERT INTO enrollment (
-    class_id,
-    student_id,
-    status,
-    enrolled_at,
-    created_at,
-    updated_at
-)
-SELECT 
-    :classId,
-    student_id,
-    'enrolled',
-    CURRENT_TIMESTAMP,
-    CURRENT_TIMESTAMP,
-    CURRENT_TIMESTAMP
-FROM UNNEST(:selectedStudentIds) AS student_id
-RETURNING id AS enrollment_id, student_id;
-
--- Update enrolled_count của class
-UPDATE class
-SET 
-    enrolled_count = enrolled_count + :selectedCount,
-    updated_at = CURRENT_TIMESTAMP
-WHERE id = :classId;
-
-
 Step 31: [System] GENERATE student_session (cho tất cả future sessions của từng student)
 Hệ thống sinh các bản ghi student_session:
 Lấy tất cả session của lớp có session_date >= today (future sessions)
@@ -473,47 +700,157 @@ Với mỗi student được ghi danh:
 Tạo student_session (student_id, session_id, attendance_status='planned')
 Nếu học viên ghi danh muộn (mid-course), chỉ sinh student_session cho các buổi còn lại
 
--- Query để lấy tất cả future sessions của class
-WITH future_sessions AS (
-    SELECT id AS session_id
-    FROM session
-    WHERE class_id = :classId
-      AND session_date >= CURRENT_DATE  -- Chỉ lấy sessions tương lai
+WITH selected_students AS (
+    -- Danh sách students được chọn từ UI (giả sử tick checkbox)
+    SELECT UNNEST(ARRAY[51, 52, 53, 54, 55]) AS student_id
+),
+class_info AS (
+    -- Lấy thông tin class để validate
+    SELECT 
+        id,
+        code,
+        name,
+        max_capacity,
+        branch_id,
+        status,
+        (SELECT COUNT(*) FROM public.enrollment WHERE class_id = 3 AND status = 'enrolled') AS current_enrolled
+    FROM public.class
+    WHERE id = 3
+),
+-- Get sessions của class này
+target_class_sessions AS (
+    SELECT 
+        s.id AS session_id,
+        s.date,
+        s.time_slot_template_id,
+        tst.start_time,
+        tst.end_time
+    FROM public.session s
+    JOIN public.time_slot_template tst ON s.time_slot_template_id = tst.id
+    WHERE s.class_id = 3
+      AND s.status = 'planned'
+      AND s.date >= CURRENT_DATE
+),
+-- Kiểm tra schedule conflict: students đã có session trùng lịch chưa?
+students_with_conflicts AS (
+    SELECT DISTINCT
+        ss.student_id,
+        COUNT(DISTINCT existing_s.id) AS conflict_count,
+        STRING_AGG(DISTINCT existing_c.code, ', ') AS conflicting_classes
+    FROM selected_students ss
+    -- Lấy các enrollments hiện tại của student
+    JOIN public.enrollment existing_e ON ss.student_id = existing_e.student_id
+    JOIN public.class existing_c ON existing_e.class_id = existing_c.id
+    -- Lấy sessions của các classes đó
+    JOIN public.session existing_s ON existing_e.class_id = existing_s.class_id
+    JOIN public.time_slot_template existing_tst ON existing_s.time_slot_template_id = existing_tst.id
+    -- Check conflict với target class sessions
+    JOIN target_class_sessions tcs ON 
+        existing_s.date = tcs.date  -- Cùng ngày
+        AND existing_s.status IN ('planned', 'done')  -- Session đang active
+        AND existing_e.status IN ('enrolled', 'waitlisted')  -- Student đang học
+        AND (
+            -- Time overlap: (start1 < end2) AND (start2 < end1)
+            (existing_tst.start_time < tcs.end_time AND tcs.start_time < existing_tst.end_time)
+        )
+    GROUP BY ss.student_id
+),
+-- Students hợp lệ (không conflict)
+valid_students AS (
+    SELECT student_id 
+    FROM selected_students
+    WHERE student_id NOT IN (SELECT student_id FROM students_with_conflicts)
+),
+-- Validate: Check capacity
+capacity_check AS (
+    SELECT 
+        ci.id,
+        ci.max_capacity,
+        ci.current_enrolled,
+        (ci.max_capacity - ci.current_enrolled) AS available_slots,
+        (SELECT COUNT(*) FROM valid_students) AS valid_count
+    FROM class_info ci
+),
+-- Step 1: Insert enrollments (chỉ cho valid students)
+new_enrollments AS (
+    INSERT INTO public.enrollment (
+        class_id,
+        student_id,
+        status,
+        enrolled_at,
+        created_at,
+        updated_at
+    )
+    SELECT 
+        3,  -- class_id
+        vs.student_id,
+        CASE 
+            WHEN (ROW_NUMBER() OVER (ORDER BY vs.student_id) + cc.current_enrolled) <= cc.max_capacity
+            THEN 'enrolled'::enrollment_status_enum
+            ELSE 'waitlisted'::enrollment_status_enum
+        END AS status,
+        CURRENT_TIMESTAMP,
+        CURRENT_TIMESTAMP,
+        CURRENT_TIMESTAMP
+    FROM valid_students vs
+    CROSS JOIN capacity_check cc
+    RETURNING id AS enrollment_id, class_id, student_id, status
+),
+-- Step 2: Get all sessions của class này
+class_sessions AS (
+    SELECT 
+        id AS session_id, 
+        date,
+        type,
+        status
+    FROM public.session
+    WHERE class_id = 3
       AND status = 'planned'
-    ORDER BY session_date, time_slot_id
+      AND date >= CURRENT_DATE
+),
+-- Step 3: Tạo student_session cho từng student × session
+new_student_sessions AS (
+    INSERT INTO public.student_session (
+        student_id,
+        session_id,
+        is_makeup,
+        attendance_status
+    )
+    SELECT 
+        ne.student_id,
+        cs.session_id,
+        FALSE,
+        'planned'::attendance_status_enum
+    FROM new_enrollments ne
+    CROSS JOIN class_sessions cs
+    WHERE ne.status = 'enrolled'
+    RETURNING student_id, session_id
 )
--- Batch insert student_session cho từng student + từng session
-INSERT INTO student_session (
-    student_id,
-    session_id,
-    attendance_status,
-    is_makeup,
-    created_at,
-    updated_at
-)
+-- Final output: Summary với conflict detection
 SELECT 
-    s.student_id,
-    fs.session_id,
-    'planned',  -- attendance_status_enum
-    false,      -- không phải makeup session
-    CURRENT_TIMESTAMP,
-    CURRENT_TIMESTAMP
-FROM UNNEST(:selectedStudentIds) AS s(student_id)
-CROSS JOIN future_sessions fs;
+    'ENROLLED' AS result_type,
+    ne.enrollment_id,
+    ne.student_id,
+    s.student_code,
+    u.full_name,
+    u.email,
+    ne.status AS enrollment_status,
+    ci.code AS class_code,
+    ci.name AS class_name,
+    COUNT(nss.session_id) AS sessions_assigned,
+    NULL AS conflict_reason
+FROM new_enrollments ne
+JOIN public.student s ON ne.student_id = s.id
+JOIN public.user_account u ON s.user_id = u.id
+CROSS JOIN class_info ci
+LEFT JOIN new_student_sessions nss ON ne.student_id = nss.student_id
+GROUP BY ne.enrollment_id, ne.student_id, s.student_code, u.full_name, u.email, ne.status, ci.code, ci.name
 
--- Nếu lớp có 20 sessions và enroll 5 students
--- → Tạo 5 × 20 = 100 student_session records
 
--- Query để verify số lượng student_session đã tạo:
-SELECT 
-    COUNT(*) AS total_student_sessions,
-    COUNT(DISTINCT student_id) AS students_count,
-    COUNT(DISTINCT session_id) AS sessions_count
-FROM student_session
-WHERE session_id IN (
-    SELECT id FROM session WHERE class_id = :classId AND session_date >= CURRENT_DATE
-)
-AND student_id = ANY(:selectedStudentIds);
+
+
+
+
 
 
 Step 32: [System] COMMIT TRANSACTION
@@ -580,7 +917,7 @@ WITH student_classes AS (
     INNER JOIN class c ON e.class_id = c.id
     INNER JOIN course co ON c.course_id = co.id
     INNER JOIN branch b ON c.branch_id = b.id
-    WHERE e.student_id = :studentId
+    WHERE e.student_id = 1
       AND e.status = 'enrolled'
       AND c.status IN ('scheduled', 'ongoing')
 ),
@@ -701,11 +1038,11 @@ SELECT
     -- Display badges
     CASE attendance_status
         WHEN 'planned' THEN 'Chưa diễn ra'
-        WHEN 'present' THEN '✓ Có mặt'
-        WHEN 'absent' THEN '✗ Vắng'
-        WHEN 'late' THEN '⏰ Muộn'
-        WHEN 'excused' THEN '⚠ Có phép'
-        WHEN 'remote' THEN '🌐 Học online'
+        WHEN 'present' THEN 'Có mặt'
+        WHEN 'absent' THEN 'Vắng'
+        WHEN 'late' THEN 'Muộn'
+        WHEN 'excused' THEN 'Có phép'
+        WHEN 'remote' THEN 'Học online'
     END AS attendance_badge,
     CASE session_status
         WHEN 'planned' THEN 'badge-primary'

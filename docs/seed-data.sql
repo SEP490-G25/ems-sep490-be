@@ -1012,7 +1012,9 @@ VALUES
 (69, 4, 20, 7, CURRENT_DATE + INTERVAL '2 days', 'class', 'planned', NULL, NOW() - INTERVAL '60 days', NOW()),
 -- Future sessions
 (70, 4, 21, 7, CURRENT_DATE + INTERVAL '7 days', 'class', 'planned', NULL, NOW() - INTERVAL '60 days', NOW()),
-(71, 4, 22, 7, CURRENT_DATE + INTERVAL '9 days', 'class', 'planned', NULL, NOW() - INTERVAL '60 days', NOW());
+(71, 4, 22, 7, CURRENT_DATE + INTERVAL '9 days', 'class', 'planned', NULL, NOW() - INTERVAL '60 days', NOW()),
+-- MAKEUP SESSION: Class 4 repeats course_session_id 14 (Listening Section 1) for makeup
+(1000, 4, 14, 7, CURRENT_DATE + INTERVAL '5 days', 'class', 'planned', 'Makeup session - Listening Section 1 review', NOW() - INTERVAL '60 days', NOW());
 
 -- 8.5 Sessions for ONGOING Class 5 (Conversational A2 - Weekend class)
 -- Schedule: Saturday, Sunday (days 7,1), Total: 30 sessions (10 weeks × 3/week - but weekends so ~15 weeks)
@@ -1032,6 +1034,42 @@ VALUES
 -- This weekend
 (82, 5, 11, 9, CURRENT_DATE, 'class', 'planned', NULL, NOW() - INTERVAL '35 days', NOW()),
 (83, 5, 1, 9, CURRENT_DATE + INTERVAL '1 day', 'class', 'planned', NULL, NOW() - INTERVAL '35 days', NOW());
+
+-- 8.6 Sessions for ONGOING Class 16 (B1-IELTS-002 - Online with Mon/Wed/Fri schedule)
+-- Schedule: Monday, Wednesday, Friday (days 2,4,6), Total: 36 sessions (12 weeks × 3/week)
+-- Started 40 days ago (about week 6), currently at session ~18
+-- Course: IELTS Foundation B1 (course_id = 2) - same as Class 3
+-- For transfer testing: Class 16 is ahead of Class 3 in curriculum
+INSERT INTO session (id, class_id, course_session_id, time_slot_template_id, date, type, status, teacher_note, created_at, updated_at)
+VALUES
+-- Past sessions (done) - showing recent history
+(1001, 16, 13, 2, CURRENT_DATE - INTERVAL '39 days', 'class', 'done', 'Online class starting well', NOW() - INTERVAL '45 days', CURRENT_DATE - INTERVAL '38 days'),
+(1002, 16, 14, 2, CURRENT_DATE - INTERVAL '37 days', 'class', 'done', NULL, NOW() - INTERVAL '45 days', CURRENT_DATE - INTERVAL '36 days'),
+(1003, 16, 15, 2, CURRENT_DATE - INTERVAL '35 days', 'class', 'done', NULL, NOW() - INTERVAL '45 days', CURRENT_DATE - INTERVAL '34 days'),
+(1004, 16, 16, 2, CURRENT_DATE - INTERVAL '32 days', 'class', 'done', NULL, NOW() - INTERVAL '45 days', CURRENT_DATE - INTERVAL '31 days'),
+(1005, 16, 17, 2, CURRENT_DATE - INTERVAL '30 days', 'class', 'done', NULL, NOW() - INTERVAL '45 days', CURRENT_DATE - INTERVAL '29 days'),
+(1006, 16, 18, 2, CURRENT_DATE - INTERVAL '28 days', 'class', 'done', NULL, NOW() - INTERVAL '45 days', CURRENT_DATE - INTERVAL '27 days'),
+(1007, 16, 19, 2, CURRENT_DATE - INTERVAL '25 days', 'class', 'done', NULL, NOW() - INTERVAL '45 days', CURRENT_DATE - INTERVAL '24 days'),
+(1008, 16, 20, 2, CURRENT_DATE - INTERVAL '23 days', 'class', 'done', NULL, NOW() - INTERVAL '45 days', CURRENT_DATE - INTERVAL '22 days'),
+(1009, 16, 21, 2, CURRENT_DATE - INTERVAL '21 days', 'class', 'done', NULL, NOW() - INTERVAL '45 days', CURRENT_DATE - INTERVAL '20 days'),
+(1010, 16, 22, 2, CURRENT_DATE - INTERVAL '18 days', 'class', 'done', NULL, NOW() - INTERVAL '45 days', CURRENT_DATE - INTERVAL '17 days'),
+(1011, 16, 23, 2, CURRENT_DATE - INTERVAL '16 days', 'class', 'done', NULL, NOW() - INTERVAL '45 days', CURRENT_DATE - INTERVAL '15 days'),
+(1012, 16, 24, 2, CURRENT_DATE - INTERVAL '14 days', 'class', 'done', NULL, NOW() - INTERVAL '45 days', CURRENT_DATE - INTERVAL '13 days'),
+(1013, 16, 25, 2, CURRENT_DATE - INTERVAL '11 days', 'class', 'done', NULL, NOW() - INTERVAL '45 days', CURRENT_DATE - INTERVAL '10 days'),
+(1014, 16, 26, 2, CURRENT_DATE - INTERVAL '9 days', 'class', 'done', NULL, NOW() - INTERVAL '45 days', CURRENT_DATE - INTERVAL '8 days'),
+(1015, 16, 27, 2, CURRENT_DATE - INTERVAL '7 days', 'class', 'done', 'Phase 1 completed', NOW() - INTERVAL '45 days', CURRENT_DATE - INTERVAL '6 days'),
+-- Starting Phase 2 - repeating course sessions
+(1016, 16, 13, 2, CURRENT_DATE - INTERVAL '4 days', 'class', 'done', 'Phase 2 - Reading focus begins', NOW() - INTERVAL '45 days', CURRENT_DATE - INTERVAL '3 days'),
+(1017, 16, 14, 2, CURRENT_DATE - INTERVAL '2 days', 'class', 'done', NULL, NOW() - INTERVAL '45 days', CURRENT_DATE - INTERVAL '1 day'),
+(1018, 16, 15, 2, CURRENT_DATE, 'class', 'planned', NULL, NOW() - INTERVAL '45 days', NOW()),
+-- Future sessions (planned) - continues Phase 2
+(1019, 16, 16, 2, CURRENT_DATE + INTERVAL '2 days', 'class', 'planned', NULL, NOW() - INTERVAL '45 days', NOW()),
+(1020, 16, 17, 2, CURRENT_DATE + INTERVAL '4 days', 'class', 'planned', NULL, NOW() - INTERVAL '45 days', NOW()),
+(1021, 16, 18, 2, CURRENT_DATE + INTERVAL '7 days', 'class', 'planned', NULL, NOW() - INTERVAL '45 days', NOW()),
+(1022, 16, 19, 2, CURRENT_DATE + INTERVAL '9 days', 'class', 'planned', NULL, NOW() - INTERVAL '45 days', NOW()),
+(1023, 16, 20, 2, CURRENT_DATE + INTERVAL '11 days', 'class', 'planned', NULL, NOW() - INTERVAL '45 days', NOW()),
+(1024, 16, 21, 2, CURRENT_DATE + INTERVAL '14 days', 'class', 'planned', NULL, NOW() - INTERVAL '45 days', NOW()),
+(1025, 16, 22, 2, CURRENT_DATE + INTERVAL '16 days', 'class', 'planned', NULL, NOW() - INTERVAL '45 days', NOW());
 
 -- Reset sequences
 SELECT setval('class_id_seq', (SELECT MAX(id) FROM "class"));
@@ -1397,7 +1435,17 @@ VALUES
 (2, 14, 3, 'makeup', NULL, CURRENT_DATE + INTERVAL '7 days', 'pending', NOW() - INTERVAL '2 days', 14, NULL, NULL, 'Request makeup for missed session 53', NOW() - INTERVAL '2 days', NOW()),
 
 -- Approved absence with excused status
-(3, 15, 3, 'absence', 54, CURRENT_DATE - INTERVAL '11 days', 'approved', NOW() - INTERVAL '13 days', 15, 4, NOW() - INTERVAL '12 days', 'Medical appointment', NOW() - INTERVAL '14 days', NOW() - INTERVAL '12 days');
+(3, 15, 3, 'absence', 54, CURRENT_DATE - INTERVAL '11 days', 'approved', NOW() - INTERVAL '13 days', 15, 4, NOW() - INTERVAL '12 days', 'Medical appointment', NOW() - INTERVAL '14 days', NOW() - INTERVAL '12 days'),
+
+-- PENDING ABSENCE REQUESTS (for testing academic staff workflow)
+-- Student 16 requests absence for upcoming session (Class 3 - IELTS Intensive A2-B1, Session 60: +3 days)
+(4, 16, 3, 'absence', 60, CURRENT_DATE + INTERVAL '3 days', 'pending', NOW() - INTERVAL '1 day', 56, NULL, NULL, 'Doctor appointment - have medical certificate', NOW() - INTERVAL '1 day', NOW()),
+
+-- Student 17 requests absence for future session (Class 3 - IELTS Intensive A2-B1, Session 61: +6 days)
+(5, 17, 3, 'absence', 61, CURRENT_DATE + INTERVAL '6 days', 'pending', NOW() - INTERVAL '6 hours', 57, NULL, NULL, 'Family wedding ceremony', NOW() - INTERVAL '6 hours', NOW()),
+
+-- Student 29 requests absence (Class 4 - Business English B2, Session 69: +2 days)
+(6, 29, 4, 'absence', 69, CURRENT_DATE + INTERVAL '2 days', 'pending', NOW() - INTERVAL '12 hours', 68, NULL, NULL, 'Business trip to Da Nang', NOW() - INTERVAL '12 hours', NOW());
 
 -- 11.2 Teacher Requests (leave, swap, reschedule)
 INSERT INTO teacher_request (id, teacher_id, session_id, request_type, replacement_teacher_id, reason, status, submitted_at, submitted_by, decided_by, decided_at, note, created_at, updated_at)
