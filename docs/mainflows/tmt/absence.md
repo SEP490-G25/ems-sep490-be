@@ -1,4 +1,4 @@
-STUDENT ABSENCE REQUEST
+Luồng học viên yêu cầu xin nghỉ 
 
 CÁC BƯỚC THỰC HIỆN (STEP-BY-STEP)
 PHẦN 1: HỌC VIÊN GỬI YÊU CẦU
@@ -353,6 +353,10 @@ Giáo vụ nhận email thông báo có yêu cầu mới
 Bước 22: Login hệ thống và vào menu request -> filter "Pending"
 
 Bước 23: Hệ thống query danh sách pending requests
+
+-- Query lấy toàn bộ pending absence requests theo branch_id
+-- Giáo vụ (Academic Staff) xem TẤT CẢ request của branch mình quản lý
+
 SELECT 
     sr.id AS request_id,
     sr.request_type,
@@ -380,7 +384,7 @@ SELECT
     b.name AS branch_name,
     -- Course info
     co.name AS course_name,
-    cs.topic AS session_topic,  -- Sửa từ cs.title → cs.topic
+    cs.topic AS session_topic,
     cs.sequence_no AS session_sequence,
     -- Room/Resource info
     STRING_AGG(DISTINCT r.name, ', ') AS room_names,
@@ -403,9 +407,10 @@ LEFT JOIN public.user_account ua_teacher ON t.user_account_id = ua_teacher.id
 WHERE sr.status = 'pending'
     AND sr.request_type = 'absence'
     AND c.branch_id IN (
+        -- Lấy tất cả branch mà Academic Staff (user_id=4) quản lý
         SELECT branch_id 
         FROM public.user_branches 
-        WHERE user_id = 4  -- Academic Affairs 1
+        WHERE user_id = 4  -- Thay user_id này bằng ID của giáo vụ cần query
     )
 GROUP BY 
     sr.id, sr.request_type, sr.status, sr.note, sr.submitted_at,
@@ -416,6 +421,93 @@ GROUP BY
     co.name, cs.topic, cs.sequence_no
 ORDER BY sr.submitted_at ASC;
 
+OUTPUT:
+[
+  {
+    "request_id": 7,
+    "request_type": "absence",
+    "status": "pending",
+    "note": "Doctor appointment - have medical certificate",
+    "submitted_at": "2025-10-27 04:26:05.793245+00",
+    "student_code": "S016",
+    "student_name": "Trinh Thi Mai",
+    "student_email": "student016@gmail.com",
+    "student_phone": "+84-914-111-111",
+    "session_id": 55,
+    "session_date": "2025-10-19",
+    "session_type": "class",
+    "session_status": "done",
+    "start_time": "13:00:00",
+    "end_time": "14:30:00",
+    "time_slot_name": "Afternoon Slot 1",
+    "class_id": 3,
+    "class_code": "B1-IELTS-001",
+    "class_name": "IELTS Foundation B1 - Afternoon",
+    "branch_id": 1,
+    "branch_name": "Main Campus",
+    "course_name": "IELTS Foundation (B1)",
+    "session_topic": "Listening Section 3 - Conversations",
+    "session_sequence": 4,
+    "room_names": "Room 201",
+    "teacher_names": "Emily Davis"
+  },
+  {
+    "request_id": 9,
+    "request_type": "absence",
+    "status": "pending",
+    "note": "Business trip to Da Nang",
+    "submitted_at": "2025-10-27 16:26:05.793245+00",
+    "student_code": "S019",
+    "student_name": "Ta Van Phong",
+    "student_email": "student019@gmail.com",
+    "student_phone": "+84-914-444-444",
+    "session_id": 75,
+    "session_date": "2025-09-30",
+    "session_type": "class",
+    "session_status": "done",
+    "start_time": "08:00:00",
+    "end_time": "10:00:00",
+    "time_slot_name": "Weekend Morning",
+    "class_id": 4,
+    "class_code": "B2-IELTS-001",
+    "class_name": "IELTS Intermediate B2 - Evening",
+    "branch_id": 1,
+    "branch_name": "Main Campus",
+    "course_name": "IELTS Intermediate (B2)",
+    "session_topic": "Personal Information",
+    "session_sequence": 4,
+    "room_names": "Room 202",
+    "teacher_names": "Tran Van Huy"
+  },
+  {
+    "request_id": 8,
+    "request_type": "absence",
+    "status": "pending",
+    "note": "Family wedding ceremony",
+    "submitted_at": "2025-10-27 22:26:05.793245+00",
+    "student_code": "S017",
+    "student_name": "Quach Van Minh",
+    "student_email": "student017@gmail.com",
+    "student_phone": "+84-914-222-222",
+    "session_id": 56,
+    "session_date": "2025-10-21",
+    "session_type": "class",
+    "session_status": "done",
+    "start_time": "13:00:00",
+    "end_time": "14:30:00",
+    "time_slot_name": "Afternoon Slot 1",
+    "class_id": 3,
+    "class_code": "B1-IELTS-001",
+    "class_name": "IELTS Foundation B1 - Afternoon",
+    "branch_id": 1,
+    "branch_name": "Main Campus",
+    "course_name": "IELTS Foundation (B1)",
+    "session_topic": "Listening Section 4 - Lectures",
+    "session_sequence": 5,
+    "room_names": "Room 201",
+    "teacher_names": "Emily Davis"
+  }
+]
 
 Bước 24: Hệ thống hiển thị danh sách pending requests
 
@@ -594,7 +686,6 @@ GROUP BY
 
 
 OUTPUT từ query:
-
 [
   {
     "request_id": 4,
@@ -701,11 +792,14 @@ System hiển thị confirmation dialog: "Bạn có chắc chắn muốn phê du
 Giáo vụ confirm
 
 Bước 31: Thực hiện transaction approve
+
+
 BEGIN;
+
 
 -- 1. Update student_request status to approved
 UPDATE public.student_request
-SET 
+SET
     status = 'approved'::request_status_enum,
     decided_by = 4,  -- Academic Affairs user_id
     decided_at = CURRENT_TIMESTAMP,
@@ -714,15 +808,17 @@ WHERE id = 4
     AND status = 'pending'
 RETURNING id, student_id, target_session_id, status, decided_at;
 
+
 -- 2. Update student_session attendance to excused
 UPDATE public.student_session
-SET 
+SET
     attendance_status = 'excused'::attendance_status_enum,
     note = COALESCE(note || E'\n', '') || 'Approved absence request #4 on ' || CURRENT_TIMESTAMP::DATE::TEXT
 WHERE student_id = 14
     AND session_id = 59
     AND attendance_status = 'planned'
 RETURNING student_id, session_id, attendance_status, note;
+
 
 COMMIT;
 
@@ -771,7 +867,7 @@ Giáo vụ confirm
 
 -- Update student_request status to rejected
 UPDATE student_request
-SET 
+SET
     status = 'rejected',
     rejection_reason = :rejection_reason,
     decided_by = :Affairs_user_id,
@@ -816,3 +912,4 @@ Có thể xem chi tiết: Rejected by, Rejected at, Rejection reason
 Bước 37 (alternative): Lịch học không thay đổi
 Session vẫn giữ status 'planned'
 Học viên vẫn phải đến lớp hoặc tạo request mới với lý do khác
+
